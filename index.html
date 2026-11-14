@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gratte Quest</title>
+<meta name="description" content="Journal de progression guitare électrique sous forme de jeu : missions du jour, paliers, cartes à collectionner, trophées et boss final.">
+<meta name="theme-color" content="#5B4BFF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gratte Quest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header id="top"></header>
+<div id="sessionbar" hidden></div>
+<main id="view" class="wrap"></main>
+<div id="dock"></div>
+<div id="modal" role="dialog" aria-modal="true" aria-label="Détail"></div>
+<div id="login" hidden></div>
+<div id="toasts" aria-live="polite"></div>
+<noscript><p style="padding:24px">Gratte Quest a besoin de JavaScript pour fonctionner.</p></noscript>
+<script src="vendor/supabase.js"></script>
+<script src="js/core.js"></script>
+<script src="js/data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/cloud.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
