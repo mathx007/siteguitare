@@ -353,17 +353,18 @@
   /* ---------- Cartes ---------- */
   function dots(n, total = 3) { return `<span class="dots" aria-hidden="true">${Array.from({ length: total }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</span>`; }
   function songCardHtml(s, mode) {
-    const pi = pinfo(s.id), own = pi.owned, color = own || ui.preview || mode === 'big', alt = isDefeated(s.id), stp = stepsOf(s.id);
+    const pi = pinfo(s.id), own = pi.owned, color = own || ui.preview || mode === 'big' || mode === 'fan', alt = isDefeated(s.id), stp = stepsOf(s.id);
     const idx = allSongs().indexOf(s) + 1, num = '#' + String(idx).padStart(3, '0') + '/' + String(allSongs().length).padStart(3, '0');
     const statsTxt = own ? 'ACQUISE' : stp < 3 ? 'ÉTAPE ' + stp + '/3' : '100 % ' + pi.n + '/3';
     const img = songImg(s, 480);
     const front = `<div class="face front"><div>
         <div class="ctop"><div class="cname">${esc(s.t)}</div><div class="badge" title="${RARITY[s.r]}">${alt ? '★' : s.r}</div></div>
-        <div class="art"><div class="poster">${esc(s.t)}</div>${img ? `<img src="${esc(img)}" alt="${esc(songAlt(s))}" loading="lazy"${artAttrs(s)} onerror="this.remove()">` : ''}<div class="shine"></div>${s.boss === 'final' && !alt ? '<span class="flag">BOSS FINAL</span>' : s.boss === 'mini' && !own ? '<span class="flag">MINI-BOSS</span>' : st.boss.current === s.id && s.boss !== 'final' ? '<span class="flag">BOSS</span>' : ''}</div>
+        <div class="art"><div class="poster">${esc(s.t)}</div>${img ? `<img src="${esc(img)}" alt="${esc(songAlt(s))}" loading="lazy"${artAttrs(s)} onload="this.classList.add('ok')" onerror="this.remove()">` : ''}<div class="shine"></div>${s.boss === 'final' && !alt ? '<span class="flag">BOSS FINAL</span>' : s.boss === 'mini' && !own ? '<span class="flag">MINI-BOSS</span>' : st.boss.current === s.id && s.boss !== 'final' ? '<span class="flag">BOSS</span>' : ''}</div>
         <div class="meta"><div class="num">${num}</div><div class="artist">${esc(s.a)}</div></div>
         <div class="stats"><span>${statsTxt}</span>${dots(own ? 3 : stp < 3 ? stp : pi.n)}</div>
       </div></div>`;
     if (mode === 'big' || mode === 'static') return `<div class="card r${s.r}${alt ? ' alt' : ''}${color ? '' : ' todo'} ${mode}">${front}</div>`;
+    if (mode === 'fan') return `<div class="slot"><div class="card r${s.r}${alt ? ' alt' : ''} static">${front}</div></div>`;
     const back = `<div class="face back"><div>
         <div class="ctop"><span class="small">${alt ? 'Alt-mythique' : RARITY[s.r]}</span><span class="small num">${num}</span></div>
         <p class="bt">${esc(s.t)}</p><div class="small">${esc(s.a)}</div>
@@ -397,12 +398,21 @@
     const doneN = ms.filter((m) => r.done.includes(m.id)).length, allDone = doneN === ms.length;
     const bannerSong = st.banner && songById(st.banner);
     const hello = st.name ? `Salut ${esc(st.name)}, on branche ?` : 'Salut, on branche ?';
+    /* Trois cartes en éventail (décoratives) : morceau du boss, morceau actif, dernière carte obtenue. */
+    const lastOwned = allSongs().filter((x) => owned(x.id)).map((x) => [x, (st.passes[x.id] || []).slice().sort().pop() || '']).sort((p, q) => (p[1] < q[1] ? 1 : -1))[0];
+    const lastBonusId = Object.keys(st.bonus).filter((id) => st.bonus[id]).pop(), lastBonus = lastBonusId && BONUS.find((x) => x.id === lastBonusId);
+    const fanIds = [b && b.id, st.active].filter((id, i, arr) => id && songById(id) && arr.indexOf(id) === i);
+    const fanHtml = fanIds.map((id) => songCardHtml(songById(id), 'fan'));
+    if (lastOwned && !fanIds.includes(lastOwned[0].id)) fanHtml.push(songCardHtml(lastOwned[0], 'fan'));
+    else if (lastBonus) fanHtml.push(bonusCard(lastBonus, 'static'));
+    const fan = fanHtml.length ? `<div class="fan" aria-hidden="true">${fanHtml.slice(0, 3).map((h, i, a) => `<div class="fanc f${a.length === 1 ? 1 : a.length === 2 ? i * 2 : i}">${h}</div>`).join('')}</div>` : '';
     const banner = bannerSong
-      ? `<section class="banner won">${songImg(bannerSong, 1200) ? `<img src="${esc(songImg(bannerSong, 1200))}" alt="${esc(songAlt(bannerSong))}"${artAttrs(bannerSong)} onerror="this.remove()">` : ''}<div class="banner-in"><div><div class="kicker">Bannière · ${esc(bannerSong.t)}</div><h1>${hello}</h1><p>Boss vaincu${st.boss.defeated.length > 1 ? 's : ' + st.boss.defeated.length : ''}. ${b ? 'Prochain boss : ' + esc(b.song.t) + '.' : 'Choisis ton prochain boss.'}</p></div>${E('crown', 64)}</div></section>`
-      : `<section class="banner"><div class="banner-in"><div><div class="kicker">Bannière · ${esc(Core.rankFor(li.level))}</div><h1>${hello}</h1><p>${b ? 'Bats ' + esc(b.song.t) + ' pour débloquer sa bannière.' : 'Choisis ton prochain boss.'}</p></div><div class="banner-emo">${E('musical-notes', 60)}${E('guitar', 60)}${E('high-voltage', 60)}</div></div></section>`;
+      ? `<section class="banner won">${songImg(bannerSong, 1200) ? `<img src="${esc(songImg(bannerSong, 1200))}" alt="${esc(songAlt(bannerSong))}"${artAttrs(bannerSong)} onerror="this.remove()">` : ''}<div class="banner-in"><div><div class="kicker">Bannière · ${esc(bannerSong.t)}</div><h1>${hello}</h1><p>Boss vaincu${st.boss.defeated.length > 1 ? 's : ' + st.boss.defeated.length : ''}. ${b ? 'Prochain boss : ' + esc(b.song.t) + '.' : 'Choisis ton prochain boss.'}</p></div>${fan || E('crown', 64)}</div></section>`
+      : `<section class="banner"><div class="banner-in"><div><div class="kicker">Bannière · ${esc(Core.rankFor(li.level))}</div><h1>${hello}</h1><p>${b ? 'Bats ' + esc(b.song.t) + ' pour débloquer sa bannière.' : 'Choisis ton prochain boss.'}</p></div>${fan || `<div class="banner-emo">${E('musical-notes', 60)}${E('guitar', 60)}${E('high-voltage', 60)}</div>`}</div></section>`;
+    const liveId = ui.session ? (ms.find((m) => !r.done.includes(m.id)) || {}).id : null;
     const tiles = ms.map((m) => {
       const br = BR[m.br], done = r.done.includes(m.id);
-      return `<button class="mtile${done ? ' done' : ''}" style="--soft:${br.soft};--col:${br.color}" data-act="mission-open" data-id="${m.id}">
+      return `<button class="mtile${done ? ' done' : ''}${m.id === liveId ? ' live' : ''}" style="--soft:${br.soft};--col:${br.color}" data-act="mission-open" data-id="${m.id}">
         <span class="mic">${done ? E('check-mark-button', 32) : E(br.icon, 32)}</span>
         <span class="mtxt"><b>${esc(m.fun)}</b><span>${esc(br.name)} · ${esc(m.sub)}</span></span>
         <span class="mmin">${done ? 'Fait' : m.min + ' min'}</span></button>`;
@@ -410,7 +420,7 @@
     const sessBtn = allDone ? `<span class="pill good">${E('check-mark-button', 18)} Session terminée</span>`
       : `<button class="btn big" data-act="session">${E('person-running', 26)} ${doneN ? 'Reprendre la session' : 'Lancer la session'}</button>`;
     const chest = r.chest === 'ready' ? `<button class="booster ready" data-act="booster">${E('wrapped-gift', 40)}<span><b>Booster du jour prêt</b><span>Ouvre-le pour gagner une carte bonus</span></span></button>`
-      : r.chest === 'opened' ? `<div class="booster">${E('wrapped-gift', 32)}<span><b>Booster ouvert</b><span>Reviens demain pour le suivant</span></span></div>`
+      : r.chest === 'opened' ? `<div class="booster" tabindex="-1" data-focus-after="booster">${E('wrapped-gift', 32)}<span><b>Booster ouvert</b><span>Reviens demain pour le suivant</span></span></div>`
         : `<div class="booster dim">${E('wrapped-gift', 32)}<span><b>Booster du jour</b><span>${doneN}/${ms.length} missions : termine-les toutes pour l'ouvrir</span></span></div>`;
     const date = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
     const bossPanel = b
@@ -730,14 +740,27 @@
         ${s.custom && st.boss.current !== s.id ? (ui.armed === 'del-' + s.id ? `<button class="btn danger sm" data-act="del-song" data-id="${s.id}">Confirmer la suppression</button>` : `<button class="link" data-act="arm" data-id="del-${s.id}">Supprimer ce morceau</button>`) : ''}
         <button class="link" data-act="close">Fermer</button></div></div></div></div>`;
   }
-  let modalOpener = null;
+  let modalOpener = null, modalOpenedAt = 0, lastModalType = null;
+  /* Annonce pour les lecteurs d'écran (région aria-live permanente). */
+  function announce(msg) { const el = $('#sr'); if (!el) return; el.textContent = ''; setTimeout(() => { el.textContent = msg; }, 60); }
+  function revealBooster(skip) {
+    const m = ui.modal; if (!m || m.type !== 'booster' || m.stage === 'revealed') return;
+    m.stage = 'revealed';
+    const sh = document.querySelector('.bsheet'); if (!sh) { render(); return; }
+    if (skip) sh.classList.add('skip');
+    sh.classList.add('revealed');
+    const f = sh.querySelector('.bfront'); if (f) f.removeAttribute('aria-hidden');
+    const b = BONUS.find((x) => x.id === m.card);
+    announce(`${m.dupe ? 'Doublon' : 'Nouvelle carte'} : ${b.t}, ${RARITY[BONUS_RAR[b.r]]}. Défi : ${b.d}`);
+    const c = sh.querySelector('[data-act="close"]'); if (c) c.focus({ preventScroll: true });
+  }
   function renderModal() {
     const el = $('#modal'), m = ui.modal;
     if (!m) {
       const was = el.classList.contains('on'); el.className = ''; el.innerHTML = '';
       if (was && modalOpener) { /* rend le focus à l'élément qui a ouvert la fenêtre (ou à son équivalent après rafraîchissement) */
         const o = modalOpener, id = o.dataset && o.dataset.id;
-        const cands = [document.contains(o) ? o : null, o.dataset && o.dataset.act ? document.querySelector(`[data-act="${o.dataset.act}"]` + (id ? `[data-id="${CSS.escape(id)}"]` : '')) : null, id ? document.querySelector(`.card[data-id="${CSS.escape(id)}"] .flip-hit`) : null];
+        const cands = [document.contains(o) ? o : null, o.dataset && o.dataset.act ? document.querySelector(`[data-act="${o.dataset.act}"]` + (id ? `[data-id="${CSS.escape(id)}"]` : '')) : null, id ? document.querySelector(`.card[data-id="${CSS.escape(id)}"] .flip-hit`) : null, o.dataset && o.dataset.act ? document.querySelector(`[data-focus-after="${o.dataset.act}"]`) : null, lastModalType ? document.querySelector(`[data-focus-after="${lastModalType}"]`) : null];
         const t = cands.find((c) => c && c.getClientRects().length && getComputedStyle(c).visibility !== 'hidden'); if (t) t.focus({ preventScroll: true });
       }
       return;
@@ -745,7 +768,21 @@
     let inner = '';
     if (m.type === 'mission') { const ms = missionsFor(today()).find((x) => x.id === m.id); if (!ms) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = missionSheet(ms); }
     else if (m.type === 'song') { const s = songById(m.id); if (!s) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = songSheet(s); }
-    else if (m.type === 'booster') { const b = BONUS.find((x) => x.id === m.card); inner = `<div class="sheet center"><h2 class="h2">${m.dupe ? 'Doublon' : 'Nouvelle carte'}</h2><div class="flipin">${bonusCard(b, 'big')}</div><p><b>Défi de la carte :</b> ${esc(b.d)}</p>${m.dupe ? `<p class="small muted">Tu l'avais déjà : +${XP.dupe} XP.</p>` : ''}<button class="btn" data-act="close">Continuer</button></div>`; }
+    else if (m.type === 'booster') {
+      /* Séquence : le paquet tremble, le sceau se fissure, flash, carte face cachée ; au clic (ou Entrée/Espace) elle se retourne et le bandeau de rareté s'envole. */
+      const b = BONUS.find((x) => x.id === m.card), r = BONUS_RAR[b.r], done = m.stage === 'revealed';
+      inner = `<div class="sheet center bsheet r${r}${done ? ' revealed skip' : ''}"><h2 class="h2">${m.dupe ? 'Doublon' : 'Nouvelle carte'}</h2>
+        <button type="button" class="btn ghost-w sm bskip" data-act="bskip">Passer</button>
+        <div class="bstage">
+          <div class="bpack" aria-hidden="true">${E('guitar', 44)}<span class="bseal"></span></div>
+          <div class="bflash" aria-hidden="true"></div>
+          <div class="bslot"><div class="bflip"><div class="bback" aria-hidden="true"><span>?</span></div><div class="bfront"${done ? '' : ' aria-hidden="true"'}>${bonusCard(b, 'big')}</div></div>
+            <button type="button" class="bhit" data-act="bflip" aria-label="Carte face cachée : la retourner"></button></div>
+          <div class="bbanner" aria-hidden="true">${RARITY[r]}</div>
+        </div>
+        <p class="bhint">Clique sur la carte pour la retourner.</p>
+        <div class="bres"><p><b>Défi de la carte :</b> ${esc(b.d)}</p>${m.dupe ? `<p class="small muted">Tu l'avais déjà : +${XP.dupe} XP.</p>` : ''}<button class="btn gold" data-act="close">Continuer</button></div></div>`;
+    }
     else if (m.type === 'bonus') { const b = BONUS.find((x) => x.id === m.id); inner = `<div class="sheet center">${bonusCard(b, 'big')}<p><b>Défi de la carte :</b> ${esc(b.d)}</p><button class="btn" data-act="close">Fermer</button></div>`; }
     else if (m.type === 'palier') { const p = ALL_PAL.find((x) => x.id === m.id), b = bossState(); inner = `<div class="sheet center"><h2 class="h2">Palier franchi</h2><div class="flipin">${palierCard(p, 'big')}</div><p>${b ? `${esc(b.song.t)} encaisse : il lui reste <b>${b.hp} PV</b>.` : 'Bien joué.'}</p><button class="btn" data-act="close">Continuer</button></div>`; }
     else if (m.type === 'boss-win') { const s = songById(m.id); inner = `<div class="sheet center win">${E('crown', 72)}<h2 class="h2">Boss vaincu : ${esc(s.t)}</h2><p>Tu débloques la <b>bannière ${esc(s.t)}</b> et la carte passe en version <b>alt-mythique</b>.</p><div class="flipin">${songCardHtml(s, 'big')}</div><button class="btn" data-act="next-boss">Choisir le prochain boss</button><button class="link" data-act="close">Plus tard</button></div>`; }
@@ -768,11 +805,14 @@
     }
     const wasOpen = el.classList.contains('on'), act = document.activeElement, inside = el.contains(act);
     const key = inside && act.dataset && act.dataset.act ? `[data-act="${act.dataset.act}"]` + (act.dataset.id ? `[data-id="${CSS.escape(act.dataset.id)}"]` : '') : null;
-    el.className = 'on'; el.innerHTML = inner;
+    if (!wasOpen) { modalOpenedAt = Date.now(); }
+    lastModalType = m.type;
+    el.className = 'on' + (Date.now() - modalOpenedAt < 400 ? ' enter' : ''); el.innerHTML = inner;
     /* Focus clavier : à l'ouverture sur la fenêtre, après une action on revient sur le même bouton s'il existe encore. */
     if (!wasOpen || inside || !el.contains(document.activeElement)) {
       const sh = el.querySelector('.sheet'); if (sh) sh.setAttribute('tabindex', '-1');
-      const target = (key && el.querySelector(key)) || sh;
+      const first = m.type === 'booster' ? el.querySelector(m.stage === 'revealed' ? '[data-act="close"]' : '.bhit') : null;
+      const target = (key && el.querySelector(key)) || first || sh;
       if (target && (!wasOpen || inside)) target.focus({ preventScroll: true });
     }
   }
@@ -815,8 +855,14 @@
   /* ---------- Rendu global ---------- */
   function renderView() {
     const v = { accueil: viewAccueil, paliers: viewPaliers, collection: viewCollection, trophees: viewTrophees, progres: viewProgres, manche: viewManche, oreille: viewOreille }[ui.tab] || viewAccueil;
-    $('#view').innerHTML = v();
+    const el = $('#view');
+    el.innerHTML = v();
+    if (ui.tab !== lastViewTab) { /* apparition décalée des blocs, seulement au changement de vue */
+      lastViewTab = ui.tab; el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter');
+      clearTimeout(enterTimer); enterTimer = setTimeout(() => el.classList.remove('enter'), 900);
+    }
   }
+  let lastViewTab = null, enterTimer = null;
   /* Fait défiler chaque manche jusqu'aux positions affichées (utile sur téléphone). */
   function scrollFretboards() {
     document.querySelectorAll('.fb-wrap').forEach((w) => {
@@ -928,6 +974,8 @@
     timer(d) { const m = missionsFor(today()).find((x) => x.id === d.id); if (m) startTimer(m.id, m.min); },
     'timer-pause'() { pauseTimer(); },
     booster() { openBooster(); },
+    bflip() { revealBooster(false); },
+    bskip() { revealBooster(true); },
     close() { ui.modal = null; ui.armed = null; render(); },
     arm(d) { ui.armed = d.id; ui.importMsg = ''; const keep = $('#code-in') ? $('#code-in').value : ''; render(); if ($('#code-in')) $('#code-in').value = keep; },
     disarm() { ui.armed = null; render(); },
@@ -1003,6 +1051,13 @@
   });
   document.addEventListener('keydown', (ev) => {
     if (ev.key === 'Escape' && ui.modal) { ui.modal = null; render(); return; }
+    if (ev.key === 'Tab' && ui.modal) { /* le focus reste dans la fenêtre */
+      const box = $('#modal'), f = [...box.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter((x) => !x.disabled && x.getClientRects().length && getComputedStyle(x).visibility !== 'hidden');
+      if (!f.length) return;
+      const a = document.activeElement, first = f[0], last = f[f.length - 1];
+      if (!box.contains(a)) { ev.preventDefault(); first.focus(); } else if (ev.shiftKey && (a === first || !f.includes(a))) { ev.preventDefault(); last.focus(); } else if (!ev.shiftKey && a === last) { ev.preventDefault(); first.focus(); }
+      return;
+    }
     if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('[data-act][tabindex]:not(button):not(a):not(input):not(select):not(textarea)')) { ev.preventDefault(); ev.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
   });
   document.addEventListener('submit', async (ev) => {
