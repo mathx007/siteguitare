@@ -181,3 +181,34 @@ const INTERVALS = [
 
 const Data = { BRANCHES, PALIERS, EXOS, EXO_ROTATION, WHY, IMPRO_POOL, STEPS_SONG, STEPS_EAR, PASSES_NEEDED, PASSES_PER_DAY, RARITY, SONGS, MINI_BOSSES, FIRST_BOSS, BONUS, BONUS_RAR, DROP, XP, TIER, TROPHIES, INTERVALS };
 if (typeof module !== 'undefined' && module.exports) module.exports = Data;
+
+/* Dossier Wikimedia de chaque illustration (2 premiers caractères du MD5 du nom de fichier) : permet de charger
+   la miniature directement sur upload.wikimedia.org, sans cookie (crossorigin="anonymous"). Vérifié par test/data.test.js. */
+const ART_PATH = {
+  "Hiroshige-100-views-of-edo-fox-fires.jpg": "8/8a",
+  "Edvard Munch, 1893, The Scream, oil, tempera and pastel on cardboard, 91 x 73 cm, National Gallery of Norway.jpg": "c/c5",
+  "Albrecht Dürer, Knight, Death and Devil, 1513, NGA 6637.jpg": "0/0a",
+  "The Ancient of Days (Blake, Research Issues).jpg": "1/1b",
+  "Plate 43 from 'Los Caprichos'- The sleep of reason produces monsters (El sueño de la razon produce monstruos) MET DP816991.jpg": "2/21",
+  "Rosa centifolia Burgundiaca.jpg": "3/30",
+  "021.Jacob's Dream.jpg": "1/14",
+  "Vincent van Gogh - Starry Night - Google Art Project.jpg": "0/01",
+  "Johannes Vermeer - The Guitar Player (ca. 1672).jpg": "a/ad",
+  "Rainstorm Beneath the Summit by Hokusai (Shimane Art Museum).jpg": "8/89",
+  "David Roberts - Triumphal Arch Crossing the Ravine Leading to Petra - 1927.109 - Cleveland Museum of Art.jpg": "2/23",
+  "Tsunami by hokusai 19th century.jpg": "a/a5",
+  "Caspar David Friedrich - Wanderer above the sea of fog.jpg": "b/b9",
+  "La Tour - La Madeleine à la veilleuse dite La Madeleine Terff, vers 1642 - 1644, RF 1949 11.jpg": "6/69",
+  "Giovanni Battista Piranesi - Le Carceri d'Invenzione - First Edition - 1750 - 01 - Metropolitan DP828185.jpg": "3/39",
+  "Henri Fantin-Latour - Roses in a Vase - Google Art Project.jpg": "a/a2",
+  "Whistler-Nocturne in black and gold.jpg": "b/b1",
+  "Pieter Bruegel the Elder - Hunters in the Snow (Winter) - Google Art Project.jpg": "d/d8",
+  "Turner - Rain, Steam and Speed - National Gallery file.jpg": "9/96",
+  "Gustav Klimt - Beech Grove I - Google Art Project.jpg": "a/a3",
+  "Katsushika Hokusai - Fine Wind, Clear Morning (Gaifū kaisei) - Google Art Project.jpg": "2/25",
+  "FlammarionWoodcut.jpg": "d/dd",
+  "San Romano Battle (Paolo Uccello, London) 01.jpg": "9/98",
+  "Yoshitoshi - 100 Aspects of the Moon - 4.jpg": "0/08",
+  "Hiroshige, Sudden shower over Shin-Ōhashi bridge and Atake, 1857.jpg": "7/72",
+  "John William Waterhouse - The Lady of Shalott - Google Art Project.jpg": "1/1e"
+  };

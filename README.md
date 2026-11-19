@@ -19,7 +19,7 @@ Journal de progression guitare électrique sous forme de jeu : missions du jour 
 Site statique, sans étape de compilation. Tests de la logique :
 
 ```
-node --test test/core.test.js
+node --test test/core.test.js test/data.test.js
 ```
 
 Fichiers : `index.html`, `app.css`, `js/core.js` (logique pure), `js/data.js` (contenu), `js/audio.js` (son), `js/cloud.js` (compte et sauvegarde Supabase), `js/app.js` (interface), `sw.js` (hors ligne).

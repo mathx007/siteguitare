@@ -12,7 +12,13 @@
   const POS_COL = ['#2BC4AE', '#FFC53D', '#FF6B6B', '#6EA8FF', '#F47BE0'];
   const TABS = [['accueil', 'Accueil', 'guitar'], ['paliers', 'Paliers', 'chart-increasing'], ['collection', 'Collection', 'card-file-box'], ['trophees', 'Trophées', 'trophy'], ['progres', 'Progrès', 'sparkles']];
   const VIEWS = TABS.map((t) => t[0]).concat(['manche', 'oreille']);
-  const commons = (file, w) => 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(file) + '?width=' + w;
+  /* Miniature Wikimedia en taille standard (500 ou 1280 px), demandée sans cookie ni référent. */
+  const commons = (file, w) => {
+    const p = ART_PATH[file]; if (!p) return '';
+    const n = encodeURIComponent(file.replace(/ /g, '_')).replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase());
+    return `https://upload.wikimedia.org/wikipedia/commons/thumb/${p}/${n}/${w > 500 ? 1280 : 500}px-${n}`;
+  };
+  const artAttrs = (s) => (st.img[s.id] ? '' : ' crossorigin="anonymous"') + ' referrerpolicy="no-referrer"';
   const commonsPage = (file) => 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(file.replace(/ /g, '_'));
 
   /* ---------- État ---------- */
@@ -353,7 +359,7 @@
     const img = songImg(s, 480);
     const front = `<div class="face front"><div>
         <div class="ctop"><div class="cname">${esc(s.t)}</div><div class="badge" title="${RARITY[s.r]}">${alt ? '★' : s.r}</div></div>
-        <div class="art"><div class="poster">${esc(s.t)}</div>${img ? `<img src="${esc(img)}" alt="${esc(songAlt(s))}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<div class="shine"></div>${s.boss === 'final' && !alt ? '<span class="flag">BOSS FINAL</span>' : s.boss === 'mini' && !own ? '<span class="flag">MINI-BOSS</span>' : st.boss.current === s.id && s.boss !== 'final' ? '<span class="flag">BOSS</span>' : ''}</div>
+        <div class="art"><div class="poster">${esc(s.t)}</div>${img ? `<img src="${esc(img)}" alt="${esc(songAlt(s))}" loading="lazy"${artAttrs(s)} onerror="this.remove()">` : ''}<div class="shine"></div>${s.boss === 'final' && !alt ? '<span class="flag">BOSS FINAL</span>' : s.boss === 'mini' && !own ? '<span class="flag">MINI-BOSS</span>' : st.boss.current === s.id && s.boss !== 'final' ? '<span class="flag">BOSS</span>' : ''}</div>
         <div class="meta"><div class="num">${num}</div><div class="artist">${esc(s.a)}</div></div>
         <div class="stats"><span>${statsTxt}</span>${dots(own ? 3 : stp < 3 ? stp : pi.n)}</div>
       </div></div>`;
@@ -392,7 +398,7 @@
     const bannerSong = st.banner && songById(st.banner);
     const hello = st.name ? `Salut ${esc(st.name)}, on branche ?` : 'Salut, on branche ?';
     const banner = bannerSong
-      ? `<section class="banner won">${songImg(bannerSong, 1200) ? `<img src="${esc(songImg(bannerSong, 1200))}" alt="${esc(songAlt(bannerSong))}" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<div class="banner-in"><div><div class="kicker">Bannière · ${esc(bannerSong.t)}</div><h1>${hello}</h1><p>Boss vaincu${st.boss.defeated.length > 1 ? 's : ' + st.boss.defeated.length : ''}. ${b ? 'Prochain boss : ' + esc(b.song.t) + '.' : 'Choisis ton prochain boss.'}</p></div>${E('crown', 64)}</div></section>`
+      ? `<section class="banner won">${songImg(bannerSong, 1200) ? `<img src="${esc(songImg(bannerSong, 1200))}" alt="${esc(songAlt(bannerSong))}"${artAttrs(bannerSong)} onerror="this.remove()">` : ''}<div class="banner-in"><div><div class="kicker">Bannière · ${esc(bannerSong.t)}</div><h1>${hello}</h1><p>Boss vaincu${st.boss.defeated.length > 1 ? 's : ' + st.boss.defeated.length : ''}. ${b ? 'Prochain boss : ' + esc(b.song.t) + '.' : 'Choisis ton prochain boss.'}</p></div>${E('crown', 64)}</div></section>`
       : `<section class="banner"><div class="banner-in"><div><div class="kicker">Bannière · ${esc(Core.rankFor(li.level))}</div><h1>${hello}</h1><p>${b ? 'Bats ' + esc(b.song.t) + ' pour débloquer sa bannière.' : 'Choisis ton prochain boss.'}</p></div><div class="banner-emo">${E('musical-notes', 60)}${E('guitar', 60)}${E('high-voltage', 60)}</div></div></section>`;
     const tiles = ms.map((m) => {
       const br = BR[m.br], done = r.done.includes(m.id);
