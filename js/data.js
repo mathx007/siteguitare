@@ -1,10 +1,10 @@
 /* Gratte Quest : contenu du jeu. */
 const BRANCHES = [
-  { id: 'gam', name: 'Gammes', icon: 'world-map', color: '#0E9C8A', soft: '#D5F5EE', tag: 'Connaître le manche' },
-  { id: 'vit', name: 'Vitesse', icon: 'high-voltage', color: '#D9423D', soft: '#FFE1DA', tag: 'Main droite, métronome' },
-  { id: 'imp', name: 'Impro', icon: 'game-die', color: '#B7791F', soft: '#FFEFBF', tag: 'Inventer en jouant' },
-  { id: 'ore', name: 'Oreille', icon: 'ear', color: '#2F6FE0', soft: '#DBE7FF', tag: 'Retrouver sans tablature' },
-  { id: 'sol', name: 'Riffs et solos', icon: 'sign-of-the-horns', color: '#C23BA8', soft: '#F8DDF2', tag: 'Le jeu en notes seules' },
+  { id: 'gam', name: 'Gammes', icon: 'world-map', color: '#0B7769', soft: '#D5F5EE', tag: 'Connaître le manche' },
+  { id: 'vit', name: 'Vitesse', icon: 'high-voltage', color: '#C22B26', soft: '#FFE1DA', tag: 'Main droite, métronome' },
+  { id: 'imp', name: 'Impro', icon: 'game-die', color: '#926019', soft: '#FFEFBF', tag: 'Inventer en jouant' },
+  { id: 'ore', name: 'Oreille', icon: 'ear', color: '#1F60D1', soft: '#DBE7FF', tag: 'Retrouver sans tablature' },
+  { id: 'sol', name: 'Riffs et solos', icon: 'sign-of-the-horns', color: '#A93392', soft: '#F8DDF2', tag: 'Le jeu en notes seules' },
 ];
 
 const PALIERS = {

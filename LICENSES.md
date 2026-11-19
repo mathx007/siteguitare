@@ -48,3 +48,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## Bibliothèque Supabase
 
 `vendor/supabase.js` : supabase-js 2.118.0, licence MIT (voir `vendor/supabase-LICENSE.txt`).
+
+## Polices
+
+Archivo (The Archivo Project Authors) et Inter (The Inter Project Authors), licence SIL Open Font License 1.1, fichiers issus de Fontsource 5.3.0 et hébergés sur le site (`assets/fonts/`, textes de licence inclus).

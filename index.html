@@ -11,20 +11,24 @@
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Gratte Quest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="canonical" href="https://mathx007.github.io/siteguitare/">
+<link rel="alternate" type="text/markdown" href="llms.txt" title="Description du site pour les agents IA">
+<link rel="sitemap" type="application/xml" href="sitemap.xml">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
 <link rel="stylesheet" href="app.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Gratte Quest","url":"https://mathx007.github.io/siteguitare/","applicationCategory":"EducationalApplication","operatingSystem":"Navigateur web","inLanguage":"fr","isAccessibleForFree":true,"description":"Journal de progression guitare électrique sous forme de jeu : missions quotidiennes de 30 minutes, paliers de compétences (gammes, vitesse, improvisation, oreille, riffs), cartes de morceaux à collectionner, trophées et boss final.","author":{"@type":"Person","name":"Mathys Langlois"}}</script>
 </head>
 <body>
 <header id="top"></header>
-<div id="sessionbar" hidden></div>
+<div id="sessionbar" role="region" aria-label="Session en cours" hidden></div>
 <main id="view" class="wrap"></main>
-<div id="dock"></div>
+<div id="dock" role="region" aria-label="Outils"></div>
 <div id="modal" role="dialog" aria-modal="true" aria-label="Détail"></div>
-<div id="login" hidden></div>
+<div id="login" role="region" aria-label="Connexion" hidden></div>
 <div id="toasts" aria-live="polite"></div>
-<noscript><p style="padding:24px">Gratte Quest a besoin de JavaScript pour fonctionner.</p></noscript>
+<noscript><div class="wrap nojs"><h1>Gratte Quest</h1><p>Journal de progression guitare électrique sous forme de jeu : missions du jour, paliers, cartes de morceaux à collectionner, trophées et boss final. L'application a besoin de JavaScript pour fonctionner. Une description complète du site se trouve dans le fichier <a href="llms.txt">llms.txt</a>.</p></div></noscript>
+<footer class="sitefoot wrap"><nav class="legal small" aria-label="Informations légales"><a href="mentions-legales.html">Mentions légales</a><a href="confidentialite.html">Confidentialité</a><a href="cookies.html">Cookies et stockage</a><a href="cgu.html">Conditions d'utilisation</a><a href="accessibilite.html">Accessibilité</a></nav></footer>
 <script src="vendor/supabase.js"></script>
 <script src="js/core.js"></script>
 <script src="js/data.js"></script>

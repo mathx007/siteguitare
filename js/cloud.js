@@ -54,5 +54,15 @@ const Cloud = (() => {
     if (error) throw error;
   }
 
-  return { init, sendLink, signOut, load, save, onChange: (f) => subs.push(f), get user() { return user; }, get available() { return !!client(); } };
+  /* Droit à l'effacement : supprime le compte et sa sauvegarde côté serveur (fonction delete_my_account, limitée au compte connecté). */
+  async function deleteAccount() {
+    if (!user || !sb) throw new Error('Non connecté');
+    const { error } = await sb.rpc('delete_my_account');
+    if (error) throw error;
+    try { await sb.auth.signOut({ scope: 'local' }); } catch (e) { /* session déjà invalide */ }
+    user = null;
+    subs.forEach((f) => { try { f(null, 'SIGNED_OUT'); } catch (e) { /* écouteur en erreur */ } });
+  }
+
+  return { init, sendLink, signOut, load, save, deleteAccount, onChange: (f) => subs.push(f), get user() { return user; }, get available() { return !!client(); } };
 })();

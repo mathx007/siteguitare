@@ -18,7 +18,7 @@
   /* ---------- État ---------- */
   function fresh() {
     return { v: 2, xp: 0, days: {}, skills: {}, steps: {}, passes: {}, bonus: {}, bpm: {}, ear: { best: {}, total: 0 }, stats: { micClean: 0 },
-      trophies: {}, boss: { current: FIRST_BOSS, defeated: [] }, banner: null, custom: [], img: {}, active: 'hysteria', short: false, best: 0, name: '', updatedAt: 0, syncedUser: null };
+      trophies: {}, boss: { current: FIRST_BOSS, defeated: [] }, banner: null, custom: [], img: {}, active: 'hysteria', short: false, noArt: false, best: 0, name: '', updatedAt: 0, syncedUser: null };
   }
   function normalize(o) {
     if (!o || typeof o !== 'object' || typeof o.days !== 'object') return null;
@@ -104,7 +104,9 @@
   const stepsOf = (id) => Math.min(3, st.steps[id] || 0);
   const pinfo = (id) => Core.passesInfo(st.passes[id], today(), PASSES_NEEDED, PASSES_PER_DAY);
   const owned = (id) => pinfo(id).owned;
-  const songImg = (s, w) => st.img[s.id] || (s.art ? commons(s.art[0], w) : '');
+  const songImg = (s, w) => st.img[s.id] || (s.art && !st.noArt ? commons(s.art[0], w) : '');
+  /* Texte alternatif : décrit l'œuvre affichée (ou l'image choisie par l'utilisateur). */
+  const songAlt = (s) => st.img[s.id] ? 'Illustration choisie pour ' + s.t : s.art && !st.noArt ? 'Illustration : ' + s.art[1] : '';
   const curIdx = (br) => { const l = PALIERS[br]; let i = 0; while (i < l.length && st.skills[l[i].id]) i++; return i; };
   const skillsDone = () => ALL_PAL.filter((p) => st.skills[p.id]).length;
   const isDefeated = (id) => st.boss.defeated.includes(id);
@@ -351,19 +353,22 @@
     const img = songImg(s, 480);
     const front = `<div class="face front"><div>
         <div class="ctop"><div class="cname">${esc(s.t)}</div><div class="badge" title="${RARITY[s.r]}">${alt ? '★' : s.r}</div></div>
-        <div class="art"><div class="poster">${esc(s.t)}</div>${img ? `<img src="${esc(img)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<div class="shine"></div>${s.boss === 'final' && !alt ? '<span class="flag">BOSS FINAL</span>' : s.boss === 'mini' && !own ? '<span class="flag">MINI-BOSS</span>' : st.boss.current === s.id && s.boss !== 'final' ? '<span class="flag">BOSS</span>' : ''}</div>
+        <div class="art"><div class="poster">${esc(s.t)}</div>${img ? `<img src="${esc(img)}" alt="${esc(songAlt(s))}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<div class="shine"></div>${s.boss === 'final' && !alt ? '<span class="flag">BOSS FINAL</span>' : s.boss === 'mini' && !own ? '<span class="flag">MINI-BOSS</span>' : st.boss.current === s.id && s.boss !== 'final' ? '<span class="flag">BOSS</span>' : ''}</div>
         <div class="meta"><div class="num">${num}</div><div class="artist">${esc(s.a)}</div></div>
         <div class="stats"><span>${statsTxt}</span>${dots(own ? 3 : stp < 3 ? stp : pi.n)}</div>
       </div></div>`;
     if (mode === 'big' || mode === 'static') return `<div class="card r${s.r}${alt ? ' alt' : ''}${color ? '' : ' todo'} ${mode}">${front}</div>`;
     const back = `<div class="face back"><div>
         <div class="ctop"><span class="small">${alt ? 'Alt-mythique' : RARITY[s.r]}</span><span class="small num">${num}</span></div>
-        <h3>${esc(s.t)}</h3><div class="small">${esc(s.a)}</div>
+        <p class="bt">${esc(s.t)}</p><div class="small">${esc(s.a)}</div>
         <div class="cell"><span>Étapes</span>${stp} sur 3</div>
         <div class="cell"><span>Passages à 100 %</span>${pi.n} sur 3 · aujourd'hui ${pi.today} sur ${PASSES_PER_DAY}</div>
         <button class="btn sm cbtn" data-act="song" data-id="${s.id}">Ouvrir la fiche</button>
+        <button class="link flipback" data-act="flip" data-id="${s.id}">Retourner la carte</button>
       </div></div>`;
-    return `<div class="slot"><div class="card r${s.r}${alt ? ' alt' : ''}${color ? '' : ' todo'}${ui.flipped === s.id ? ' flipped' : ''}" data-act="flip" data-id="${s.id}" tabindex="0" role="button" aria-label="${esc(s.t)}, ${esc(s.a)}, ${RARITY[s.r]}, ${own ? 'acquise' : 'non acquise'}. Retourner la carte">${front}${back}</div></div>`;
+    /* Un vrai bouton transparent couvre le recto (clavier et lecteurs d'écran), sans contenir d'autres éléments interactifs. */
+    const hit = `<button type="button" class="flip-hit" data-act="flip" data-id="${s.id}" aria-label="${esc(s.t)}, ${esc(s.a)}, ${alt ? 'Alt-mythique' : RARITY[s.r]}, ${own ? 'acquise' : 'non acquise'}. Retourner la carte"></button>`;
+    return `<div class="slot"><div class="card r${s.r}${alt ? ' alt' : ''}${color ? '' : ' todo'}${ui.flipped === s.id ? ' flipped' : ''}" data-act="flip" data-id="${s.id}">${front}${back}${hit}</div></div>`;
   }
   function simpleCard(o) { // carte palier ou bonus
     return `<div class="slot"><div class="card r${o.r}${o.on ? '' : ' todo'} ${o.mode || ''}"${o.act ? ' ' + o.act + ' tabindex="0" role="button"' : ''}><div class="face front"><div>
@@ -387,7 +392,7 @@
     const bannerSong = st.banner && songById(st.banner);
     const hello = st.name ? `Salut ${esc(st.name)}, on branche ?` : 'Salut, on branche ?';
     const banner = bannerSong
-      ? `<section class="banner won">${songImg(bannerSong, 1200) ? `<img src="${esc(songImg(bannerSong, 1200))}" alt="" onerror="this.remove()">` : ''}<div class="banner-in"><div><div class="kicker">Bannière · ${esc(bannerSong.t)}</div><h1>${hello}</h1><p>Boss vaincu${st.boss.defeated.length > 1 ? 's : ' + st.boss.defeated.length : ''}. ${b ? 'Prochain boss : ' + esc(b.song.t) + '.' : 'Choisis ton prochain boss.'}</p></div>${E('crown', 64)}</div></section>`
+      ? `<section class="banner won">${songImg(bannerSong, 1200) ? `<img src="${esc(songImg(bannerSong, 1200))}" alt="${esc(songAlt(bannerSong))}" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<div class="banner-in"><div><div class="kicker">Bannière · ${esc(bannerSong.t)}</div><h1>${hello}</h1><p>Boss vaincu${st.boss.defeated.length > 1 ? 's : ' + st.boss.defeated.length : ''}. ${b ? 'Prochain boss : ' + esc(b.song.t) + '.' : 'Choisis ton prochain boss.'}</p></div>${E('crown', 64)}</div></section>`
       : `<section class="banner"><div class="banner-in"><div><div class="kicker">Bannière · ${esc(Core.rankFor(li.level))}</div><h1>${hello}</h1><p>${b ? 'Bats ' + esc(b.song.t) + ' pour débloquer sa bannière.' : 'Choisis ton prochain boss.'}</p></div><div class="banner-emo">${E('musical-notes', 60)}${E('guitar', 60)}${E('high-voltage', 60)}</div></div></section>`;
     const tiles = ms.map((m) => {
       const br = BR[m.br], done = r.done.includes(m.id);
@@ -503,8 +508,8 @@
     let o = `<svg class="chart" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Tempo propre atteint, ${esc(EXOS[ui.bpmExo].t)}">`;
     for (let i = 0; i <= 2; i++) { const v = lo + (hi - lo) * i / 2; o += `<line x1="${L}" x2="${W - Rm}" y1="${y(v)}" y2="${y(v)}" stroke="#E3E1EE"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${Math.round(v)}</text>`; }
     const pts = data.map((d, i) => `${x(i).toFixed(1)},${y(d[1]).toFixed(1)}`), li = data.length - 1;
-    if (data.length > 1) o += `<polygon points="${L},${H - B} ${pts.join(' ')} ${x(li).toFixed(1)},${H - B}" fill="rgba(217,66,61,.12)"/><polyline points="${pts.join(' ')}" fill="none" stroke="#D9423D" stroke-width="3" stroke-linejoin="round"/>`;
-    o += `<circle cx="${x(li)}" cy="${y(data[li][1])}" r="6" fill="#D9423D" stroke="#fff" stroke-width="2"/><text x="${x(li) + 10}" y="${y(data[li][1]) + 4}" class="endv">${data[li][1]}</text>`;
+    if (data.length > 1) o += `<polygon points="${L},${H - B} ${pts.join(' ')} ${x(li).toFixed(1)},${H - B}" fill="rgba(217,66,61,.12)"/><polyline points="${pts.join(' ')}" fill="none" stroke="#C22B26" stroke-width="3" stroke-linejoin="round"/>`;
+    o += `<circle cx="${x(li)}" cy="${y(data[li][1])}" r="6" fill="#C22B26" stroke="#fff" stroke-width="2"/><text x="${x(li) + 10}" y="${y(data[li][1]) + 4}" class="endv">${data[li][1]}</text>`;
     const lab = (k) => k.slice(8) + '/' + k.slice(5, 7);
     o += `<text x="${L}" y="${H - 8}">${lab(data[0][0])}</text>`; if (data.length > 1) o += `<text x="${W - Rm}" y="${H - 8}" text-anchor="end">${lab(data[li][0])}</text>`;
     return o + '</svg>';
@@ -526,17 +531,18 @@
       </div>
       <div class="row2b">
         <section class="panel"><h2 class="h3">Tes cinq branches</h2>${radarSvg()}</section>
-        <section class="panel"><h2 class="h3">5 dernières semaines</h2><div class="cal">${cal}</div><div class="legend"><span><i style="background:#1E9E6A"></i>Jour validé</span><span><i style="background:#9FDCC2"></i>Commencé</span></div></section>
+        <section class="panel"><h2 class="h3">5 dernières semaines</h2><div class="cal">${cal}</div><div class="legend"><span><i style="background:#177750"></i>Jour validé</span><span><i style="background:#9FDCC2"></i>Commencé</span></div></section>
       </div>
       <section class="panel"><div class="row between"><h2 class="h3">Vitesse : tempo propre atteint</h2><select id="bpm-exo" data-change="bpm-exo" aria-label="Exercice">${Object.entries(EXOS).map(([id, x]) => `<option value="${id}"${id === ui.bpmExo ? ' selected' : ''}>${esc(x.t)}</option>`).join('')}</select></div><div class="chartbox">${bpmSvg()}</div></section>
       <div class="row2b">
         <section class="panel"><h2 class="h3">Réglages</h2>
           <div class="row between"><div><b>Mode partiels</b><p class="small muted">2 missions et 10 minutes par jour, la série continue. S'applique au prochain jour non commencé.</p></div><button class="btn ${st.short ? 'ok' : 'ghost'} sm" data-act="short" aria-pressed="${st.short}">${st.short ? 'Activé' : 'Désactivé'}</button></div>
+          <div class="row between"><div><b>Illustrations Wikimedia</b><p class="small muted">Les œuvres des cartes sont chargées depuis Wikimedia Commons, qui reçoit alors ton adresse IP. Désactive pour ne rien charger depuis ce site.</p></div><button class="btn ${st.noArt ? 'ghost' : 'ok'} sm" data-act="no-art" aria-pressed="${!st.noArt}">${st.noArt ? 'Désactivées' : 'Activées'}</button></div>
           <div class="field"><label for="pseudo">Ton prénom (affiché sur l'accueil)</label><div class="row"><input id="pseudo" type="text" maxlength="24" value="${esc(st.name)}" autocomplete="given-name"><button class="btn ghost sm" data-act="save-name">Enregistrer</button></div></div>
         </section>
         <section class="panel" id="compte"><h2 class="h3">Compte et sauvegarde</h2>
           <p><span class="pill" id="sync-status">${esc(syncLabel())}</span></p>
-          ${u ? `<p class="small">Connecté avec <b>${esc(u.email || '')}</b>.</p><div><button class="btn ghost sm" data-act="logout">Se déconnecter</button></div>` : `<p class="small muted">Avec un compte, ta série, tes cartes et tes trophées suivent sur ton PC et ton téléphone.</p><div><button class="btn sm" data-act="login-open">Se connecter</button></div>`}
+          ${u ? `<p class="small">Connecté avec <b>${esc(u.email || '')}</b>.</p><div class="row"><button class="btn ghost sm" data-act="logout">Se déconnecter</button>${ui.armed === 'delacc' ? '<button class="btn danger sm" data-act="delacc-ok">Confirmer : supprimer définitivement mon compte</button><button class="link" data-act="disarm">Annuler</button>' : '<button class="link" data-act="arm" data-id="delacc">Supprimer mon compte</button>'}</div>${ui.armed === 'delacc' ? '<p class="small err">Ton compte, ton adresse e-mail et ta sauvegarde en ligne seront effacés tout de suite, sans retour possible. La progression enregistrée sur cet appareil sera aussi effacée.</p>' : ''}` : `<p class="small muted">Avec un compte, ta série, tes cartes et tes trophées suivent sur ton PC et ton téléphone.</p><div><button class="btn sm" data-act="login-open">Se connecter</button></div>`}
           <details><summary class="small strong">Code de sauvegarde (copie manuelle)</summary>
             <label for="code-out" class="small">Ton code</label><textarea id="code-out" readonly>${code}</textarea>
             <div class="row"><button class="btn ghost sm" data-act="copy">Copier le code</button><span class="small muted" id="copy-msg"></span></div>
@@ -554,7 +560,7 @@
     const notes = Core.fretboardNotes(fb.root, fb.scale);
     const X0 = 52, FW = opts.compact ? 44 : 52, W = X0 + Core.MAXFRET * FW + 14, Y0 = 26, SH = opts.compact ? 28 : 32, H = Y0 + 5 * SH + 42;
     const x = (f) => (f === 0 ? X0 - 26 : X0 + (f - 0.5) * FW), y = (s) => Y0 + (5 - s) * SH;
-    let o = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Manche : ${esc(Core.SCALES[fb.scale].name)} de ${Core.NOTE_FR[fb.root]}"><defs>`;
+    let o = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="group" aria-label="Manche : ${esc(Core.SCALES[fb.scale].name)} de ${Core.NOTE_FR[fb.root]}"><defs>`;
     for (let a = 0; a < 5; a++) for (let b = a + 1; b < 5; b++) { const [l, r] = a === 0 && b === 4 ? [b, a] : [a, b]; o += `<linearGradient id="gp${a}${b}" x1="0" y1="0" x2="1" y2="0"><stop offset="50%" stop-color="${POS_COL[l]}"/><stop offset="50%" stop-color="${POS_COL[r]}"/></linearGradient>`; }
     o += `</defs><rect x="${X0}" y="${Y0 - 12}" width="${Core.MAXFRET * FW}" height="${5 * SH + 24}" rx="4" fill="#2A2044"/>`;
     for (const f of [3, 5, 7, 9, 15, 17]) o += `<circle cx="${x(f)}" cy="${Y0 + 2.5 * SH}" r="7" fill="#3D3163"/>`;
@@ -568,7 +574,7 @@
       if (!sel.length) { o += `<circle class="nt" data-act="pluck" data-midi="${n.midi}" cx="${cx}" cy="${cy}" r="5" fill="#7D74A8" opacity=".7"/>`; continue; }
       const fill = sel.length === 1 ? POS_COL[sel[0]] : `url(#gp${Math.min(sel[0], sel[1])}${Math.max(sel[0], sel[1])})`;
       if (tgt && tgt.s === n.s && tgt.f === n.f) o += `<circle class="pulse" cx="${cx}" cy="${cy}" r="18"/>`;
-      o += `<circle class="nt" data-act="pluck" data-midi="${n.midi}" cx="${cx}" cy="${cy}" r="12.5" fill="${fill}" stroke="${n.isRoot ? '#fff' : 'rgba(0,0,0,.4)'}" stroke-width="${n.isRoot ? 3.5 : 1}"/><text x="${cx}" y="${cy + 0.5}" fill="#17132B">${fb.labels === 'deg' ? Core.DEG_LABEL[n.iv] : Core.NOTE_FR[n.pc]}</text>`;
+      o += `<circle class="nt" data-act="pluck" data-midi="${n.midi}" tabindex="0" role="button" aria-label="Écouter ${Core.NOTE_FR[n.pc]}" cx="${cx}" cy="${cy}" r="12.5" fill="${fill}" stroke="${n.isRoot ? '#fff' : 'rgba(0,0,0,.4)'}" stroke-width="${n.isRoot ? 3.5 : 1}"/><text x="${cx}" y="${cy + 0.5}" fill="#17132B">${fb.labels === 'deg' ? Core.DEG_LABEL[n.iv] : Core.NOTE_FR[n.pc]}</text>`;
     }
     return o + '</svg>';
   }
@@ -696,7 +702,7 @@
   function links(s) {
     if (s.custom && !s.a) return '';
     const q = encodeURIComponent(s.t.replace(', version rock', '') + ' ' + s.a.replace(', avec ton groupe', '').replace('Zelda : ', 'Zelda '));
-    return `<div class="row links"><a class="btn ghost sm" href="https://www.songsterr.com/?pattern=${q}" target="_blank" rel="noopener">Tablature Songsterr</a><a class="btn ghost sm" href="https://www.youtube.com/results?search_query=${q}%20guitar%20lesson" target="_blank" rel="noopener">Leçons YouTube</a>${s.ear ? '' : `<a class="btn ghost sm" href="https://www.youtube.com/results?search_query=${q}%20backing%20track" target="_blank" rel="noopener">Backing track</a>`}</div>`;
+    return `<div class="row links"><a class="btn ghost sm" href="https://www.songsterr.com/?pattern=${q}" target="_blank" rel="noopener noreferrer">Tablature Songsterr</a><a class="btn ghost sm" href="https://www.youtube.com/results?search_query=${q}%20guitar%20lesson" target="_blank" rel="noopener noreferrer">Leçons YouTube</a>${s.ear ? '' : `<a class="btn ghost sm" href="https://www.youtube.com/results?search_query=${q}%20backing%20track" target="_blank" rel="noopener noreferrer">Backing track</a>`}</div>`;
   }
   function songSheet(s) {
     const stp = stepsOf(s.id), pi = pinfo(s.id), steps = s.ear ? STEPS_EAR : STEPS_SONG;
@@ -711,16 +717,25 @@
       ${links(s)}
       <details><summary class="small strong">Changer l'illustration</summary>
         <div class="field"><label for="img-url">Lien d'une image</label><div class="row"><input id="img-url" type="url" placeholder="https://..."><button class="btn ghost sm" data-act="img-url" data-id="${s.id}">Appliquer</button></div></div>
-        <div class="row"><label class="btn ghost sm filebtn">Importer un fichier<input type="file" accept="image/*" data-change="img-file" data-id="${s.id}" hidden></label><a class="btn ghost sm" href="https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(s.t)}&title=Special:MediaSearch&type=image" target="_blank" rel="noopener">Chercher une image libre</a>${st.img[s.id] ? `<button class="btn ghost sm" data-act="img-reset" data-id="${s.id}">${s.art ? 'Illustration d\'origine' : 'Retirer l\'image'}</button>` : ''}</div>
+        <div class="row"><label class="btn ghost sm filebtn">Importer un fichier<input type="file" accept="image/*" data-change="img-file" data-id="${s.id}" hidden></label><a class="btn ghost sm" href="https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(s.t)}&title=Special:MediaSearch&type=image" target="_blank" rel="noopener noreferrer">Chercher une image libre</a>${st.img[s.id] ? `<button class="btn ghost sm" data-act="img-reset" data-id="${s.id}">${s.art ? 'Illustration d\'origine' : 'Retirer l\'image'}</button>` : ''}</div>
         <p class="small muted">L'image choisie reste dans ta sauvegarde, visible par toi seul.</p></details>
-      ${s.art && !st.img[s.id] ? `<p class="small muted">Illustration : ${esc(s.art[1])} (${esc(s.art[2])}). <a href="${commonsPage(s.art[0])}" target="_blank" rel="noopener">Voir sur Wikimedia Commons</a></p>` : ''}
+      ${s.art && !st.img[s.id] ? `<p class="small muted">Illustration : ${esc(s.art[1])} (${esc(s.art[2])}). <a href="${commonsPage(s.art[0])}" target="_blank" rel="noopener noreferrer">Voir sur Wikimedia Commons</a></p>` : ''}
       <div class="row between foot">${st.active === s.id ? '<span class="pill">Carte en cours</span>' : `<button class="btn ghost sm" data-act="set-active" data-id="${s.id}">Définir comme carte en cours</button>`}
         ${s.custom && st.boss.current !== s.id ? (ui.armed === 'del-' + s.id ? `<button class="btn danger sm" data-act="del-song" data-id="${s.id}">Confirmer la suppression</button>` : `<button class="link" data-act="arm" data-id="del-${s.id}">Supprimer ce morceau</button>`) : ''}
         <button class="link" data-act="close">Fermer</button></div></div></div></div>`;
   }
+  let modalOpener = null;
   function renderModal() {
     const el = $('#modal'), m = ui.modal;
-    if (!m) { el.className = ''; el.innerHTML = ''; return; }
+    if (!m) {
+      const was = el.classList.contains('on'); el.className = ''; el.innerHTML = '';
+      if (was && modalOpener) { /* rend le focus à l'élément qui a ouvert la fenêtre (ou à son équivalent après rafraîchissement) */
+        const o = modalOpener, id = o.dataset && o.dataset.id;
+        const cands = [document.contains(o) ? o : null, o.dataset && o.dataset.act ? document.querySelector(`[data-act="${o.dataset.act}"]` + (id ? `[data-id="${CSS.escape(id)}"]` : '')) : null, id ? document.querySelector(`.card[data-id="${CSS.escape(id)}"] .flip-hit`) : null];
+        const t = cands.find((c) => c && c.getClientRects().length && getComputedStyle(c).visibility !== 'hidden'); if (t) t.focus({ preventScroll: true });
+      }
+      return;
+    }
     let inner = '';
     if (m.type === 'mission') { const ms = missionsFor(today()).find((x) => x.id === m.id); if (!ms) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = missionSheet(ms); }
     else if (m.type === 'song') { const s = songById(m.id); if (!s) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = songSheet(s); }
@@ -745,7 +760,15 @@
       inner = `<div class="sheet"><h2 class="h2">Deux progressions trouvées</h2><p>Cet appareil et ton compte ont chacun une progression. Laquelle garder ?</p>
         <div class="row"><button class="btn" data-act="merge" data-v="local">Cet appareil · ${st.xp} XP</button><button class="btn ghost" data-act="merge" data-v="remote">Mon compte · ${r.xp} XP</button></div><p class="small muted">L'autre sera remplacée.</p></div>`;
     }
+    const wasOpen = el.classList.contains('on'), act = document.activeElement, inside = el.contains(act);
+    const key = inside && act.dataset && act.dataset.act ? `[data-act="${act.dataset.act}"]` + (act.dataset.id ? `[data-id="${CSS.escape(act.dataset.id)}"]` : '') : null;
     el.className = 'on'; el.innerHTML = inner;
+    /* Focus clavier : à l'ouverture sur la fenêtre, après une action on revient sur le même bouton s'il existe encore. */
+    if (!wasOpen || inside || !el.contains(document.activeElement)) {
+      const sh = el.querySelector('.sheet'); if (sh) sh.setAttribute('tabindex', '-1');
+      const target = (key && el.querySelector(key)) || sh;
+      if (target && (!wasOpen || inside)) target.focus({ preventScroll: true });
+    }
   }
 
   /* ---------- Dock : métronome et boucle ---------- */
@@ -775,9 +798,12 @@
       ${L.state === 'sent' ? `<div class="panel"><p>${E('sparkles', 24)} Lien envoyé à <b>${esc(L.email)}</b>. Ouvre l'e-mail sur cet appareil et clique sur le lien.</p><button class="link" data-act="login-retry">Changer d'adresse ou renvoyer</button></div>`
         : `<form class="panel col" id="login-form"><div class="field"><label for="login-email">Adresse e-mail</label><input id="login-email" type="email" autocomplete="email" required placeholder="toi@exemple.fr" value="${esc(L.email)}"${avail ? '' : ' disabled'}></div>
           <button class="btn big" type="submit"${avail && L.state !== 'sending' ? '' : ' disabled'}>${L.state === 'sending' ? 'Envoi…' : 'Recevoir mon lien de connexion'}</button>
-          <p class="small muted">Pas de mot de passe : tu cliques sur le lien reçu par e-mail.</p>${L.msg ? `<p class="err small">${esc(L.msg)}</p>` : ''}${avail ? '' : '<p class="err small">Service de connexion injoignable pour l\'instant.</p>'}</form>`}
+          <p class="small muted">Pas de mot de passe : tu cliques sur le lien reçu par e-mail.</p><p class="small muted">Ton adresse sert uniquement à t'envoyer ce lien et à retrouver ta sauvegarde. Jamais de pub ni de revente. En créant un compte, tu acceptes les <a href="cgu.html">conditions d'utilisation</a>. Détails et droits : <a href="confidentialite.html">politique de confidentialité</a>.</p>${L.msg ? `<p class="err small">${esc(L.msg)}</p>` : ''}${avail ? '' : '<p class="err small">Service de connexion injoignable pour l\'instant.</p>'}</form>`}
       <button class="btn ghost big" data-act="guest">Jouer sans compte sur cet appareil</button>
-      <p class="small muted">Avec un compte, ta série, tes cartes et tes trophées suivent sur ton PC et ton téléphone.</p></div>`;
+      <p class="small muted">Avec un compte, ta série, tes cartes et tes trophées suivent sur ton PC et ton téléphone.</p>${legalLinks()}</div>`;
+  }
+  function legalLinks() {
+    return `<nav class="legal small" aria-label="Informations légales (écran de connexion)"><a href="mentions-legales.html">Mentions légales</a><a href="confidentialite.html">Confidentialité</a><a href="cookies.html">Cookies et stockage</a><a href="cgu.html">Conditions d'utilisation</a><a href="accessibilite.html">Accessibilité</a></nav>`;
   }
 
   /* ---------- Rendu global ---------- */
@@ -882,6 +908,11 @@
     'login-open'() { ui.login.show = true; render(); },
     'login-retry'() { ui.login.state = 'idle'; render(); },
     guest() { try { localStorage.setItem(LS_GUEST, '1'); } catch (e) { /* rien */ } ui.login.show = false; render(); },
+    async 'delacc-ok'() {
+      try { await Cloud.deleteAccount(); } catch (e) { ui.armed = null; render(); toast('Suppression impossible : vérifie ta connexion et réessaie.', 'locked'); return; }
+      try { localStorage.removeItem(LS); localStorage.removeItem(LS_GUEST); } catch (e) { /* rien */ }
+      st = fresh(); ui.armed = null; ui.session = null; ui.sync = 'local'; stopTimer(); render(); toast('Compte et données supprimés.', 'check-mark-button');
+    },
     async logout() { await Cloud.signOut(); ui.sync = 'local'; render(); toast('Déconnecté. Ta progression reste sur cet appareil.', 'link'); },
     dock() { ui.dock = !ui.dock; render(); },
     session() { startSession(); },
@@ -898,7 +929,7 @@
     'palier-undo'(d) { undoPalier(d.id); },
     song(d) { ui.modal = { type: 'song', id: d.id }; ui.armed = null; render(); },
     bonus(d) { ui.modal = { type: 'bonus', id: d.id }; render(); },
-    flip(d) { ui.flipped = ui.flipped === d.id ? null : d.id; const el = document.querySelector(`.card[data-id="${CSS.escape(d.id)}"]`); document.querySelectorAll('.card.flipped').forEach((c) => { if (c !== el) c.classList.remove('flipped'); }); if (el) el.classList.toggle('flipped', ui.flipped === d.id); },
+    flip(d) { ui.flipped = ui.flipped === d.id ? null : d.id; const el = document.querySelector(`.card[data-id="${CSS.escape(d.id)}"]`); document.querySelectorAll('.card.flipped').forEach((c) => { if (c !== el) c.classList.remove('flipped'); }); if (el) { el.classList.toggle('flipped', ui.flipped === d.id); const kb = document.activeElement && el.contains(document.activeElement); if (kb) { const f = el.querySelector(ui.flipped === d.id ? '.cbtn' : '.flip-hit'); if (f) f.focus(); } } },
     step(d) { songStep(d.id, 1); },
     'step-undo'(d) { songStep(d.id, -1); },
     pass(d) { passSong(d.id); },
@@ -942,6 +973,7 @@
     'check-start'() { const p = Math.min(...ui.fb.pos); ui.fb.pos = [p]; const seq = Core.sequenceForPosition(ui.fb.root, ui.fb.scale, p); ui.check = seq.length ? { seq, i: 0, errors: 0, wrong: '', done: false, t0: 0, time: 0 } : null; mic.tracker = new Core.NoteTracker(3, 4); render(); },
     'check-stop'() { ui.check = null; render(); },
     short() { st.short = !st.short; commit(); },
+    'no-art'() { st.noArt = !st.noArt; commit(); },
     'save-name'() { st.name = ($('#pseudo').value || '').trim().slice(0, 24); commit(); toast('Prénom enregistré', 'check-mark-button'); },
     copy() { const t = $('#code-out'), msg = $('#copy-msg'); const done = (ok) => { if (msg) msg.textContent = ok ? 'Copié.' : 'Copie impossible : sélectionne le texte et copie-le à la main.'; }; try { navigator.clipboard.writeText(t.value).then(() => done(true), () => { t.select(); done(false); }); } catch (e) { t.select(); done(false); } },
     'import-ok'() {
@@ -959,12 +991,13 @@
     if (t.closest('a[target="_blank"]')) return;
     const el = t.closest('[data-act]');
     if (!el) { if (t.id === 'modal') { ui.modal = null; render(); } return; }
+    if (!ui.modal) modalOpener = el;
     const fn = ACT[el.dataset.act];
     if (fn) { if (el.dataset.act !== 'account') Sound.ac(); fn(el.dataset, el); }
   });
   document.addEventListener('keydown', (ev) => {
     if (ev.key === 'Escape' && ui.modal) { ui.modal = null; render(); return; }
-    if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('.card[data-act], .card [data-act]')) { ev.preventDefault(); ev.target.click(); }
+    if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('[data-act][tabindex]:not(button):not(a):not(input):not(select):not(textarea)')) { ev.preventDefault(); ev.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
   });
   document.addEventListener('submit', async (ev) => {
     ev.preventDefault();

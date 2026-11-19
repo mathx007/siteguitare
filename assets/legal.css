@@ -1,0 +1,38 @@
+/* Pages légales de Gratte Quest : lisibles sans JavaScript, contrastes AA vérifiés. */
+:root { color-scheme: light; --bg: #F3F2F8; --surface: #FFFFFF; --ink: #1B1733; --muted: #5E5A78; --line: #E3E1EE; --accent: #5B4BFF; --accent-d: #3F31D6; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif; font-size: 17px; line-height: 1.6; -webkit-text-size-adjust: 100%; }
+.skip { position: absolute; left: -9999px; top: 8px; background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 10px; z-index: 10; }
+.skip:focus { left: 8px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+header.top { background: var(--surface); border-bottom: 1px solid var(--line); }
+.in { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+header.top .in { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; min-height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: "Archivo", "Arial Black", sans-serif; font-stretch: 125%; font-weight: 900; font-size: 1.15rem; color: var(--ink); text-decoration: none; }
+.back { color: var(--accent-d); font-weight: 600; }
+nav.legal-nav { background: var(--surface); border-bottom: 1px solid var(--line); }
+nav.legal-nav ul { list-style: none; margin: 0 auto; padding: 8px 20px; max-width: 860px; display: flex; flex-wrap: wrap; gap: 4px 6px; }
+nav.legal-nav a { display: inline-block; padding: 6px 12px; border-radius: 10px; color: var(--ink); text-decoration: none; font-weight: 600; font-size: .92rem; }
+nav.legal-nav a[aria-current="page"] { background: var(--ink); color: #fff; }
+nav.legal-nav a:not([aria-current]):hover { background: #E3DFFF; }
+main { padding: 28px 0 48px; }
+h1 { font-family: "Archivo", "Arial Black", sans-serif; font-stretch: 125%; font-weight: 900; font-size: clamp(1.7rem, 4.5vw, 2.3rem); line-height: 1.1; margin: 0 0 8px; }
+h2 { font-family: "Archivo", "Arial Black", sans-serif; font-stretch: 112%; font-weight: 800; font-size: 1.3rem; line-height: 1.2; margin: 36px 0 10px; }
+h3 { font-size: 1.05rem; margin: 22px 0 6px; }
+.updated { color: var(--muted); margin: 0 0 20px; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 22px; }
+.box > :first-child { margin-top: 0; }
+.box > :last-child { margin-bottom: 0; }
+a { color: var(--accent-d); text-underline-offset: 2px; }
+.table-wrap { overflow-x: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .93rem; min-width: 560px; }
+caption { text-align: left; padding: 10px 14px; font-weight: 700; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-top: 1px solid var(--line); }
+th { background: #F8F7FB; }
+code { font-family: ui-monospace, Consolas, monospace; font-size: .88em; background: #ECEAF5; padding: 1px 5px; border-radius: 6px; overflow-wrap: anywhere; }
+ul, ol { padding-left: 1.3em; }
+li { margin: 4px 0; }
+footer.foot { border-top: 1px solid var(--line); padding: 20px 0 32px; color: var(--muted); font-size: .9rem; }
+footer.foot a { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

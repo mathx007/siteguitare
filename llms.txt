@@ -1,0 +1,27 @@
+# Gratte Quest
+
+> Journal de progression à la guitare électrique présenté comme un jeu, en français. Application web gratuite et installable (PWA), utilisable sur ordinateur et téléphone, avec ou sans compte. Éditeur : Mathys Langlois (site personnel, non commercial). Contact : journalprogression@gmail.com
+
+Gratte Quest propose chaque jour une séance d'environ 30 minutes découpée en 4 missions (vitesse, gammes, oreille, jeu), six jours par semaine. La progression se mesure par des paliers de compétences, des cartes de morceaux à collectionner, des trophées et un boss final. L'application fonctionne entièrement dans le navigateur (JavaScript requis) ; la progression est enregistrée sur l'appareil et, avec un compte facultatif (lien de connexion par e-mail), synchronisée entre appareils.
+
+## Sections de l'application
+
+- [Accueil](https://mathx007.github.io/siteguitare/#accueil): missions du jour, série, boss en cours
+- [Paliers](https://mathx007.github.io/siteguitare/#paliers): 5 branches (Gammes, Vitesse, Impro, Oreille, Riffs et solos) avec tests de validation
+- [Collection](https://mathx007.github.io/siteguitare/#collection): cartes de morceaux, de paliers et cartes bonus
+- [Trophées](https://mathx007.github.io/siteguitare/#trophees): succès à débloquer
+- [Progrès](https://mathx007.github.io/siteguitare/#progres): statistiques, réglages, compte et sauvegarde
+- [Manche](https://mathx007.github.io/siteguitare/#manche): gammes et positions sur le manche, contrôle au micro
+- [Oreille](https://mathx007.github.io/siteguitare/#oreille): jeux d'oreille (notes, intervalles, mélodies)
+
+## Informations légales
+
+- [Mentions légales](https://mathx007.github.io/siteguitare/mentions-legales.html)
+- [Politique de confidentialité](https://mathx007.github.io/siteguitare/confidentialite.html)
+- [Cookies et stockage](https://mathx007.github.io/siteguitare/cookies.html): aucun cookie, aucun traceur
+- [Conditions d'utilisation](https://mathx007.github.io/siteguitare/cgu.html)
+- [Accessibilité](https://mathx007.github.io/siteguitare/accessibilite.html)
+
+## Optional
+
+- [Code source et licences](https://github.com/mathx007/siteguitare)
