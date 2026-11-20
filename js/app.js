@@ -392,6 +392,34 @@
       : simpleCard({ r, on: false, e: '', t: '???', s: 'Dans un booster du jour', foot: RARITY[r], mode });
   }
 
+  /* ---------- Accueil : repère des notes et manche complet (notation anglo-saxonne) ---------- */
+  function repereBlock() {
+    const strings = [[1, 'La'], [0, 'Mi grave']]; // corde de La au-dessus, Mi grave en bas, comme une guitare vue de face
+    const frets = Array.from({ length: 13 }, (_, f) => f);
+    const head = `<tr><td class="rep-c"></td>${frets.map((f) => `<th scope="col"><span class="sr-only">Case </span>${f}</th>`).join('')}</tr>`;
+    const rows = strings.map(([s, nm]) => `<tr><th scope="row" class="rep-c">${'EADGBE'[s]}<span class="sr-only"> : corde de ${nm}</span></th>${frets.map((f) => {
+      const midi = Core.OPEN_MIDI[s] + f, pc = Core.mod(midi, 12), n = Core.NOTE_EN[pc], root = pc === ui.fb.root;
+      return `<td class="${f === 0 ? 'f0' : f === 1 ? 'f1' : ''}"><button type="button" class="rn ${n.length > 1 ? 'sh' : 'nat'}${root ? ' root' : ''}" data-act="pluck" data-midi="${midi}" aria-label="Corde de ${nm}, case ${f} : ${n}${root ? ', tonique de la gamme choisie' : ''}">${n}</button></td>`;
+    }).join('')}</tr>`).join('');
+    const marks = `<tr aria-hidden="true"><td class="rep-c"></td>${frets.map((f) => `<td>${f === 12 ? '<i class="rep-dot"></i><i class="rep-dot"></i>' : [3, 5, 7, 9].includes(f) ? '<i class="rep-dot"></i>' : ''}</td>`).join('')}</tr>`;
+    return `<section class="panel dark" aria-labelledby="rep-title"><div><div class="kicker">Repère</div><h2 class="h2" id="rep-title">Notes des cordes de Mi grave et de La</h2><p class="muted">Pour placer la tonique d'un accord barré ou d'une gamme.</p></div>
+      <div class="rep-wrap"><table class="rep"><caption class="sr-only">Notes des cases 0 à 12 des cordes de Mi grave et de La ; les notes se répètent ensuite.</caption><thead>${head}</thead><tbody>${rows}</tbody><tfoot>${marks}</tfoot></table></div>
+      <p class="small muted">En orange : la tonalité choisie dans le manche complet, en bas de page. Clique sur une case pour l'entendre.</p></section>`;
+  }
+  function mancheBlock() {
+    const fb = ui.fb, sc = Core.SCALES[fb.scale], all = fb.pos.length === 5, word = sc.penta || sc.blues ? 'Position' : 'Zone';
+    const which = all ? 'toutes les positions' : (fb.pos.length > 1 ? word.toLowerCase() + 's ' : word.toLowerCase() + ' ') + fb.pos.map((p) => p + 1).join(' et ');
+    return `<section class="panel dark" aria-labelledby="hm-title"><div class="row between"><div><div class="kicker">Outil</div><h2 class="h2" id="hm-title">Le manche complet</h2><p class="muted">${esc(sc.name)} de ${Core.NOTE_EN[fb.root]}, ${which}</p></div><a class="link strong" href="#manche">Ouvrir dans l'onglet Manche</a></div>
+      <div class="row"><label for="hm-root">Tonalité</label><select id="hm-root" data-change="fb-root">${Core.NOTE_EN.map((n, i) => `<option value="${i}"${i === fb.root ? ' selected' : ''}>${n}</option>`).join('')}</select>
+        <label for="hm-scale">Gamme</label><select id="hm-scale" data-change="fb-scale">${Object.entries(Core.SCALES).map(([k, s]) => `<option value="${k}"${k === fb.scale ? ' selected' : ''}>${s.name}</option>`).join('')}</select>
+        <div class="chips" role="group" aria-label="Affichage"><button class="chip${fb.labels === 'notes' ? ' on' : ''}" data-act="fb-labels" data-v="notes" aria-pressed="${fb.labels === 'notes'}">Notes</button><button class="chip${fb.labels === 'deg' ? ' on' : ''}" data-act="fb-labels" data-v="deg" aria-pressed="${fb.labels === 'deg'}">Degrés</button></div></div>
+      <div class="chips" role="group" aria-label="Positions"><button class="chip${all ? ' on' : ''}" data-act="fb-all" aria-pressed="${all}">Toutes</button>${[0, 1, 2, 3, 4].map((p) => { const on = !all && fb.pos.includes(p); return `<button class="chip${on ? ' on' : ''}" data-act="fb-pos" data-p="${p}" aria-pressed="${on}" style="${on ? `background:${POS_COL[p]};border-color:${POS_COL[p]};color:#17132B` : ''}">${word} ${p + 1}</button>`; }).join('')}</div>
+      <div class="fb-wrap" tabindex="0" aria-label="Manche complet, défilement horizontal">${fretboardSvg(fb, { letters: true, stringNames: true, rootAccent: true })}</div>
+      <div class="row between"><div class="legend">${[0, 1, 2, 3, 4].map((p) => `<span><i style="background:${POS_COL[p]}"></i>${word} ${p + 1}</span>`).join('')}<span><i style="background:#FF4D2E;border:3px solid #fff"></i>Tonique</span></div>
+        <button class="btn gold sm" data-act="fb-play">${E('headphone', 20)} Écouter la gamme</button></div>
+      <p class="small muted">Corde de Mi grave en bas, comme sur une tablature. Clique sur une note pour l'entendre. « Écouter la gamme » joue ${all ? 'la position 1' : 'la ' + word.toLowerCase() + ' ' + (Math.min(...fb.pos) + 1)} en montée puis en descente.</p></section>`;
+  }
+
   /* ---------- Vue : accueil ---------- */
   function viewAccueil() {
     const k = today(), r = getRec(k), ms = missionsFor(k), b = bossState(), s = Core.computeStreak(st.days, k), li = Core.levelInfo(st.xp);
@@ -436,6 +464,7 @@
     const lt = st.lastTrophy && TROPHIES.find((t) => t.id === st.lastTrophy);
     const a = songById(st.active) || songById('hysteria');
     return `${banner}
+      ${repereBlock()}
       <div class="row2">
         <section class="panel session">
           <div class="sesshead"><div><div class="kicker muted">${esc(date)}</div><h1 class="h1">Session du jour</h1><p class="muted">${ms.length} exercices, ${ms.reduce((t, m) => t + m.min, 0)} minutes. Un clic et le chrono s'enchaîne tout seul.</p></div>${sessBtn}</div>
@@ -449,7 +478,8 @@
         <section class="panel"><h2 class="h3">Ta semaine</h2><div class="week">${wk}</div><p class="small muted">${s.jokerUsed ? 'Jour de pause utilisé cette semaine.' : 'Jour de pause disponible cette semaine.'} ${(r.short !== undefined ? r.short : st.short) ? 'Mode partiels actif.' : ''}</p></section>
         <section class="panel yellow"><h2 class="h3">Dernier trophée</h2>${lt ? `<div class="tline">${E(lt.e, 56)}<div><b>${esc(lt.n)}</b><div class="small">${esc(lt.g)}</div></div></div>` : `<div class="tline">${E('trophy', 56)}<div><b>Aucun pour l'instant</b><div class="small">Termine une session complète pour le premier.</div></div></div>`}<a href="#trophees" class="small strong">Voir les ${TROPHIES.length} trophées</a></section>
         <section class="panel cur"><div class="curcard">${songCardHtml(a, 'static')}</div><div><h2 class="h3">Carte en cours</h2><p class="small muted">${owned(a.id) ? esc(a.t) + ' est acquise. Choisis une autre carte en cours dans la collection.' : `${esc(a.t)} : étape ${stepsOf(a.id)}/3, ${pinfo(a.id).n}/3 passages à 100 %.`}</p><button class="link strong" data-act="song" data-id="${a.id}">Ouvrir la fiche</button></div></section>
-      </div>`;
+      </div>
+      ${mancheBlock()}`;
   }
 
   /* ---------- Vue : paliers ---------- */
@@ -572,11 +602,13 @@
   }
 
   /* ---------- Vue : manche ---------- */
+  /* opts.letters : notes en lettres (C, D…) ; opts.stringNames : lettres des cordes à vide à gauche du sillet ;
+     opts.rootAccent : toniques en orange. Sans ces options, rendu identique à l'onglet Manche. */
   function fretboardSvg(fb, opts = {}) {
-    const notes = Core.fretboardNotes(fb.root, fb.scale);
-    const X0 = 52, FW = opts.compact ? 44 : 52, W = X0 + Core.MAXFRET * FW + 14, Y0 = 26, SH = opts.compact ? 28 : 32, H = Y0 + 5 * SH + 42;
+    const notes = Core.fretboardNotes(fb.root, fb.scale), NM = opts.letters ? Core.NOTE_EN : Core.NOTE_FR;
+    const X0 = opts.stringNames ? 76 : 52, FW = opts.compact ? 44 : 52, W = X0 + Core.MAXFRET * FW + 14, Y0 = 26, SH = opts.compact ? 28 : 32, H = Y0 + 5 * SH + 42;
     const x = (f) => (f === 0 ? X0 - 26 : X0 + (f - 0.5) * FW), y = (s) => Y0 + (5 - s) * SH;
-    let o = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="group" aria-label="Manche : ${esc(Core.SCALES[fb.scale].name)} de ${Core.NOTE_FR[fb.root]}"><defs>`;
+    let o = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="group" aria-label="Manche : ${esc(Core.SCALES[fb.scale].name)} de ${NM[fb.root]}"><defs>`;
     for (let a = 0; a < 5; a++) for (let b = a + 1; b < 5; b++) { const [l, r] = a === 0 && b === 4 ? [b, a] : [a, b]; o += `<linearGradient id="gp${a}${b}" x1="0" y1="0" x2="1" y2="0"><stop offset="50%" stop-color="${POS_COL[l]}"/><stop offset="50%" stop-color="${POS_COL[r]}"/></linearGradient>`; }
     o += `</defs><rect x="${X0}" y="${Y0 - 12}" width="${Core.MAXFRET * FW}" height="${5 * SH + 24}" rx="4" fill="#2A2044"/>`;
     for (const f of [3, 5, 7, 9, 15, 17]) o += `<circle cx="${x(f)}" cy="${Y0 + 2.5 * SH}" r="7" fill="#3D3163"/>`;
@@ -584,13 +616,14 @@
     for (let f = 0; f <= Core.MAXFRET; f++) o += `<line x1="${X0 + f * FW}" y1="${Y0 - 12}" x2="${X0 + f * FW}" y2="${Y0 + 5 * SH + 12}" stroke="${f === 0 ? '#F6F2FF' : '#6A5F96'}" stroke-width="${f === 0 ? 5 : 2}"/>`;
     for (let s = 0; s < 6; s++) o += `<line x1="${X0}" y1="${y(s)}" x2="${W - 14}" y2="${y(s)}" stroke="#C9C2E6" stroke-width="${3 - s * 0.4}" opacity=".8"/>`;
     for (const f of [3, 5, 7, 9, 12, 15, 17]) o += `<text x="${x(f)}" y="${H - 12}" fill="#B0A7D6">${f}</text>`;
+    if (opts.stringNames) for (let s = 0; s < 6; s++) o += `<text class="sname" x="16" y="${y(s)}" fill="#EDEAE4">${'EADGBE'[s]}</text>`;
     const tgt = !opts.compact && ui.check && !ui.check.done ? ui.check.seq[ui.check.i] : null;
     for (const n of notes) {
       const sel = n.pos.filter((p) => fb.pos.includes(p)), cx = x(n.f), cy = y(n.s);
       if (!sel.length) { o += `<circle class="nt" data-act="pluck" data-midi="${n.midi}" cx="${cx}" cy="${cy}" r="5" fill="#7D74A8" opacity=".7"/>`; continue; }
-      const fill = sel.length === 1 ? POS_COL[sel[0]] : `url(#gp${Math.min(sel[0], sel[1])}${Math.max(sel[0], sel[1])})`;
+      const fill = opts.rootAccent && n.isRoot ? '#FF4D2E' : sel.length === 1 ? POS_COL[sel[0]] : `url(#gp${Math.min(sel[0], sel[1])}${Math.max(sel[0], sel[1])})`;
       if (tgt && tgt.s === n.s && tgt.f === n.f) o += `<circle class="pulse" cx="${cx}" cy="${cy}" r="18"/>`;
-      o += `<circle class="nt" data-act="pluck" data-midi="${n.midi}" tabindex="0" role="button" aria-label="Écouter ${Core.NOTE_FR[n.pc]}" cx="${cx}" cy="${cy}" r="12.5" fill="${fill}" stroke="${n.isRoot ? '#fff' : 'rgba(0,0,0,.4)'}" stroke-width="${n.isRoot ? 3.5 : 1}"/><text x="${cx}" y="${cy + 0.5}" fill="#17132B">${fb.labels === 'deg' ? Core.DEG_LABEL[n.iv] : Core.NOTE_FR[n.pc]}</text>`;
+      o += `<circle class="nt" data-act="pluck" data-midi="${n.midi}" tabindex="0" role="button" aria-label="Écouter ${NM[n.pc]}" cx="${cx}" cy="${cy}" r="12.5" fill="${fill}" stroke="${n.isRoot ? '#fff' : 'rgba(0,0,0,.4)'}" stroke-width="${n.isRoot ? 3.5 : 1}"/><text x="${cx}" y="${cy + 0.5}" fill="#17132B">${fb.labels === 'deg' ? Core.DEG_LABEL[n.iv] : NM[n.pc]}</text>`;
     }
     return o + '</svg>';
   }
@@ -855,8 +888,15 @@
   /* ---------- Rendu global ---------- */
   function renderView() {
     const v = { accueil: viewAccueil, paliers: viewPaliers, collection: viewCollection, trophees: viewTrophees, progres: viewProgres, manche: viewManche, oreille: viewOreille }[ui.tab] || viewAccueil;
-    const el = $('#view');
+    const el = $('#view'), a = document.activeElement;
+    /* Après un rafraîchissement, le focus clavier revient sur la même commande (menu, puce, bouton). */
+    let sel = null;
+    if (a && a !== el && el.contains(a)) {
+      if (a.id) sel = '#' + CSS.escape(a.id);
+      else if (a.dataset && a.dataset.act) sel = `[data-act="${a.dataset.act}"]` + ['id', 'v', 'p', 'q'].filter((k) => a.dataset[k] !== undefined).map((k) => `[data-${k}="${CSS.escape(a.dataset[k])}"]`).join('');
+    }
     el.innerHTML = v();
+    if (sel) { const t = el.querySelector(sel); if (t) t.focus({ preventScroll: true }); }
     if (ui.tab !== lastViewTab) { /* apparition décalée des blocs, seulement au changement de vue */
       lastViewTab = ui.tab; el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter');
       clearTimeout(enterTimer); enterTimer = setTimeout(() => el.classList.remove('enter'), 900);
@@ -1010,7 +1050,12 @@
     'fb-all'() { ui.fb.pos = [0, 1, 2, 3, 4]; ui.check = null; render(); },
     'fb-pos'(d) { const p = Number(d.p), f = ui.fb; if (f.pos.length === 5) f.pos = [p]; else if (f.pos.includes(p)) { f.pos = f.pos.filter((x) => x !== p); if (!f.pos.length) f.pos = [0, 1, 2, 3, 4]; } else f.pos = f.pos.concat(p).sort(); ui.check = null; render(); },
     dice() { let r; do { r = Math.floor(Math.random() * 12); } while (r === ui.fb.root); ui.fb.root = r; ui.check = null; toast('Tonalité : ' + Core.NOTE_FR[r], 'game-die'); render(); },
-    pluck(d) { Sound.pluck(Number(d.midi)); },
+    pluck(d, el) { Sound.pluck(Number(d.midi)); if (el) { el.classList.remove('hit'); void el.getBoundingClientRect(); el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 450); } },
+    'fb-play'() {
+      const f = ui.fb, p = f.pos.length === 5 ? 0 : Math.min(...f.pos), seq = Core.sequenceForPosition(f.root, f.scale, p).map((n) => n.midi);
+      if (!seq.length) { toast('Cette position ne tient pas sur le manche dans cette tonalité', 'locked'); return; }
+      Sound.playSeq(seq, 0.3, 0.7);
+    },
     'go-ear'(d) { ui.ear.mode = d.mode; ui.ear.level = Number(d.level); ui.ear.q = null; ui.ear.result = null; ui.modal = null; go('oreille'); },
     'ear-mode'(d) { ui.ear.mode = d.v; ui.ear.level = 1; ui.ear.q = null; ui.ear.streak = 0; render(); },
     'ear-level'(d) { ui.ear.level = Number(d.v); ui.ear.q = null; ui.ear.streak = 0; render(); },

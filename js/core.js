@@ -1,5 +1,6 @@
 /* Gratte Quest : logique pure (aucun accès au DOM), testable sous Node. */
 const NOTE_FR = ['Do', 'Do#', 'Ré', 'Ré#', 'Mi', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'La#', 'Si'];
+const NOTE_EN = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']; // notation anglo-saxonne (blocs de l'Accueil)
 const OPEN_MIDI = [40, 45, 50, 55, 59, 64]; // cordes 6 (Mi grave) à 1 (Mi aigu)
 const STRING_FR = ['Mi grave', 'La', 'Ré', 'Sol', 'Si', 'Mi aigu'];
 const MAXFRET = 17;
@@ -253,7 +254,7 @@ function seeded(seed) {
 }
 
 const Core = {
-  NOTE_FR, OPEN_MIDI, STRING_FR, MAXFRET, DEG_LABEL, SCALES, BOX, mod, noteName, boxRootFret, positionShifts,
+  NOTE_FR, NOTE_EN, OPEN_MIDI, STRING_FR, MAXFRET, DEG_LABEL, SCALES, BOX, mod, noteName, boxRootFret, positionShifts,
   inPosition, fretboardNotes, sequenceForPosition, dayKey, parseDay, addDays, dayNumber, isoWeek, weekDays,
   computeStreak, levelInfo, rankFor, RANKS, bossHp, passesInfo, maxWeekOk, detectPitch, freqToMidi, midiToFreq, NoteTracker, seeded,
 };

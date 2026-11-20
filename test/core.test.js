@@ -5,6 +5,23 @@ const D = require('../js/data.js');
 
 const A = 9; // La
 
+test('notes en lettres : case 5 de la corde de Mi grave = A, case 7 de la corde de La = E', () => {
+  const en = (s, f) => C.NOTE_EN[C.mod(C.OPEN_MIDI[s] + f, 12)];
+  assert.strictEqual(en(0, 5), 'A');
+  assert.strictEqual(en(1, 7), 'E');
+  const row = (s) => Array.from({ length: 13 }, (_, f) => en(s, f)).join(' ');
+  assert.strictEqual(row(0), 'E F F# G G# A A# B C C# D D# E');
+  assert.strictEqual(row(1), 'A A# B C C# D D# E F F# G G# A');
+});
+
+test('penta mineure de Mi : uniquement E G A B D sur tout le manche, toniques = E', () => {
+  const E = 4, notes = C.fretboardNotes(E, 'pentaMin');
+  assert.deepStrictEqual([...new Set(notes.map((n) => C.NOTE_EN[n.pc]))].sort(), ['A', 'B', 'D', 'E', 'G']);
+  assert.ok(notes.filter((n) => n.isRoot).every((n) => C.NOTE_EN[n.pc] === 'E'));
+  const pos1 = notes.filter((n) => n.pos.includes(0) && n.f <= 3).map((n) => n.s + ':' + n.f).sort().join(' ');
+  assert.strictEqual(pos1, '0:0 0:3 1:0 1:2 2:0 2:2 3:0 3:2 4:0 4:3 5:0 5:3');
+});
+
 test('penta mineure de La : position 1 = cases 5 à 8', () => {
   const notes = C.fretboardNotes(A, 'pentaMin').filter((n) => n.pos.includes(0) && n.f >= 5 && n.f <= 8);
   const got = notes.map((n) => n.s + ':' + n.f).sort().join(' ');
