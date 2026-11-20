@@ -525,16 +525,39 @@ circle.nt:focus-visible { outline: none; stroke: #FFD166; stroke-width: 4px; }
 .panel.dark .fb-wrap { background: var(--dk-bg); border: 1px solid var(--dk-line); }
 .fb-wrap .sname { font-family: var(--display); font-size: 14px; font-weight: 900; }
 .rep-wrap { position: relative; overflow-x: auto; /* relative : garde les textes .sr-only dans le cadre qui défile */ border-radius: 16px; background: var(--dk-bg); border: 1px solid var(--dk-line); }
+/* Repère vertical : cases de haut en bas, une colonne par corde */
 .rep { border-collapse: separate; border-spacing: 0; width: 100%; }
-.rep th, .rep td { padding: 4px 3px; text-align: center; }
-.rep thead th { font-size: .8rem; font-weight: 700; color: var(--dk-muted); font-variant-numeric: tabular-nums; padding-top: 10px; }
-.rep .rep-c { position: sticky; left: 0; z-index: 2; background: var(--dk-bg); padding: 4px 10px 4px 14px; }
-.rep tbody .rep-c { font-family: var(--display); font-stretch: 125%; font-weight: 900; font-size: 1.15rem; color: #fff; }
-.rep tbody td { border-left: 2px solid #3A3654; background: linear-gradient(transparent calc(50% - 1px), #6A5F96 calc(50% - 1px), #6A5F96 calc(50% + 1px), transparent calc(50% + 1px)); }
-.rep tbody td.f0 { border-left: 0; background: none; }
-.rep tbody td.f1 { border-left: 5px solid #F6F2FF; }
-.rep tfoot td { height: 18px; padding: 0 3px 8px; }
-.rep-dot { display: inline-block; width: 8px; height: 8px; margin: 0 2px; border-radius: 50%; background: #77738A; }
+.rep th, .rep td { padding: 3px 4px; text-align: center; }
+.rep thead th { font-family: var(--display); font-stretch: 125%; font-weight: 900; font-size: 1.15rem; color: #fff; padding-top: 10px; padding-bottom: 6px; }
+.rep .rep-c { width: 1%; white-space: nowrap; padding: 3px 8px 3px 12px; text-align: right; }
+.rep tbody .rep-c { font-size: .82rem; font-weight: 700; color: var(--dk-muted); font-variant-numeric: tabular-nums; }
+.rep tbody td { border-top: 2px solid #3A3654; background: linear-gradient(90deg, transparent calc(50% - 1px), #6A5F96 calc(50% - 1px), #6A5F96 calc(50% + 1px), transparent calc(50% + 1px)); }
+.rep tbody tr.f0 td { border-top: 0; background: none; }
+.rep tbody tr.f1 td { border-top: 5px solid #F6F2FF; }
+.rep tbody tr:last-child td { padding-bottom: 10px; }
+.rep-dots { display: inline-flex; gap: 2px; width: 18px; margin-left: 4px; vertical-align: middle; }
+.rep-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #77738A; }
+/* Colonne à droite de l'Accueil sur grand écran */
+.home-grid { display: flex; flex-direction: column; gap: 28px; }
+.home-main { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+@media (min-width: 1024px) {
+  .home-grid { display: grid; grid-template-columns: minmax(0, 1fr) 210px; align-items: start; gap: 20px; }
+  .home-side { grid-column: 2; grid-row: 1; position: sticky; top: 82px; max-height: calc(100vh - 88px); overflow-y: auto; border-radius: 24px; }
+  .home-main { grid-column: 1; grid-row: 1; }
+  .repere { padding: 18px 14px; gap: 10px; }
+  .repere .h2 { font-size: 1.05rem; }
+  .repere .muted { font-size: .84rem; }
+  .repere p.small { font-size: .78rem; line-height: 1.35; }
+  .repere .rep thead th { padding-top: 6px; padding-bottom: 4px; }
+  .repere .rep th, .repere .rep td { padding-top: 2px; padding-bottom: 2px; }
+  .repere .rn { min-width: 34px; height: 32px; }
+  /* la colonne principale est plus étroite : mêmes dispositions qu'avant, tuiles un peu plus fines */
+  .home-main .row2 > .boss { flex-basis: 260px; }
+  .home-main .mtiles { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+  .home-main .qtiles { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); }
+  .home-main .row3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+}
+@media (max-width: 1023px) { .repere .rep-wrap { max-width: 320px; } }
 .rn { min-width: 38px; height: 38px; padding: 0 6px; border-radius: 99px; border: 1.5px solid transparent; font-weight: 800; font-size: .88rem; cursor: pointer; transition: transform .12s var(--ease-out); }
 .rn.nat { background: var(--dk-ink); color: var(--dk-bg); }
 .rn.sh { background: var(--dk-panel2); color: var(--dk-muted); border-color: #8A8696; font-weight: 700; font-size: .8rem; }

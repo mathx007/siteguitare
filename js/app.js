@@ -394,16 +394,16 @@
 
   /* ---------- Accueil : repère des notes et manche complet (notation anglo-saxonne) ---------- */
   function repereBlock() {
-    const strings = [[1, 'La'], [0, 'Mi grave']]; // corde de La au-dessus, Mi grave en bas, comme une guitare vue de face
+    /* Vertical, comme un manche tenu tête en haut : cases de haut en bas, corde de Mi grave à gauche, La à droite. */
+    const strings = [[0, 'Mi grave'], [1, 'La']];
     const frets = Array.from({ length: 13 }, (_, f) => f);
-    const head = `<tr><td class="rep-c"></td>${frets.map((f) => `<th scope="col"><span class="sr-only">Case </span>${f}</th>`).join('')}</tr>`;
-    const rows = strings.map(([s, nm]) => `<tr><th scope="row" class="rep-c">${'EADGBE'[s]}<span class="sr-only"> : corde de ${nm}</span></th>${frets.map((f) => {
+    const head = `<tr><td class="rep-c"></td>${strings.map(([s, nm]) => `<th scope="col">${'EADGBE'[s]}<span class="sr-only"> : corde de ${nm}</span></th>`).join('')}</tr>`;
+    const rows = frets.map((f) => `<tr class="${f === 0 ? 'f0' : f === 1 ? 'f1' : ''}"><th scope="row" class="rep-c"><span class="sr-only">Case </span>${f}<span class="rep-dots" aria-hidden="true">${f === 12 ? '<i class="rep-dot"></i><i class="rep-dot"></i>' : [3, 5, 7, 9].includes(f) ? '<i class="rep-dot"></i>' : ''}</span></th>${strings.map(([s, nm]) => {
       const midi = Core.OPEN_MIDI[s] + f, pc = Core.mod(midi, 12), n = Core.NOTE_EN[pc], root = pc === ui.fb.root;
-      return `<td class="${f === 0 ? 'f0' : f === 1 ? 'f1' : ''}"><button type="button" class="rn ${n.length > 1 ? 'sh' : 'nat'}${root ? ' root' : ''}" data-act="pluck" data-midi="${midi}" aria-label="Corde de ${nm}, case ${f} : ${n}${root ? ', tonique de la gamme choisie' : ''}">${n}</button></td>`;
+      return `<td><button type="button" class="rn ${n.length > 1 ? 'sh' : 'nat'}${root ? ' root' : ''}" data-act="pluck" data-midi="${midi}" aria-label="Corde de ${nm}, case ${f} : ${n}${root ? ', tonique de la gamme choisie' : ''}">${n}</button></td>`;
     }).join('')}</tr>`).join('');
-    const marks = `<tr aria-hidden="true"><td class="rep-c"></td>${frets.map((f) => `<td>${f === 12 ? '<i class="rep-dot"></i><i class="rep-dot"></i>' : [3, 5, 7, 9].includes(f) ? '<i class="rep-dot"></i>' : ''}</td>`).join('')}</tr>`;
-    return `<section class="panel dark" aria-labelledby="rep-title"><div><div class="kicker">Repère</div><h2 class="h2" id="rep-title">Notes des cordes de Mi grave et de La</h2><p class="muted">Pour placer la tonique d'un accord barré ou d'une gamme.</p></div>
-      <div class="rep-wrap"><table class="rep"><caption class="sr-only">Notes des cases 0 à 12 des cordes de Mi grave et de La ; les notes se répètent ensuite.</caption><thead>${head}</thead><tbody>${rows}</tbody><tfoot>${marks}</tfoot></table></div>
+    return `<section class="panel dark repere" aria-labelledby="rep-title"><div><div class="kicker">Repère</div><h2 class="h2" id="rep-title">Notes des cordes de Mi grave et de La</h2><p class="muted">Pour placer la tonique d'un accord barré ou d'une gamme.</p></div>
+      <div class="rep-wrap"><table class="rep"><caption class="sr-only">Notes des cases 0 à 12 des cordes de Mi grave et de La ; les notes se répètent ensuite.</caption><thead>${head}</thead><tbody>${rows}</tbody></table></div>
       <p class="small muted">En orange : la tonalité choisie dans le manche complet, en bas de page. Clique sur une case pour l'entendre.</p></section>`;
   }
   function mancheBlock() {
@@ -414,7 +414,7 @@
         <label for="hm-scale">Gamme</label><select id="hm-scale" data-change="fb-scale">${Object.entries(Core.SCALES).map(([k, s]) => `<option value="${k}"${k === fb.scale ? ' selected' : ''}>${s.name}</option>`).join('')}</select>
         <div class="chips" role="group" aria-label="Affichage"><button class="chip${fb.labels === 'notes' ? ' on' : ''}" data-act="fb-labels" data-v="notes" aria-pressed="${fb.labels === 'notes'}">Notes</button><button class="chip${fb.labels === 'deg' ? ' on' : ''}" data-act="fb-labels" data-v="deg" aria-pressed="${fb.labels === 'deg'}">Degrés</button></div></div>
       <div class="chips" role="group" aria-label="Positions"><button class="chip${all ? ' on' : ''}" data-act="fb-all" aria-pressed="${all}">Toutes</button>${[0, 1, 2, 3, 4].map((p) => { const on = !all && fb.pos.includes(p); return `<button class="chip${on ? ' on' : ''}" data-act="fb-pos" data-p="${p}" aria-pressed="${on}" style="${on ? `background:${POS_COL[p]};border-color:${POS_COL[p]};color:#17132B` : ''}">${word} ${p + 1}</button>`; }).join('')}</div>
-      <div class="fb-wrap" tabindex="0" aria-label="Manche complet, défilement horizontal">${fretboardSvg(fb, { letters: true, stringNames: true, rootAccent: true })}</div>
+      <div class="fb-wrap" data-keep-scroll tabindex="0" aria-label="Manche complet, défilement horizontal">${fretboardSvg(fb, { letters: true, stringNames: true, rootAccent: true, compact: true })}</div>
       <div class="row between"><div class="legend">${[0, 1, 2, 3, 4].map((p) => `<span><i style="background:${POS_COL[p]}"></i>${word} ${p + 1}</span>`).join('')}<span><i style="background:#FF4D2E;border:3px solid #fff"></i>Tonique</span></div>
         <button class="btn gold sm" data-act="fb-play">${E('headphone', 20)} Écouter la gamme</button></div>
       <p class="small muted">Corde de Mi grave en bas, comme sur une tablature. Clique sur une note pour l'entendre. « Écouter la gamme » joue ${all ? 'la position 1' : 'la ' + word.toLowerCase() + ' ' + (Math.min(...fb.pos) + 1)} en montée puis en descente.</p></section>`;
@@ -463,8 +463,9 @@
     const wk = Core.weekDays(k).map((d, i) => { const rr = getRec(d), p = s.pausedDays.includes(d); return `<div class="day${rr.ok ? ' ok' : ''}${p ? ' pause' : ''}${d === k ? ' today' : ''}" title="${d}">${'LMMJVSD'[i]}</div>`; }).join('');
     const lt = st.lastTrophy && TROPHIES.find((t) => t.id === st.lastTrophy);
     const a = songById(st.active) || songById('hysteria');
+    /* Le repère est une colonne à droite sur grand écran ; sur téléphone il reste sous la bannière (même ordre dans le code). */
     return `${banner}
-      ${repereBlock()}
+      <div class="home-grid"><div class="home-side">${repereBlock()}</div><div class="home-main">
       <div class="row2">
         <section class="panel session">
           <div class="sesshead"><div><div class="kicker muted">${esc(date)}</div><h1 class="h1">Session du jour</h1><p class="muted">${ms.length} exercices, ${ms.reduce((t, m) => t + m.min, 0)} minutes. Un clic et le chrono s'enchaîne tout seul.</p></div>${sessBtn}</div>
@@ -479,7 +480,7 @@
         <section class="panel yellow"><h2 class="h3">Dernier trophée</h2>${lt ? `<div class="tline">${E(lt.e, 56)}<div><b>${esc(lt.n)}</b><div class="small">${esc(lt.g)}</div></div></div>` : `<div class="tline">${E('trophy', 56)}<div><b>Aucun pour l'instant</b><div class="small">Termine une session complète pour le premier.</div></div></div>`}<a href="#trophees" class="small strong">Voir les ${TROPHIES.length} trophées</a></section>
         <section class="panel cur"><div class="curcard">${songCardHtml(a, 'static')}</div><div><h2 class="h3">Carte en cours</h2><p class="small muted">${owned(a.id) ? esc(a.t) + ' est acquise. Choisis une autre carte en cours dans la collection.' : `${esc(a.t)} : étape ${stepsOf(a.id)}/3, ${pinfo(a.id).n}/3 passages à 100 %.`}</p><button class="link strong" data-act="song" data-id="${a.id}">Ouvrir la fiche</button></div></section>
       </div>
-      ${mancheBlock()}`;
+      ${mancheBlock()}</div></div>`;
   }
 
   /* ---------- Vue : paliers ---------- */
@@ -905,7 +906,7 @@
   let lastViewTab = null, enterTimer = null;
   /* Fait défiler chaque manche jusqu'aux positions affichées (utile sur téléphone). */
   function scrollFretboards() {
-    document.querySelectorAll('.fb-wrap').forEach((w) => {
+    document.querySelectorAll('.fb-wrap:not([data-keep-scroll])').forEach((w) => { /* le manche de l'Accueil reste calé sur le sillet et les noms des cordes */
       const xs = [...w.querySelectorAll('circle[r="12.5"]')].map((c) => Number(c.getAttribute('cx')));
       if (!xs.length || w.scrollWidth <= w.clientWidth) return;
       const lo = Math.min(...xs), hi = Math.max(...xs);
