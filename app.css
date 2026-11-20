@@ -540,10 +540,12 @@ circle.nt:focus-visible { outline: none; stroke: #FFD166; stroke-width: 4px; }
 /* Colonne à droite de l'Accueil sur grand écran */
 .home-grid { display: flex; flex-direction: column; gap: 28px; }
 .home-main { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+/* Très grand écran : le repère se loge dans la marge droite, le centre garde sa largeur normale (1180 px) */
+@media (min-width: 1660px) {
+  .home-side { position: fixed; top: 82px; left: calc(50% + 570px + 24px); width: 210px; max-height: calc(100vh - 88px); overflow-y: auto; border-radius: 24px; z-index: 20; }
+  #view.enter > .home-grid { animation-name: fadein; } /* pas de transform : il décalerait le bloc fixe pendant l'apparition */
+}
 @media (min-width: 1024px) {
-  .home-grid { display: grid; grid-template-columns: minmax(0, 1fr) 210px; align-items: start; gap: 20px; }
-  .home-side { grid-column: 2; grid-row: 1; position: sticky; top: 82px; max-height: calc(100vh - 88px); overflow-y: auto; border-radius: 24px; }
-  .home-main { grid-column: 1; grid-row: 1; }
   .repere { padding: 18px 14px; gap: 10px; }
   .repere .h2 { font-size: 1.05rem; }
   .repere .muted { font-size: .84rem; }
@@ -551,6 +553,12 @@ circle.nt:focus-visible { outline: none; stroke: #FFD166; stroke-width: 4px; }
   .repere .rep thead th { padding-top: 6px; padding-bottom: 4px; }
   .repere .rep th, .repere .rep td { padding-top: 2px; padding-bottom: 2px; }
   .repere .rn { min-width: 34px; height: 32px; }
+}
+/* Écran moyen (portable) : pas assez de marge, le repère prend une colonne à droite */
+@media (min-width: 1024px) and (max-width: 1659px) {
+  .home-grid { display: grid; grid-template-columns: minmax(0, 1fr) 210px; align-items: start; gap: 20px; }
+  .home-side { grid-column: 2; grid-row: 1; position: sticky; top: 82px; max-height: calc(100vh - 88px); overflow-y: auto; border-radius: 24px; }
+  .home-main { grid-column: 1; grid-row: 1; }
   /* la colonne principale est plus étroite : mêmes dispositions qu'avant, tuiles un peu plus fines */
   .home-main .row2 > .boss { flex-basis: 260px; }
   .home-main .mtiles { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
