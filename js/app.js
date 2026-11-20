@@ -463,7 +463,7 @@
     const wk = Core.weekDays(k).map((d, i) => { const rr = getRec(d), p = s.pausedDays.includes(d); return `<div class="day${rr.ok ? ' ok' : ''}${p ? ' pause' : ''}${d === k ? ' today' : ''}" title="${d}">${'LMMJVSD'[i]}</div>`; }).join('');
     const lt = st.lastTrophy && TROPHIES.find((t) => t.id === st.lastTrophy);
     const a = songById(st.active) || songById('hysteria');
-    /* Le repère est une colonne à droite sur grand écran ; sur téléphone il reste sous la bannière (même ordre dans le code). */
+    /* Le repère est à gauche du bloc central sur grand écran (dans la marge à partir de 1660 px) ; sur téléphone il reste sous la bannière (même ordre dans le code). */
     return `${banner}
       <div class="home-grid"><div class="home-side">${repereBlock()}</div><div class="home-main">
       <div class="row2">
