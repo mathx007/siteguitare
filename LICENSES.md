@@ -25,7 +25,7 @@
 | Back in Black | James McNeill Whistler, Nocturne en noir et or, 1875 | Domaine public | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Whistler-Nocturne_in_black_and_gold.jpg) |
 | Snow (Hey Oh) | Pieter Bruegel l'Ancien, Chasseurs dans la neige, 1565 | Domaine public | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Pieter_Bruegel_the_Elder_-_Hunters_in_the_Snow_(Winter)_-_Google_Art_Project.jpg) |
 | Can't Stop | William Turner, Pluie, vapeur et vitesse, 1844 | Domaine public | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Turner_-_Rain%2C_Steam_and_Speed_-_National_Gallery_file.jpg) |
-| Lost Woods | Gustav Klimt, Hêtraie I, 1902 | Domaine public | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gustav_Klimt_-_Beech_Grove_I_-_Google_Art_Project.jpg) |
+| Saria's Song (Lost Woods) | Gustav Klimt, Hêtraie I, 1902 | Domaine public | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gustav_Klimt_-_Beech_Grove_I_-_Google_Art_Project.jpg) |
 | Thème principal | Katsushika Hokusai, Le Fuji rouge, vers 1831 | Domaine public | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Katsushika_Hokusai_-_Fine_Wind%2C_Clear_Morning_(Gaif%C5%AB_kaisei)_-_Google_Art_Project.jpg) |
 | Supermassive Black Hole | Gravure dite de Flammarion, 1888 | Domaine public | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:FlammarionWoodcut.jpg) |
 | Seven Nation Army | Paolo Uccello, La Bataille de San Romano, vers 1438-1440 | Domaine public | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:San_Romano_Battle_(Paolo_Uccello%2C_London)_01.jpg) |
@@ -52,3 +52,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## Polices
 
 Archivo (The Archivo Project Authors) et Inter (The Inter Project Authors), licence SIL Open Font License 1.1, fichiers issus de Fontsource 5.3.0 et hébergés sur le site (`assets/fonts/`, textes de licence inclus).
+
+## Sons de guitare
+
+`assets/sounds/guitare-claire/` : 49 notes de guitare électrique en son clair (instrument « Electric Guitar (clean) », midi 40 à 88), tirées de la banque de sons FluidR3_GM de Frank Wen, dans le rendu en MP3 de MIDI.js Soundfonts par Benjamin Gleitzman (https://github.com/gleitz/midi-js-soundfonts). Licence Creative Commons Attribution 3.0 (https://creativecommons.org/licenses/by/3.0/). Fichiers non modifiés ; le site ajuste seulement leur volume et leur durée au moment de les jouer.

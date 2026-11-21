@@ -1,6 +1,6 @@
 /* Gratte Quest : fonctionnement hors ligne. Réseau d'abord pour les fichiers du site (les mises à jour arrivent tout de suite),
    copie locale si le réseau manque. Les requêtes vers d'autres sites (compte, illustrations Wikimedia) ne passent pas par ici. */
-const CACHE = 'gratte-quest-v8';
+const CACHE = 'gratte-quest-v9';
 const SHELL = ['./', './index.html', './app.css', './js/core.js', './js/data.js', './js/audio.js', './js/cloud.js', './js/app.js', './vendor/supabase.js', './manifest.webmanifest', './assets/icons/icon-192.png', './assets/fonts/fonts.css', './assets/fonts/archivo-latin-standard-normal.woff2', './assets/fonts/inter-latin-wght-normal.woff2'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });

@@ -7,16 +7,50 @@ const Sound = (() => {
       if (!AC) return null;
       ctx = new AC();
       master = ctx.createGain(); master.gain.value = 0.8; master.connect(ctx.destination);
+      loadGuitar();
     }
     if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     return ctx;
   }
   const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
-  /* Note pincée. */
+  /* Vraie guitare électrique en son clair : un enregistrement par note, du Mi grave (E2, midi 40) au Mi aigu case 24 (E6, midi 88).
+     Échantillons de la banque FluidR3_GM (Frank Wen), rendus par MIDI.js Soundfonts (B. Gleitzman), licence CC BY 3.0 : voir LICENSES.md.
+     Chargés au premier clic, servis depuis le site ; chaque note est normalisée et son silence de départ retiré. */
+  const GTR_LO = 40, GTR_HI = 88, GTR_URL = 'assets/sounds/guitare-claire/';
+  const gtr = {}; let gtrLoading = null;
+  function loadGuitar() {
+    if (gtrLoading || !ctx || typeof fetch !== 'function') return gtrLoading;
+    const decode = (b) => new Promise((res, rej) => ctx.decodeAudioData(b, res, rej));
+    const one = (m) => fetch(GTR_URL + m + '.mp3').then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status)))).then(decode).then((buf) => {
+      const d = buf.getChannelData(0); let peak = 0, onset = -1;
+      for (let i = 0; i < d.length; i++) { const a = Math.abs(d[i]); if (a > peak) peak = a; if (onset < 0 && a > 0.004) onset = i; }
+      gtr[m] = { buf, gain: peak > 0 ? 0.85 / peak : 1, offset: Math.max(0, onset / buf.sampleRate - 0.004) };
+    }).catch(() => { /* note absente : on retombe sur une note voisine, ou sur le synthé */ });
+    /* d'abord les notes du bas du manche (les plus jouées), puis le reste */
+    const order = []; for (let m = GTR_LO; m <= 76; m++) order.push(m); for (let m = 77; m <= GTR_HI; m++) order.push(m);
+    gtrLoading = Promise.all(order.map(one));
+    return gtrLoading;
+  }
+  function nearestGtr(m) {
+    if (gtr[m]) return [gtr[m], m];
+    for (let d = 1; d <= 3; d++) { if (gtr[m - d]) return [gtr[m - d], m - d]; if (gtr[m + d]) return [gtr[m + d], m + d]; }
+    return null;
+  }
+
+  /* Note pincée : la guitare si l'enregistrement est chargé, sinon le petit synthé d'origine. */
   function pluck(midi, when, dur = 1.1, vol = 0.5) {
     const c = ac(); if (!c) return;
     const t = when == null ? c.currentTime + 0.02 : when;
+    const s = midi >= GTR_LO - 3 && midi <= GTR_HI + 3 ? nearestGtr(midi) : null;
+    if (!s) { synthPluck(c, midi, t, dur, vol); return; }
+    const [smp, from] = s, src = c.createBufferSource(), g = c.createGain();
+    src.buffer = smp.buf; src.playbackRate.value = Math.pow(2, (midi - from) / 12);
+    const level = vol * smp.gain * 1.2, end = t + dur + 0.35;
+    g.gain.setValueAtTime(level, t); g.gain.setValueAtTime(level, t + dur); g.gain.exponentialRampToValueAtTime(0.0001, end);
+    src.connect(g); g.connect(master); src.start(t, smp.offset); src.stop(end + 0.05);
+  }
+  function synthPluck(c, midi, t, dur, vol) {
     const g = c.createGain(), f = c.createBiquadFilter();
     f.type = 'lowpass'; f.frequency.setValueAtTime(3800, t); f.frequency.exponentialRampToValueAtTime(700, t + dur);
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
@@ -107,11 +141,15 @@ const Sound = (() => {
     midis.forEach((m, i) => pluck(m, t0 + i * gap, dur));
     return midis.length * gap + dur;
   }
-  /* Bourdon (tonique + quinte, grave et doux) pour installer une tonalité. */
+  /* Bourdon pour installer une tonalité : power chord grave (tonique, quinte, octave) gratté doucement à la guitare,
+     regratté toutes les 2,6 s tant qu'il doit durer (une note de guitare s'éteint au bout de 3 s environ). */
   function drone(rootMidi, dur) {
     const c = ac(); if (!c) return;
-    const t = c.currentTime + 0.03, base = 40 + ((rootMidi - 40) % 12 + 12) % 12;
-    for (const [iv, lv] of [[0, 0.12], [7, 0.07], [12, 0.05]]) tone(base + iv, t, dur, 'triangle', lv, 700);
+    const t = c.currentTime + 0.03, base = 40 + ((rootMidi - 40) % 12 + 12) % 12, EVERY = 2.6;
+    for (let k = 0; k * EVERY < dur - 0.4; k++) {
+      const tk = t + k * EVERY, hold = Math.min(EVERY, dur - k * EVERY);
+      [0, 7, 12].forEach((iv, i) => pluck(base + iv, tk + i * 0.018, hold, k ? 0.16 : 0.2));
+    }
   }
   /* Bourdon puis suite de notes par-dessus. Renvoie la durée totale en secondes. */
   function playOverDrone(rootMidi, midis, gap = 0.7, dur = 1.0) {
@@ -125,7 +163,9 @@ const Sound = (() => {
   function chime(good) {
     const c = ac(); if (!c) return;
     const t = c.currentTime + 0.01;
-    (good ? [76, 81, 88] : [52, 51]).forEach((m, i) => tone(m, t + i * 0.09, 0.22, good ? 'triangle' : 'sawtooth', 0.14, good ? 4000 : 500));
+    /* Réussite : petit arpège aigu de guitare (La majeur). Erreur : deux notes graves à un demi-ton, qui frottent. */
+    if (good) [69, 73, 76, 81].forEach((m, i) => pluck(m, t + i * 0.075, 0.5, 0.32));
+    else [52, 51].forEach((m, i) => pluck(m, t + i * 0.13, 0.35, 0.42));
   }
   return { ac, pluck, playSeq, drone, playOverDrone, chime, metro, metroLoop, jam, jamLoop, get ctx() { return ctx; } };
 })();
