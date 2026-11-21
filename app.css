@@ -437,7 +437,7 @@ circle.nt:focus-visible { outline: none; stroke: #FFD166; stroke-width: 4px; }
 
 /* Cartes : matières selon la rareté */
 .face { overflow: hidden; }
-.face > div { position: relative; z-index: 1; background: linear-gradient(165deg, var(--dk-panel2), var(--card) 55%, var(--dk-bg)); }
+.face > div { position: relative; background: linear-gradient(165deg, var(--dk-panel2), var(--card) 55%, var(--dk-bg)); }
 .card:is(.rL, .rM):not(.todo) .face::before { content: ""; position: absolute; top: -50%; bottom: -50%; left: -50%; width: 200%; background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, .85) 50%, transparent 58%); transform: translateX(-60%); animation: metal 3.4s linear infinite; }
 @keyframes metal { to { transform: translateX(60%); } }
 .art .shine { overflow: hidden; }

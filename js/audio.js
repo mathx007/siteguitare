@@ -6,7 +6,10 @@ const Sound = (() => {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
       ctx = new AC();
-      master = ctx.createGain(); master.gain.value = 0.8; master.connect(ctx.destination);
+      /* Limiteur doux en sortie : plusieurs notes ou le bourdon ne font jamais de pic agressif. */
+      const lim = ctx.createDynamicsCompressor();
+      lim.threshold.value = -10; lim.knee.value = 8; lim.ratio.value = 8; lim.attack.value = 0.003; lim.release.value = 0.2;
+      master = ctx.createGain(); master.gain.value = 0.8; master.connect(lim); lim.connect(ctx.destination);
       loadGuitar();
     }
     if (ctx.state === 'suspended') ctx.resume().catch(() => {});
@@ -38,10 +41,30 @@ const Sound = (() => {
     return null;
   }
 
+  /* Comme sur une vraie corde : une nouvelle note du même groupe coupe la précédente (étouffement rapide),
+     pour que des notes voisines cliquées ou jouées en gamme ne sonnent jamais ensemble. Une note encore
+     à venir (gamme en cours) est annulée. Groupe null : la note sonne librement (accord, arpège). */
+  const voices = {};
+  function choke(group, t) {
+    const list = voices[group]; if (!list) return;
+    for (const v of list) {
+      if (v.end <= t || v.choked) continue;
+      v.choked = true;
+      if (v.start >= t) { try { v.src.stop(); } catch (e) { /* déjà arrêtée */ } v.end = 0; continue; }
+      const p = v.g.gain;
+      if (p.cancelAndHoldAtTime) p.cancelAndHoldAtTime(t); else p.cancelScheduledValues(t);
+      p.setTargetAtTime(0.0001, t, 0.03);
+      try { v.src.stop(t + 0.25); } catch (e) { /* déjà arrêtée */ }
+      v.end = t + 0.25;
+    }
+    voices[group] = list.filter((v) => v.end > t);
+  }
+
   /* Note pincée : la guitare si l'enregistrement est chargé, sinon le petit synthé d'origine. */
-  function pluck(midi, when, dur = 1.1, vol = 0.5) {
+  function pluck(midi, when, dur = 1.1, vol = 0.5, group = 'lead') {
     const c = ac(); if (!c) return;
     const t = when == null ? c.currentTime + 0.02 : when;
+    if (group) choke(group, t);
     const s = midi >= GTR_LO - 3 && midi <= GTR_HI + 3 ? nearestGtr(midi) : null;
     if (!s) { synthPluck(c, midi, t, dur, vol); return; }
     const [smp, from] = s, src = c.createBufferSource(), g = c.createGain();
@@ -49,6 +72,7 @@ const Sound = (() => {
     const level = vol * smp.gain * 1.2, end = t + dur + 0.35;
     g.gain.setValueAtTime(level, t); g.gain.setValueAtTime(level, t + dur); g.gain.exponentialRampToValueAtTime(0.0001, end);
     src.connect(g); g.connect(master); src.start(t, smp.offset); src.stop(end + 0.05);
+    if (group) (voices[group] = voices[group] || []).push({ src, g, start: t, end });
   }
   function synthPluck(c, midi, t, dur, vol) {
     const g = c.createGain(), f = c.createBiquadFilter();
@@ -148,7 +172,7 @@ const Sound = (() => {
     const t = c.currentTime + 0.03, base = 40 + ((rootMidi - 40) % 12 + 12) % 12, EVERY = 2.6;
     for (let k = 0; k * EVERY < dur - 0.4; k++) {
       const tk = t + k * EVERY, hold = Math.min(EVERY, dur - k * EVERY);
-      [0, 7, 12].forEach((iv, i) => pluck(base + iv, tk + i * 0.018, hold, k ? 0.16 : 0.2));
+      [0, 7, 12].forEach((iv, i) => pluck(base + iv, tk + i * 0.018, hold, k ? 0.16 : 0.2, 'drone' + i)); // une corde par note du power chord
     }
   }
   /* Bourdon puis suite de notes par-dessus. Renvoie la durée totale en secondes. */
@@ -164,8 +188,8 @@ const Sound = (() => {
     const c = ac(); if (!c) return;
     const t = c.currentTime + 0.01;
     /* Réussite : petit arpège aigu de guitare (La majeur). Erreur : deux notes graves à un demi-ton, qui frottent. */
-    if (good) [69, 73, 76, 81].forEach((m, i) => pluck(m, t + i * 0.075, 0.5, 0.32));
-    else [52, 51].forEach((m, i) => pluck(m, t + i * 0.13, 0.35, 0.42));
+    if (good) [69, 73, 76, 81].forEach((m, i) => pluck(m, t + i * 0.075, 0.5, 0.32, null)); // accord de La majeur qui sonne librement
+    else [52, 51].forEach((m, i) => pluck(m, t + i * 0.13, 0.35, 0.42, 'fx')); // la 2e note coupe la 1re : erreur nette, sans frottement
   }
   return { ac, pluck, playSeq, drone, playOverDrone, chime, metro, metroLoop, jam, jamLoop, get ctx() { return ctx; } };
 })();
