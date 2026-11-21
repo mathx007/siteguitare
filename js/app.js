@@ -514,7 +514,7 @@
     } else if (ui.colTab === 'paliers') grid = ALL_PAL.map((p) => palierCard(p)).join('');
     else grid = BONUS.map((b) => bonusCard(b)).join('');
     const filters = ui.colTab === 'songs' ? `<div class="chips">${[['all', 'Toutes'], ...Object.entries(RARITY)].map(([k, n]) => `<button class="chip${ui.rar === k ? ' on' : ''}" data-act="rar" data-v="${k}">${k === 'all' ? n : k + ' · ' + n}</button>`).join('')}<button class="chip${ui.preview ? ' on' : ''}" data-act="preview" aria-pressed="${ui.preview}">Aperçu : tout en couleur</button></div>
-      <p class="small muted">Une carte reste grisée tant que le morceau n'a pas été joué ${PASSES_NEEDED} fois en entier à 100 % du tempo, à raison de ${PASSES_PER_DAY} passages maximum par jour, après ses 3 étapes. La rareté dépend de la difficulté. Clique sur une carte pour la retourner.</p>` : '';
+      <p class="small muted">Une carte reste grisée tant que le morceau n'a pas été joué ${PASSES_NEEDED} fois en entier à 100 % du tempo, à raison de ${PASSES_PER_DAY} passages maximum par jour, après ses 3 étapes. La rareté dépend de la difficulté. Clique sur une carte pour la retourner, puis clique dessus une deuxième fois pour ouvrir sa fiche.</p>` : '';
     return `<section class="pagehead"><div><div class="kicker muted">Album</div><h1 class="h1">Ma collection</h1></div>
         <div class="counts"><div><b class="num">${nS}</b><span>/ ${songs.length} morceaux</span></div><div><b class="num">${nP}</b><span>/ ${ALL_PAL.length} paliers</span></div><div><b class="num">${nB}</b><span>/ ${BONUS.length} bonus</span></div></div></section>
       <div class="tabs" role="tablist">${[['songs', 'Morceaux'], ['paliers', 'Paliers'], ['bonus', 'Bonus']].map(([k, n]) => `<button role="tab" aria-selected="${ui.colTab === k}" class="tab${ui.colTab === k ? ' on' : ''}" data-act="coltab" data-v="${k}">${n}</button>`).join('')}</div>
@@ -1024,7 +1024,10 @@
     'palier-undo'(d) { undoPalier(d.id); },
     song(d) { ui.modal = { type: 'song', id: d.id }; ui.armed = null; render(); },
     bonus(d) { ui.modal = { type: 'bonus', id: d.id }; render(); },
-    flip(d) { ui.flipped = ui.flipped === d.id ? null : d.id; const el = document.querySelector(`.card[data-id="${CSS.escape(d.id)}"]`); document.querySelectorAll('.card.flipped').forEach((c) => { if (c !== el) c.classList.remove('flipped'); }); if (el) { el.classList.toggle('flipped', ui.flipped === d.id); const kb = document.activeElement && el.contains(document.activeElement); if (kb) { const f = el.querySelector(ui.flipped === d.id ? '.cbtn' : '.flip-hit'); if (f) f.focus(); } } },
+    flip(d, src) {
+      /* Carte déjà retournée : un clic n'importe où au dos ouvre la fiche (seul le lien « Retourner la carte » la remet à l'endroit). */
+      if (src && src.classList.contains('card') && ui.flipped === d.id) { ui.modal = { type: 'song', id: d.id }; ui.armed = null; render(); return; }
+      ui.flipped = ui.flipped === d.id ? null : d.id; const el = document.querySelector(`.card[data-id="${CSS.escape(d.id)}"]`); document.querySelectorAll('.card.flipped').forEach((c) => { if (c !== el) c.classList.remove('flipped'); }); if (el) { el.classList.toggle('flipped', ui.flipped === d.id); const kb = document.activeElement && el.contains(document.activeElement); if (kb) { const f = el.querySelector(ui.flipped === d.id ? '.cbtn' : '.flip-hit'); if (f) f.focus(); } } },
     step(d) { songStep(d.id, 1); },
     'step-undo'(d) { songStep(d.id, -1); },
     pass(d) { passSong(d.id); },

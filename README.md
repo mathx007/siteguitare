@@ -24,4 +24,6 @@ node --test test/core.test.js test/data.test.js
 
 Fichiers : `index.html`, `app.css`, `js/core.js` (logique pure), `js/data.js` (contenu), `js/audio.js` (son), `js/cloud.js` (compte et sauvegarde Supabase), `js/app.js` (interface), `sw.js` (hors ligne).
 
+À chaque mise en ligne : incrémenter `CACHE` dans `sw.js` et le même numéro `?v=` sur les fichiers CSS et JS de `index.html` (un test le vérifie). Sinon, un navigateur peut garder l'ancienne version jusqu'à 10 minutes.
+
 Crédits et licences : voir `LICENSES.md`.
