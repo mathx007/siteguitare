@@ -249,9 +249,11 @@
     if (ui.timer && ui.timer.mid === id) stopTimer();
     st.best = Math.max(st.best || 0, Core.computeStreak(st.days, k).streak);
     if (ui.session) {
+      /* Mode séance : la suite (compte à rebours, mission suivante, récapitulatif) est gérée par le plein écran. */
       const next = ms.find((x) => !r.done.includes(x.id));
-      if (next) { ui.modal = { type: 'mission', id: next.id }; startTimer(next.id, next.min, true); }
-      else { ui.session = null; ui.modal = null; checkTrophies(); save(); if (r.chest === 'ready') { openBooster(); return; } }
+      if (ui.modal && ui.modal.type === 'mission') ui.modal = null;
+      if (!next) { seanceToolsOff(); ui.session.on = false; ui.session.view = 'recap'; ui.session.count = null; checkTrophies(); save(); }
+      else if (!ui.session.committing) { ui.session.view = 'full'; seanceCount('next'); } /* validée ailleurs (jeu d'oreille) : on revient au plein écran */
     } else if (ui.modal && ui.modal.type === 'mission') ui.modal = null;
     commit();
   }
@@ -322,17 +324,13 @@
       const t = ui.timer; if (!t || !t.running) return;
       t.left = (t.end - Date.now()) / 1000;
       document.querySelectorAll('[data-timer]').forEach((el) => { el.textContent = fmt(t.left); });
+      const seg = document.querySelector('.sx-prog i.cur'); if (seg) seg.style.setProperty('--p', Math.min(1, 1 - t.left / t.total).toFixed(3)); /* segment de la mission en cours */
       if (t.left <= 0) { t.running = false; t.left = 0; t.over = true; clearInterval(tick); Sound.chime(true); toast('Temps écoulé : valide la mission quand c\'est bon', 'stopwatch'); render(); }
     }, 400);
     render();
   }
   function pauseTimer() { if (ui.timer) { ui.timer.running = false; ui.timer.left = Math.max(0, (ui.timer.end - Date.now()) / 1000); } clearInterval(tick); render(); }
   function stopTimer() { ui.timer = null; clearInterval(tick); }
-  function startSession() {
-    const k = today(), r = getRec(k), next = missionsFor(k).find((m) => !r.done.includes(m.id));
-    if (!next) { toast('Session du jour déjà terminée', 'check-mark-button'); return; }
-    ui.session = { on: true }; ui.modal = { type: 'mission', id: next.id }; startTimer(next.id, next.min, true);
-  }
 
   /* ---------- Rendu : en-tête, navigation, barre de session ---------- */
   function renderHeader() {
@@ -350,7 +348,7 @@
   }
   function renderSessionBar() {
     const el = $('#sessionbar');
-    if (!ui.session) { el.innerHTML = ''; el.hidden = true; return; }
+    if (!ui.session || ui.session.view !== 'min') { el.innerHTML = ''; el.hidden = true; return; } /* visible seulement quand la séance plein écran est en pause */
     const k = today(), r = getRec(k), ms = missionsFor(k), cur = ms.find((m) => !r.done.includes(m.id));
     if (!cur) { el.innerHTML = ''; el.hidden = true; return; }
     const i = ms.indexOf(cur) + 1, b = BR[cur.br], t = ui.timer && ui.timer.mid === cur.id ? ui.timer : null;
@@ -360,11 +358,161 @@
       <span class="sess-t"><b>Mission ${i}/${ms.length} · ${esc(cur.fun)}</b><span>${esc(b.name)} · ${esc(cur.sub)}</span></span>
       <span class="sess-time num" ${t && t.running ? 'data-timer' : ''}>${t ? (t.over ? 'Temps écoulé' : fmt(t.left)) : fmt(cur.min * 60)}</span>
       <span class="sess-act">
-        ${t && t.running ? '<button class="btn ghost sm" data-act="timer-pause">Pause</button>' : `<button class="btn ghost sm" data-act="timer" data-id="${cur.id}">${t && !t.over ? 'Reprendre' : 'Chrono'}</button>`}
-        <button class="btn ghost sm" data-act="mission-open" data-id="${cur.id}">Ouvrir</button>
-        ${cur.auto ? '' : `<button class="btn sm" data-act="mission" data-id="${cur.id}">Validée</button>`}
-        <button class="link" data-act="session-stop">Arrêter</button>
+        <button class="btn sm" data-act="session">Reprendre en plein écran</button>
+        <button class="link" data-act="session-stop">Arrêter la séance</button>
       </span></div>`;
+  }
+
+  /* ---------- Mode séance plein écran ----------
+     ui.session = { on, view: 'full' | 'min' | 'recap', count, pending, played, xp0, drawer }.
+     Une validation n'est enregistrée qu'à la fin du compte à rebours de 3 s : « Annuler » ne touche donc jamais aux données. */
+  const SEANCE_ART = { vit: 'cantstop', gam: 'skyfall', ore: 'lostwoods', imp: 'johnny', sol: 'johnny' };
+  const seanceArt = (m) => { const s = m.song && songById(m.song); return s && songImg(s, 1200) ? s : songById(SEANCE_ART[m.br]) || songById('hysteria'); };
+  const seanceCur = () => { const k = today(), r = getRec(k); return missionsFor(k).find((m) => !r.done.includes(m.id)); };
+  const seanceOn = () => !!(ui.session && (ui.session.view === 'full' || ui.session.view === 'recap'));
+  let seanceLastMid = null;
+  function seanceToolsOff() { if (Sound.metroLoop.on) { Sound.metroLoop.stop(); ui.beat = -1; } if (Sound.jamLoop.on) Sound.jamLoop.stop(); }
+  /* L'outil de la mission démarre avec le chrono : métronome en vitesse, boucle en impro. */
+  function seanceToolsOn(m) { if (m.exo && !Sound.metroLoop.on) { Sound.jamLoop.stop(); Sound.metroLoop.start(); } if (m.jam && !Sound.jamLoop.on) { Sound.metroLoop.stop(); ui.beat = -1; Sound.jamLoop.start(); } }
+  function seanceStartTimer(m) { if (!(ui.timer && ui.timer.mid === m.id)) ui.timer = { mid: m.id, end: 0, left: m.min * 60, total: m.min * 60, running: false }; startTimer(m.id, m.min); seanceToolsOn(m); }
+  /* Libellé du bouton de séance : il dit ce qui va se passer (reprise avec le temps restant si une séance est en pause). */
+  function seanceLabel(next, doneN) {
+    if (ui.session && ui.session.on && next) return `Reprendre la séance${ui.timer && ui.timer.mid === next.id && ui.timer.left < ui.timer.total ? ' · ' + fmt(ui.timer.left) : ''}`;
+    return doneN ? 'Continuer la séance' : 'Jouer la séance';
+  }
+  function startSession() {
+    const next = seanceCur();
+    if (!next) { toast('Séance du jour déjà terminée', 'check-mark-button'); return; }
+    ui.modal = null;
+    if (ui.session && ui.session.on) { /* reprise après une pause : le chrono repart là où il était */
+      ui.session.view = 'full';
+      if (ui.timer && ui.timer.mid === next.id && ui.timer.left < ui.timer.total) { seanceStartTimer(next); announce(`Séance reprise : ${next.fun}.`); } else seanceCount('start');
+      render(); return;
+    }
+    ui.session = { on: true, view: 'full', count: null, pending: null, played: 0, xp0: st.xp, drawer: false };
+    ui.timer = null; seanceCount('start'); render();
+  }
+  function seanceCount(kind) {
+    const s = ui.session; if (!s) return;
+    if (s.count) clearTimeout(s.count.t);
+    s.count = { kind, paused: false, rest: 3000, at: Date.now(), t: setTimeout(seanceCountDone, 3000) };
+    const cur = seanceCur(), nx = kind === 'next' ? missionsFor(today()).find((m) => !getRec(today()).done.includes(m.id) && (!s.pending || m.id !== s.pending.id)) : null;
+    announce(kind === 'start' ? `Le chrono démarre dans 3 secondes : ${cur ? cur.fun : ''}. Entrée pour démarrer, Espace pour attendre.` : kind === 'end' ? 'Dernière mission validée. Récapitulatif dans 3 secondes. Contrôle Z pour annuler.' : `Mission validée. Mission suivante dans 3 secondes${nx ? ' : ' + nx.fun : ''}. Contrôle Z pour annuler.`);
+  }
+  function seanceHold() {
+    const c = ui.session && ui.session.count; if (!c) return;
+    if (c.paused) { c.paused = false; c.at = Date.now(); c.t = setTimeout(seanceCountDone, c.rest); } else { c.paused = true; clearTimeout(c.t); c.rest = Math.max(0, c.rest - (Date.now() - c.at)); }
+    render();
+  }
+  /* Enregistre la mission en attente (fin du compte à rebours, sortie, arrêt ou fermeture de la page). */
+  function seanceCommit() {
+    const s = ui.session; if (!s || !s.pending) return;
+    const p = s.pending; s.pending = null; s.committing = true; ui.bpmDraft = p.bpm || '';
+    completeMission(p.id); s.committing = false;
+  }
+  function seanceCountDone() {
+    const s = ui.session; if (!s || !s.count) return;
+    const c = s.count; clearTimeout(c.t); s.count = null;
+    if (c.kind !== 'start') seanceCommit();
+    if (ui.session && ui.session.view === 'full') { const m = seanceCur(); if (m) { const ms = missionsFor(today()); seanceStartTimer(m); announce(`Mission ${ms.findIndex((x) => x.id === m.id) + 1} sur ${ms.length} : ${m.fun}. Chrono lancé.`); } }
+    render();
+  }
+  function seanceValidate() {
+    const s = ui.session, m = seanceCur(); if (!s || s.count || !m || m.auto) return;
+    const t = ui.timer && ui.timer.mid === m.id ? ui.timer : null;
+    if (t) { if (t.running) t.left = Math.max(0, (t.end - Date.now()) / 1000); s.played += t.total - t.left; t.running = false; clearInterval(tick); }
+    seanceToolsOff(); s.drawer = false;
+    s.pending = { id: m.id, bpm: ui.bpmDraft, played: t ? t.total - t.left : 0 };
+    const rest = missionsFor(today()).filter((x) => !getRec(today()).done.includes(x.id) && x.id !== m.id).length;
+    seanceCount(rest ? 'next' : 'end'); Sound.chime(false);
+    render();
+    const st0 = $('.sx-stamp'); if (st0) { st0.classList.remove('go'); void st0.offsetWidth; st0.classList.add('go'); }
+  }
+  function seanceUndo() {
+    const s = ui.session; if (!s || !s.pending || !s.count) return;
+    clearTimeout(s.count.t); s.count = null; s.played -= s.pending.played || 0; ui.bpmDraft = s.pending.bpm || ''; s.pending = null;
+    announce('Validation annulée. Chrono en pause : Espace pour reprendre.'); render();
+  }
+  /* Quitter le plein écran : la séance reste en cours (barre de séance), le chrono est mis en pause. */
+  function seanceMin() {
+    const s = ui.session; if (!s) return;
+    if (s.view === 'recap') { ui.session = null; render(); return; }
+    if (s.count) { clearTimeout(s.count.t); const kind = s.count.kind; s.count = null; if (kind !== 'start') seanceCommit(); }
+    if (!ui.session) { render(); return; }
+    if (ui.timer && ui.timer.running) pauseTimer();
+    seanceToolsOff(); ui.session.view = 'min'; ui.session.drawer = false; render();
+    announce('Séance en pause. Reprends-la depuis la barre de séance ou l\'Accueil.');
+  }
+  function seanceStop() { if (ui.session && ui.session.count) { clearTimeout(ui.session.count.t); ui.session.count = null; seanceCommit(); } seanceToolsOff(); ui.session = null; if (ui.timer && ui.timer.running) pauseTimer(); render(); }
+  function seanceTool(m) {
+    const r = getRec(today());
+    if (m.exo) return `<div class="sx-tool"><span class="sx-bpm num" id="sheet-bpm">${Sound.metro.bpm}</span><span class="sx-u">bpm</span>${[-5, -1, 1, 5].map((v) => `<button type="button" class="b b-sm" data-act="metro-step" data-v="${v}" aria-label="${v > 0 ? 'Plus' : 'Moins'} ${Math.abs(v)} bpm">${v > 0 ? '+' : '−'}${Math.abs(v)}</button>`).join('')}<button type="button" class="b b-sm" data-act="metro-toggle" aria-pressed="${Sound.metroLoop.on}">Métronome <span class="key">M</span></button><span class="sx-beats" id="sx-beats" aria-hidden="true">${[0, 1, 2, 3].map((i) => `<i class="${ui.beat === i ? 'on' : ''}"></i>`).join('')}</span>
+      <label class="sx-field">Tempo propre atteint <input type="number" id="bpm-in" inputmode="numeric" min="30" max="320" placeholder="bpm" value="${esc(ui.bpmDraft)}" data-input="bpm"></label></div>`;
+    if (m.fb) { const [scale, root, pos] = m.fb; return `<div class="sx-tool col"><div class="fb-wrap compact">${fretboardSvg({ root, scale, pos, labels: 'notes' }, { compact: true })}</div><button type="button" class="b b-sm" data-act="show-fb" data-fb="${esc(JSON.stringify(m.fb))}">Ouvrir le manche et le contrôle au micro</button></div>`; }
+    if (m.game) return `<div class="sx-tool"><button type="button" class="b" data-act="go-ear" data-mode="${m.game[0]}" data-level="${m.game[1]}">${E('ear', 22)} Jouer (${Math.min(8, r.ear || 0)}/8)</button><span class="sx-note">Se valide toute seule à 8 bonnes réponses.</span></div>`;
+    if (m.jam) return `<div class="sx-tool"><select id="jam-root2" data-change="jam-root" aria-label="Tonalité de la boucle">${Core.NOTE_FR.map((n, i) => `<option value="${i}"${i === Sound.jam.root ? ' selected' : ''}>${n} mineur</option>`).join('')}</select><button type="button" class="b b-sm" data-act="jam-toggle" aria-pressed="${Sound.jamLoop.on}">Boucle d'impro <span class="key">M</span></button></div>`;
+    if (m.song) { const s = songById(m.song); return `<div class="sx-tool">${links(s)}<button type="button" class="b b-sm" data-act="song" data-id="${s.id}">Fiche du morceau</button></div>`; }
+    return '';
+  }
+  function seanceUp(ms, r, m) {
+    const s = ui.session, c = s.count, pend = s.pending, nx = ms.find((x) => !r.done.includes(x.id) && x.id !== m.id);
+    if (c) {
+      const who = c.kind === 'start' ? m.fun : c.kind === 'end' ? 'Séance terminée' : nx ? nx.fun : '';
+      const what = c.paused ? 'En attente : Espace pour reprendre' : c.kind === 'start' ? 'Le chrono démarre dans 3 s' : c.kind === 'end' ? 'Récapitulatif dans 3 s' : 'Mission suivante dans 3 s';
+      return `<b>${esc(who)}</b><div class="sx-bar"><i class="run${c.paused ? ' paused' : ''}" style="animation-duration:3s;animation-delay:-${((3000 - c.rest + (c.paused ? 0 : Date.now() - c.at)) / 1000).toFixed(2)}s"></i></div><span class="l">${what}</span>
+        <div class="a"><button type="button" class="b b-sm b-gold" data-act="seance-now">${c.kind === 'end' ? 'Voir le récap' : 'Lancer'} <span class="key">Entrée</span></button><button type="button" class="b b-sm" data-act="seance-hold">${c.paused ? 'Reprendre' : 'Attendre'} <span class="key">Espace</span></button>${pend ? '<button type="button" class="b b-sm mob" data-act="seance-undo">Annuler</button>' : ''}</div>`;
+    }
+    return `<b>${nx ? esc(nx.fun) : 'Fin de séance et booster'}</b><span>${nx ? `${esc(BR[nx.br].name)} · ${nx.min} min · 3 s pour te préparer après la validation` : 'Le boss encaisse le coup de ta séance.'}</span>`;
+  }
+  function seanceHtml() {
+    const k = today(), r = getRec(k), ms = missionsFor(k), s = ui.session, m = ms.find((x) => !r.done.includes(x.id)); /* même liste que ms : indexOf fiable */
+    if (!m) return '';
+    const i = ms.indexOf(m), b = BR[m.br], t = ui.timer && ui.timer.mid === m.id ? ui.timer : null, art = seanceArt(m), img = songImg(art, 1200), pend = s.pending && s.pending.id === m.id;
+    const g = m.exo && GUIDES[m.exo];
+    const prog = ms.map((x) => `<i class="${x.id === m.id ? 'cur' : ''}" style="--m:${x.min};--c:${BR[x.br].color};--p:${r.done.includes(x.id) || (pend && x.id === m.id) ? 1 : x.id === m.id && t ? (1 - t.left / t.total).toFixed(3) : 0}"></i>`).join('');
+    const queue = ms.map((x) => x.id === m.id ? '' : `<div class="sx-q${r.done.includes(x.id) ? ' done' : ''}"><b>${esc(x.fun)}</b><span>${esc(BR[x.br].name)} · ${r.done.includes(x.id) ? 'faite' : x.min + ' min'}</span></div>`).join('');
+    const okOff = !!s.count || m.auto;
+    return `<div class="sx${s.count ? ' counting' : ''}" id="sx" tabindex="-1">
+      <div class="sx-art">${img ? `<img src="${esc(img)}" alt="" loading="eager"${artAttrs(art)} onerror="this.remove()">` : ''}</div>${img && art.art && !st.img[art.id] ? `<p class="sx-credit">${esc(art.art[1])}</p>` : ''}
+      <header class="sx-top"><span class="t">Séance du jour</span><div class="sx-prog" aria-hidden="true">${prog}</div><span class="count">Mission ${i + 1} sur ${ms.length}</span><span class="sp"></span><button type="button" class="b b-sm" data-act="seance-min">Quitter <span class="key">Échap</span></button></header>
+      <div class="sx-stage"><section class="sx-hero${seanceLastMid && seanceLastMid !== m.id ? ' swap-in' : ''}" aria-labelledby="sx-title">
+        <h1 class="sx-h1${m.fun.length > 18 ? ' long' : ''}" id="sx-title">${esc(m.fun)}</h1>
+        <p class="sx-meta">${E(b.icon, 24)} ${esc(b.name)} · ${esc(m.sub)} · ${m.min} minutes</p>
+        <p class="sx-lede">${esc(m.text)}</p>
+        <div class="sx-clock"><span class="sx-time num" ${t && t.running ? 'data-timer' : ''}>${t ? (t.over ? '0:00' : fmt(t.left)) : fmt(m.min * 60)}</span><button type="button" class="b" data-act="seance-pause" id="sx-pause">${t && t.running ? 'Pause' : 'Reprendre'} <span class="key">Espace</span></button><span class="sx-state">${t && t.over ? 'Temps écoulé : valide quand tu as fini' : t && !t.running && !s.count ? 'En pause' : ''}</span></div>
+        ${seanceTool(m)}</section>
+        <div class="sx-dock"><button type="button" class="b b-gold b-big" data-act="seance-ok" id="sx-ok"${okOff ? ' aria-disabled="true"' : ''}>${m.auto ? 'Validation au jeu' : 'Validée'} <span class="key">Entrée</span></button>${g ? `<button type="button" class="b sx-gbtn" data-act="seance-guide" aria-expanded="${!!s.drawer}" aria-controls="sx-drawer">${E('scroll', 22)}<span class="lbl"> Comment bien faire l'exo</span> <span class="key">G</span></button>` : ''}${pend ? '<button type="button" class="b mob" data-act="seance-undo">Annuler</button>' : ''}</div></div>
+      <section class="sx-next${s.count ? ' counting' : ''}" aria-label="À suivre"><h2 aria-hidden="true">À suivre</h2>${queue}<div class="sx-up${s.count ? ' counting' : ''}">${seanceUp(ms, r, m)}</div></section>
+      ${pend && s.count ? `<div class="sx-toast" role="status"><span>Mission validée</span><button type="button" class="b b-sm" data-act="seance-undo">Annuler <span class="key">Ctrl</span><span class="key">Z</span></button></div>` : ''}
+      ${g ? `<aside class="sx-drawer${s.drawer ? ' on' : ''}" id="sx-drawer" aria-label="Comment bien faire l'exo"><div class="sx-dhead"><h2>${esc(EXOS[m.exo].t)}</h2><button type="button" class="b b-sm" data-act="seance-guide">Fermer <span class="key">G</span></button></div>${guideBody(m.exo)}</aside>` : ''}
+      <div class="sx-stamp" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    </div>`;
+  }
+  function seanceRecapHtml() {
+    const k = today(), r = getRec(k), ms = missionsFor(k), s = ui.session, b = bossState(), art = b ? b.song : songById(st.active) || songById('hysteria'), img = songImg(art, 1200);
+    const streak = Core.computeStreak(st.days, k).streak, xp = Math.max(0, st.xp - s.xp0);
+    const day = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
+    return `<div class="sx recap" id="sx" tabindex="-1">
+      <div class="sx-art">${img ? `<img src="${esc(img)}" alt=""${artAttrs(art)} onerror="this.remove()">` : ''}</div>${img && art.art && !st.img[art.id] ? `<p class="sx-credit">${esc(art.art[1])}</p>` : ''}
+      <header class="sx-top"><span class="t">Séance du jour</span><div class="sx-prog" aria-hidden="true">${ms.map((x) => `<i style="--m:${x.min};--c:${BR[x.br].color};--p:1"></i>`).join('')}</div><span class="sp"></span></header>
+      <div class="sx-stage"><section class="sx-hero" tabindex="0" aria-labelledby="sx-title">
+        <h1 class="sx-h1" id="sx-title">Séance terminée</h1><p class="sx-meta">${esc(day)} · ${ms.length} missions sur ${ms.length}</p>
+        <div class="sx-stats"><div><b class="num">${fmt(s.played)}</b><span>temps joué</span></div><div><b class="num">+${xp} XP</b><span>missions et séance du jour</span></div><div><b class="num">${streak} jour${streak > 1 ? 's' : ''}</b><span>de série</span></div></div>
+        ${b ? `<div class="sx-boss hit"><div class="bh"><b>${esc(b.song.t)} encaisse le coup</b><span>${b.first ? 'Boss final' : 'Boss'} · ${esc(b.song.a)} · ${b.hp} PV sur 100</span></div><span class="sx-hp" role="progressbar" aria-label="Points de vie du boss" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${b.hp}"><i style="width:${b.hp}%"></i></span><span class="bt">Les PV baissent quand tu franchis un palier. Prochain coup : ${esc(bossHint(b))}.</span></div>` : ''}
+      </section><div class="sx-dock">${r.chest === 'ready' ? `<button type="button" class="b b-gold b-big" data-act="seance-booster">${E('wrapped-gift', 26)}<span>Ouvrir le booster<span class="lbl-long"> du jour</span></span></button>` : ''}<button type="button" class="b${r.chest === 'ready' ? '' : ' b-gold b-big'}" data-act="seance-close">Retour à l'Accueil</button></div></div>
+      <section class="sx-next keep" aria-label="Missions faites">${ms.map((x) => `<div class="sx-q done"><b>${esc(x.fun)}</b><span>${esc(BR[x.br].name)} · ${x.min} min · faite</span></div>`).join('')}</section>
+    </div>`;
+  }
+  function renderSeance() {
+    const el = $('#seance'), on = seanceOn();
+    document.body.classList.toggle('in-seance', on);
+    if (!on) { if (!el.hidden) { el.hidden = true; el.innerHTML = ''; } seanceLastMid = null; return; }
+    const a = document.activeElement, inside = el.contains(a) && a.id !== 'sx', sel = inside ? (a.id ? '#' + CSS.escape(a.id) : a.dataset && a.dataset.act ? `[data-act="${a.dataset.act}"]` + (a.dataset.v ? `[data-v="${CSS.escape(a.dataset.v)}"]` : '') : null) : null;
+    const wasHidden = el.hidden, m = ui.session.view === 'full' ? seanceCur() : null;
+    el.innerHTML = ui.session.view === 'recap' ? seanceRecapHtml() : seanceHtml();
+    el.hidden = false; seanceLastMid = m ? m.id : null;
+    const t = sel && el.querySelector(sel);
+    if (t) t.focus({ preventScroll: true }); else if (wasHidden || !el.contains(document.activeElement)) { const sx = $('#sx'); if (sx) sx.focus({ preventScroll: true }); }
   }
 
   /* ---------- Cartes ---------- */
@@ -482,8 +630,8 @@
     if (next) {
       const br = BR[next.br], art = (next.song && songById(next.song)) || a;
       bill = wBill(art, `<h1>${esc(next.fun)}</h1><p class="w-meta"><b>Mission ${ms.indexOf(next) + 1} sur ${ms.length}</b> · ${esc(br.name)} · ${next.min} minutes · encore ${left} minutes aujourd'hui</p><p class="w-lede">${esc(next.text)}</p>
-        <div class="w-acts"><button type="button" class="w-btn w-btn-1" data-act="session">${ICON_PLAY}${doneN ? 'Reprendre la séance' : 'Jouer'}</button><button type="button" class="w-btn w-btn-2" data-act="mission-open" data-id="${next.id}">Voir la mission</button>${next.fb ? `<button type="button" class="w-btn w-btn-2" data-act="show-fb" data-fb="${esc(JSON.stringify(next.fb))}">Voir sur le manche</button>` : ''}</div>
-        <p class="w-note">Le chrono démarre et les missions s'enchaînent toutes seules.</p>`);
+        <div class="w-acts"><button type="button" class="w-btn w-btn-1" data-act="session">${ICON_PLAY}${seanceLabel(next, doneN)}</button><button type="button" class="w-btn w-btn-2" data-act="mission-open" data-id="${next.id}">Voir la mission</button>${next.fb ? `<button type="button" class="w-btn w-btn-2" data-act="show-fb" data-fb="${esc(JSON.stringify(next.fb))}">Voir sur le manche</button>` : ''}</div>
+        <p class="w-note">Plein écran : le chrono démarre après 3 secondes. Entrée valide, Espace met en pause.</p>`);
     } else {
       bill = wBill(a, `<h1>Séance terminée</h1><p class="w-meta"><b>${ms.length} missions sur ${ms.length}</b> · série de ${s.streak} jour${s.streak > 1 ? 's' : ''}</p><p class="w-lede">${r.chest === 'ready' ? 'Ton booster du jour t\'attend : ouvre-le pour gagner une carte bonus.' : 'Bravo. Reviens demain pour la séance suivante et un nouveau booster.'}</p>${r.chest === 'ready' ? `<div class="w-acts"><button type="button" class="w-btn w-btn-1" data-act="booster">${E('wrapped-gift', 22)}Ouvrir le booster</button></div>` : ''}`);
     }
@@ -599,7 +747,7 @@
         <span class="mmin">${done ? 'Fait' : m.min + ' min'}</span></button>`;
     }).join('');
     const sessBtn = allDone ? `<span class="pill good">${E('check-mark-button', 18)} Session terminée</span>`
-      : `<button class="btn big" data-act="session">${E('person-running', 26)} ${doneN ? 'Reprendre la session' : 'Lancer la session'}</button>`;
+      : `<button class="btn big" data-act="session">${E('person-running', 26)} ${seanceLabel(missionsFor(today()).find((x) => !getRec(today()).done.includes(x.id)), doneN)}</button>`;
     const chest = r.chest === 'ready' ? `<button class="booster ready" data-act="booster">${E('wrapped-gift', 40)}<span><b>Booster du jour prêt</b><span>Ouvre-le pour gagner une carte bonus</span></span></button>`
       : r.chest === 'opened' ? `<div class="booster" tabindex="-1" data-focus-after="booster">${E('wrapped-gift', 32)}<span><b>Booster ouvert</b><span>Reviens demain pour le suivant</span></span></div>`
         : `<div class="booster dim">${E('wrapped-gift', 32)}<span><b>Booster du jour</b><span>${doneN}/${ms.length} missions : termine-les toutes pour l'ouvrir</span></span></div>`;
@@ -947,17 +1095,22 @@
       'Vu depuis le chevalet, en jouant la corde de Sol : la paume droite couvre les cordes plus graves, les doigts de la main gauche effleurent les plus aiguës.');
     return panes ? `<div class="g-fig${panes.split('<figure').length > 2 ? ' two' : ''}">${panes}</div>` : '';
   }
-  function guideSheet(id, from) {
-    const g = GUIDES[id], ex = EXOS[id], b = BR.vit, col = ex ? b.color : 'var(--accent)', soft = ex ? b.soft : '#ECEAFF';
-    const li = (a) => a.map((x) => `<li>${esc(x)}</li>`).join('');
-    return `<div class="sheet msheet gsheet" style="--col:${col};--soft:${soft}">
-      <div class="mhead"><span class="mic">${E(guideIcon(id), 40)}</span><div><div class="kicker" style="color:${col}">${ex ? 'Comment bien faire l\'exo · ' + esc(ex.fun) : 'Documentation · Les bases'}</div><h2 class="h2" id="g-title">${esc(guideTitle(id))}</h2></div></div>
-      <p class="g-goal">${esc(g.goal)}</p>${guideFig(g.fig)}
+  /* Contenu d'un guide, commun à la fenêtre et au tiroir du mode séance. */
+  function guideBody(id) {
+    const g = GUIDES[id], ex = EXOS[id], li = (a) => a.map((x) => `<li>${esc(x)}</li>`).join('');
+    return `<p class="g-goal">${esc(g.goal)}</p>${guideFig(g.fig)}
       <section class="g-sec"><h3 class="h3">${ex ? 'Avant de commencer : position des mains' : 'Les repères'}</h3><ul class="g-list">${li(g.setup)}</ul></section>
       <section class="g-sec"><h3 class="h3">${ex ? 'Le mouvement, étape par étape' : 'Pour t\'entraîner'}</h3><ol class="g-steps">${li(g.steps)}</ol></section>
       <section class="g-sec"><h3 class="h3">Erreurs fréquentes</h3><ul class="g-err">${g.errors.map(([bad, fix]) => `<li><p class="g-bad"><b>À éviter :</b> ${esc(bad)}</p><p class="g-fix"><b>Correction :</b> ${esc(fix)}</p></li>`).join('')}</ul></section>
       <section class="g-sec g-okbox"><h3 class="h3">${E('check-mark-button', 22)} Tu le fais bien si…</h3><ul class="g-list">${li(g.check)}</ul></section>
-      <div class="g-video"><a class="btn ghost sm" href="${esc(ytSearch(g.yt))}" target="_blank" rel="noopener noreferrer">${E('eye', 20)} Voir des démonstrations vidéo<span class="sr-only"> sur YouTube, nouvel onglet</span></a><span class="small muted">Recherche YouTube, dans un nouvel onglet. Les vidéos ne sont pas choisies par Gratte Quest.</span></div>
+      ${g.src ? `<p class="small muted g-src">D'après <cite>${esc(BOOK.t)}</cite>, de ${esc(BOOK.a)} (${esc(g.src)}). Conseils reformulés pour Gratte Quest, sans reproduire le livre.</p>` : ''}
+      <div class="g-video"><a class="btn ghost sm" href="${esc(ytSearch(g.yt))}" target="_blank" rel="noopener noreferrer">${E('eye', 20)} Voir des démonstrations vidéo<span class="sr-only"> sur YouTube, nouvel onglet</span></a><span class="small muted">Recherche YouTube, dans un nouvel onglet. Les vidéos ne sont pas choisies par Gratte Quest.</span></div>`;
+  }
+  function guideSheet(id, from) {
+    const g = GUIDES[id], ex = EXOS[id], b = BR.vit, col = ex ? b.color : 'var(--accent)', soft = ex ? b.soft : '#ECEAFF';
+    return `<div class="sheet msheet gsheet" style="--col:${col};--soft:${soft}">
+      <div class="mhead"><span class="mic">${E(guideIcon(id), 40)}</span><div><div class="kicker" style="color:${col}">${ex ? 'Comment bien faire l\'exo · ' + esc(ex.fun) : g.kind === 'book' ? 'Documentation · D\'après le livre' : 'Documentation · Les bases'}</div><h2 class="h2" id="g-title">${esc(guideTitle(id))}</h2></div></div>
+      ${guideBody(id)}
       <div class="row between foot">${from ? `<button class="btn" data-act="mission-open" data-id="${esc(from)}" data-back="1">Retour à la mission</button>` : '<span></span>'}<button class="link" data-act="close">Fermer</button></div></div>`;
   }
   /* Exercice de vitesse de la séance du jour (pour le mettre en avant dans la Documentation). */
@@ -968,13 +1121,14 @@
     const tile = (id) => `<button type="button" class="gtile${id === te ? ' today' : ''}" data-act="guide" data-id="${id}">${E(guideIcon(id), 40)}<span class="gt-t"><b>${esc(EXOS[id] ? EXOS[id].fun : guideTitle(id))}</b>${EXOS[id] ? `<span class="gt-s">${esc(EXOS[id].t)}</span>` : ''}<span class="gt-p">${esc(GUIDES[id].goal)}</span></span>${id === te ? '<span class="pill">Exercice du jour</span>' : ''}</button>`;
     return `<section class="pagehead"><div><div class="kicker muted">Apprendre</div><h1 class="h1">Documentation</h1><p class="muted">Avant de lancer un exercice : la position des mains, le mouvement étape par étape et les erreurs qui bloquent la progression.</p></div></section>
       <section class="panel"><h2 class="h3">${E('high-voltage', 26)} Exercices de vitesse</h2><div class="gtiles">${EXO_IDS.map(tile).join('')}</div></section>
-      <section class="panel"><h2 class="h3">${E('scroll', 26)} Les bases</h2><div class="gtiles">${GUIDE_BASES.map(tile).join('')}</div></section>`;
+      <section class="panel"><h2 class="h3">${E('scroll', 26)} Les bases</h2><div class="gtiles">${GUIDE_BASES.map(tile).join('')}</div></section>
+      <section class="panel"><h2 class="h3">${E('musical-score', 26)} D'après le livre</h2><p class="small muted">Les conseils de <cite>${esc(BOOK.t)}</cite> (${esc(BOOK.a)}), reformulés avec nos mots. Pour tout le détail, le livre reste la référence.</p><div class="gtiles">${GUIDE_BOOK.map(tile).join('')}</div></section>`;
   }
   function wallDoc() {
     const te = todayExo(), art = songById('johnny');
-    const tile = (id) => wTile({ act: `data-act="guide" data-id="${id}"`, icon: guideIcon(id), t: EXOS[id] ? EXOS[id].fun : guideTitle(id), s: EXOS[id] ? EXOS[id].t + (id === te ? ' · exercice du jour' : '') : 'Les bases', p: GUIDES[id].goal, cls: id === te ? 'is-focus' : '' });
+    const tile = (id) => wTile({ act: `data-act="guide" data-id="${id}"`, icon: guideIcon(id), t: EXOS[id] ? EXOS[id].fun : guideTitle(id), s: EXOS[id] ? EXOS[id].t + (id === te ? ' · exercice du jour' : '') : GUIDES[id].kind === 'book' ? 'D\'après le livre' : 'Les bases', p: GUIDES[id].goal, cls: id === te ? 'is-focus' : '' });
     return wBill(art, `<h1>Documentation</h1><p class="w-lede">Avant de lancer un exercice : la position des mains, le mouvement étape par étape et les erreurs qui bloquent la progression.</p>${te ? `<div class="w-acts"><button type="button" class="w-btn w-btn-1" data-act="guide" data-id="${te}">${E(guideIcon(te), 22)}Guide de l'exercice du jour</button></div><p class="w-note">${esc(EXOS[te].fun)} · ${esc(EXOS[te].t)}</p>` : ''}`)
-      + `<div class="w-wall">${wRow('Exercices de vitesse', `${EXO_IDS.length} guides`, EXO_IDS.map(tile))}${wRow('Les bases', '', GUIDE_BASES.map(tile))}</div>`;
+      + `<div class="w-wall">${wRow('Exercices de vitesse', `${EXO_IDS.length} guides`, EXO_IDS.map(tile))}${wRow('Les bases', '', GUIDE_BASES.map(tile))}${wRow('D\'après le livre', BOOK.t, GUIDE_BOOK.map(tile))}</div>`;
   }
 
   /* ---------- Modales ---------- */
@@ -1139,7 +1293,8 @@
   /* ---------- Rendu global ---------- */
   function renderView() {
     /* Mode sombre : Accueil, Collection, Paliers et Trophées en « Mur de cartes » ; Progrès bascule lui-même ; Manche et Oreille gardent leur mise en page. */
-    const wall = isDark() ? { accueil: wallAccueil, paliers: wallPaliers, collection: wallCollection, trophees: wallTrophees, doc: wallDoc } : {};
+    /* Sombre : Mur sur Accueil, Collection, Paliers, Trophées et Docs. Clair : Mur sur l'Accueil seulement (choix du 22 novembre 2026). */
+    const wall = isDark() ? { accueil: wallAccueil, paliers: wallPaliers, collection: wallCollection, trophees: wallTrophees, doc: wallDoc } : { accueil: wallAccueil };
     const v = wall[ui.tab] || { accueil: viewAccueil, paliers: viewPaliers, collection: viewCollection, trophees: viewTrophees, doc: viewDoc, progres: viewProgres, manche: viewManche, oreille: viewOreille }[ui.tab] || viewAccueil;
     const el = $('#view'), a = document.activeElement;
     /* Après un rafraîchissement, le focus clavier revient sur la même commande (menu, puce, bouton). */
@@ -1165,7 +1320,7 @@
       w.scrollLeft = Math.max(0, (hi - lo < w.clientWidth - 60 ? (lo + hi) / 2 - w.clientWidth / 2 : lo - 30));
     });
   }
-  function render() { renderHeader(); renderSessionBar(); renderView(); renderDock(); renderModal(); renderLogin(); scrollFretboards(); }
+  function render() { renderHeader(); renderSessionBar(); renderView(); renderDock(); renderModal(); renderSeance(); renderLogin(); scrollFretboards(); }
 
   /* ---------- Micro ---------- */
   const mic = { stream: null, analyser: null, buf: null, timer: null, tracker: new Core.NoteTracker(3, 4) };
@@ -1261,7 +1416,16 @@
     async logout() { await Cloud.signOut(); ui.sync = 'local'; render(); toast('Déconnecté. Ta progression reste sur cet appareil.', 'link'); },
     dock() { ui.dock = !ui.dock; render(); },
     session() { startSession(); },
-    'session-stop'() { ui.session = null; render(); },
+    'session-stop'() { seanceStop(); },
+    'seance-ok'() { seanceValidate(); },
+    'seance-pause'() { const s = ui.session, m = seanceCur(); if (!s || !m) return; if (s.count) { seanceHold(); return; } if (ui.timer && ui.timer.mid === m.id && ui.timer.running) { pauseTimer(); seanceToolsOff(); render(); } else { seanceStartTimer(m); render(); } },
+    'seance-now'() { seanceCountDone(); },
+    'seance-hold'() { seanceHold(); },
+    'seance-undo'() { seanceUndo(); },
+    'seance-min'() { seanceMin(); },
+    'seance-guide'() { if (!ui.session) return; ui.session.drawer = !ui.session.drawer; render(); const d = $('#sx-drawer'); if (ui.session.drawer && d) d.querySelector('button').focus({ preventScroll: true }); else { const sx = $('#sx'); if (sx) sx.focus({ preventScroll: true }); } }, /* guide fermé : le focus revient sur l'écran pour qu'Entrée valide */
+    'seance-booster'() { ui.session = null; openBooster(); render(); },
+    'seance-close'() { ui.session = null; go('accueil'); },
     'mission-open'(d) { ui.modal = { type: 'mission', id: d.id, focusSel: d.back ? '[data-act="guide"]' : null }; render(); },
     guide(d) { ui.modal = { type: 'guide', id: d.id, from: d.from || null }; render(); },
     mission(d) { completeMission(d.id); },
@@ -1303,7 +1467,7 @@
       else if (d.q === 'oreille') go('oreille');
       else if (d.q === 'tuner' || d.q === 'check') { if (d.q === 'check') ui.fb.pos = [Math.min(...ui.fb.pos)]; go('manche'); if (MIC_OK && !ui.mic.on) micStart(ui.mic.device); setTimeout(() => { const p = $('#micpanel'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60); }
     },
-    'show-fb'(d) { const [scale, root, pos] = JSON.parse(d.fb); ui.fb.scale = scale; ui.fb.root = root; ui.fb.pos = pos.slice(); ui.check = null; ui.modal = null; go('manche'); },
+    'show-fb'(d) { if (seanceOn()) seanceMin(); const [scale, root, pos] = JSON.parse(d.fb); ui.fb.scale = scale; ui.fb.root = root; ui.fb.pos = pos.slice(); ui.check = null; ui.modal = null; go('manche'); },
     'fb-labels'(d) { ui.fb.labels = d.v; render(); },
     'fb-all'() { ui.fb.pos = [0, 1, 2, 3, 4]; ui.check = null; render(); },
     'fb-pos'(d) { const p = Number(d.p), f = ui.fb; if (f.pos.length === 5) f.pos = [p]; else if (f.pos.includes(p)) { f.pos = f.pos.filter((x) => x !== p); if (!f.pos.length) f.pos = [0, 1, 2, 3, 4]; } else f.pos = f.pos.concat(p).sort(); ui.check = null; render(); },
@@ -1314,7 +1478,7 @@
       if (!seq.length) { toast('Cette position ne tient pas sur le manche dans cette tonalité', 'locked'); return; }
       Sound.playSeq(seq, 0.3, 0.7);
     },
-    'go-ear'(d) { ui.ear.mode = d.mode; ui.ear.level = Number(d.level); ui.ear.q = null; ui.ear.result = null; ui.modal = null; go('oreille'); },
+    'go-ear'(d) { if (seanceOn()) seanceMin(); ui.ear.mode = d.mode; ui.ear.level = Number(d.level); ui.ear.q = null; ui.ear.result = null; ui.modal = null; go('oreille'); },
     'ear-mode'(d) { ui.ear.mode = d.v; ui.ear.level = 1; ui.ear.q = null; ui.ear.streak = 0; render(); },
     'ear-level'(d) { ui.ear.level = Number(d.v); ui.ear.q = null; ui.ear.streak = 0; render(); },
     'ear-new'() { newQuestion(); render(); playQuestion(); },
@@ -1349,10 +1513,33 @@
     const el = t.closest('[data-act]');
     if (!el) { if (t.id === 'modal') { ui.modal = null; render(); } return; }
     if (!ui.modal) modalOpener = el;
-    const fn = ACT[el.dataset.act];
+    const fn = ACT[el.dataset.act], inSx = seanceOn() && $('#seance').contains(el);
     if (fn) { if (el.dataset.act !== 'account') Sound.ac(); fn(el.dataset, el); }
+    /* Après un clic souris dans la séance, le focus revient sur l'écran : Espace et Entrée restent des raccourcis. */
+    if (inSx && ev.detail > 0 && !ui.modal && seanceOn() && el.dataset.act !== 'seance-guide' && !el.matches('input, select')) { const sx = $('#sx'); if (sx) sx.focus({ preventScroll: true }); }
   });
   document.addEventListener('keydown', (ev) => {
+    /* Mode séance : Échap, Tab gardé dans l'écran, Espace, Entrée, G, M, Ctrl+Z (pas pendant la saisie d'un tempo). */
+    if (seanceOn() && !ui.modal && !ui.login.show) {
+      const s = ui.session, onCtl = ev.target.closest && ev.target.closest('button, a, input, select, textarea'), typing = ev.target.matches && ev.target.matches('input, select, textarea');
+      if (ev.key === 'Escape') { ev.preventDefault(); if (s.drawer) { s.drawer = false; render(); const sx = $('#sx'); if (sx) sx.focus({ preventScroll: true }); } else if (s.view === 'recap') { ui.session = null; go('accueil'); } else seanceMin(); return; }
+      if (ev.key === 'Tab') {
+        const box = $('#seance'), f = [...box.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter((x) => !x.disabled && x.getClientRects().length && getComputedStyle(x).visibility !== 'hidden');
+        if (!f.length) return;
+        const a = document.activeElement, first = f[0], last = f[f.length - 1];
+        if (!box.contains(a) || a.id === 'sx') { ev.preventDefault(); (ev.shiftKey ? last : first).focus(); } else if (ev.shiftKey && a === first) { ev.preventDefault(); last.focus(); } else if (!ev.shiftKey && a === last) { ev.preventDefault(); first.focus(); }
+        return;
+      }
+      if (s.view !== 'full' || typing) return;
+      if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); seanceUndo(); return; }
+      if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+      const m = seanceCur();
+      if (ev.key === ' ' && !onCtl) { ev.preventDefault(); ACT['seance-pause'](); return; }
+      if (ev.key === 'Enter' && !onCtl) { ev.preventDefault(); if (s.count) seanceCountDone(); else seanceValidate(); return; }
+      if ((ev.key === 'g' || ev.key === 'G') && m && m.exo && GUIDES[m.exo]) { ACT['seance-guide'](); return; }
+      if ((ev.key === 'm' || ev.key === 'M') && m) { if (m.exo) ACT['metro-toggle'](); else if (m.jam) ACT['jam-toggle'](); return; }
+      return;
+    }
     if (ev.key === 'Escape' && ui.modal) { ui.modal = null; render(); return; }
     if (ev.key === 'Tab' && ui.modal) { /* le focus reste dans la fenêtre */
       const box = $('#modal'), f = [...box.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter((x) => !x.disabled && x.getClientRects().length && getComputedStyle(x).visibility !== 'hidden');
@@ -1403,7 +1590,9 @@
     c.style.setProperty('--ry', (x * 14).toFixed(1) + 'deg'); c.style.setProperty('--rx', (-y * 14).toFixed(1) + 'deg'); c.style.setProperty('--sx', (120 - (x + 0.5) * 240).toFixed(0) + '%');
   });
   document.addEventListener('pointerout', (ev) => { const c = ev.target.closest && ev.target.closest('.card'); if (c && !c.contains(ev.relatedTarget)) { c.style.removeProperty('--rx'); c.style.removeProperty('--ry'); c.style.removeProperty('--sx'); } });
-  Sound.metro.onBeat = (b) => { ui.beat = b; const el = $('#beats'); if (el) [...el.children].forEach((c, i) => c.classList.toggle('on', i === b)); };
+  Sound.metro.onBeat = (b) => { ui.beat = b; document.querySelectorAll('#beats, #sx-beats').forEach((el) => [...el.children].forEach((c, i) => c.classList.toggle('on', i === b))); };
+  /* Page fermée pendant le compte à rebours : la mission validée est enregistrée quand même. */
+  window.addEventListener('pagehide', () => { if (ui.session && ui.session.pending) { if (ui.session.count) clearTimeout(ui.session.count.t); ui.session.count = null; seanceCommit(); save(); } });
   function readHash() { const h = location.hash.replace('#', ''); ui.tab = VIEWS.includes(h) ? h : 'accueil'; ui.armed = null; ui.flipped = null; }
   window.addEventListener('hashchange', () => { const prev = ui.tab; readHash(); if (ui.tab !== prev) { render(); window.scrollTo(0, 0); } });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { pullIfNewer(); if (lastDay !== today()) { lastDay = today(); render(); } } });

@@ -1,0 +1,892 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-22T18:28:55.431Z",
+  "title": "Design System: Gratte Quest",
+  "extensions": {
+    "colorMeta": {
+      "gold": {
+        "role": "primary",
+        "displayName": "Or de rampe",
+        "canonical": "#FFD166",
+        "oklch": "oklch(88.0% 0.135 86.1)",
+        "tonalRamp": [
+          "#100A01",
+          "#2F2200",
+          "#513C01",
+          "#765902",
+          "#A07A07",
+          "#C29C40",
+          "#DFC489",
+          "#F7EEDA"
+        ]
+      },
+      "on-gold": {
+        "role": "primary",
+        "displayName": "Encre aubergine (sur or)",
+        "canonical": "#1B1733",
+        "oklch": "oklch(22.6% 0.053 287.9)",
+        "tonalRamp": [
+          "#0B0A10",
+          "#232232",
+          "#3E3C56",
+          "#5C597A",
+          "#7E7C9E",
+          "#9F9DBE",
+          "#C6C4DC",
+          "#EEEDF6"
+        ]
+      },
+      "day-focus": {
+        "role": "secondary",
+        "displayName": "Violet de focus (jour)",
+        "canonical": "#4B3BEF",
+        "oklch": "oklch(50.3% 0.253 276.2)",
+        "tonalRamp": [
+          "#070721",
+          "#190A69",
+          "#2F15AC",
+          "#4634E4",
+          "#6368FE",
+          "#8997FE",
+          "#B8C3FE",
+          "#EAEEFF"
+        ]
+      },
+      "day-cue": {
+        "role": "secondary",
+        "displayName": "Or des repères (jour)",
+        "canonical": "#8F6500",
+        "usage": "Traits d'état du jour (mission au point, carte Mission suivante, barre du compte à rebours, temps du métronome) : 5,2:1 sur le blanc, 4,7:1 sur day-wall. La nuit, gold."
+      },
+      "day-ok": {
+        "role": "secondary",
+        "displayName": "Vert sapin (jour)",
+        "canonical": "#177750",
+        "oklch": "oklch(50.6% 0.106 160.4)",
+        "tonalRamp": [
+          "#040E08",
+          "#012C1A",
+          "#014D30",
+          "#0E6F49",
+          "#3D936B",
+          "#6BB48E",
+          "#A3D5B9",
+          "#E2F3E9"
+        ]
+      },
+      "day-bad": {
+        "role": "secondary",
+        "displayName": "Rouge grenat (jour)",
+        "canonical": "#B3203A",
+        "oklch": "oklch(50.1% 0.180 18.1)",
+        "tonalRamp": [
+          "#180506",
+          "#4A0010",
+          "#7B0120",
+          "#AA1B36",
+          "#D54756",
+          "#F4737C",
+          "#FFAFB0",
+          "#FEE9E8"
+        ]
+      },
+      "day-root": {
+        "role": "secondary",
+        "displayName": "Orange vermillon (jour)",
+        "canonical": "#E8432A",
+        "oklch": "oklch(62.1% 0.206 31.6)",
+        "tonalRamp": [
+          "#1A0402",
+          "#490500",
+          "#790F01",
+          "#AD1B02",
+          "#DF3D24",
+          "#FD6E56",
+          "#FEB1A2",
+          "#FFE9E4"
+        ]
+      },
+      "night-ok": {
+        "role": "secondary",
+        "displayName": "Vert menthe (nuit)",
+        "canonical": "#3DDC97",
+        "oklch": "oklch(79.7% 0.164 159.7)",
+        "tonalRamp": [
+          "#000F06",
+          "#012C1A",
+          "#014D30",
+          "#056F48",
+          "#049863",
+          "#38BC82",
+          "#8BDCB1",
+          "#DCF6E7"
+        ]
+      },
+      "night-bad": {
+        "role": "secondary",
+        "displayName": "Corail clair (nuit)",
+        "canonical": "#FF8A8A",
+        "oklch": "oklch(76.1% 0.142 20.9)",
+        "tonalRamp": [
+          "#160606",
+          "#440D11",
+          "#721C23",
+          "#9D343A",
+          "#C6595B",
+          "#E58080",
+          "#FBB1AF",
+          "#FEE9E8"
+        ]
+      },
+      "night-root": {
+        "role": "secondary",
+        "displayName": "Orange tonique (nuit)",
+        "canonical": "#FF6B4F",
+        "oklch": "oklch(70.7% 0.186 32.6)",
+        "tonalRamp": [
+          "#190503",
+          "#480700",
+          "#771401",
+          "#AB2002",
+          "#D8482E",
+          "#F6755C",
+          "#FEB1A0",
+          "#FFE9E4"
+        ]
+      },
+      "rarity-common": {
+        "role": "tertiary",
+        "displayName": "Cadre commune",
+        "canonical": "#8E96A8",
+        "oklch": "oklch(67.3% 0.028 266.5)",
+        "tonalRamp": [
+          "#0A0B0E",
+          "#20242C",
+          "#3A404D",
+          "#565E6E",
+          "#798091",
+          "#9AA1B1",
+          "#C2C7D3",
+          "#EDEEF3"
+        ]
+      },
+      "rarity-rare": {
+        "role": "tertiary",
+        "displayName": "Cadre rare",
+        "canonical": "#4D8DFF",
+        "oklch": "oklch(65.8% 0.182 261.0)",
+        "tonalRamp": [
+          "#030B1B",
+          "#021F56",
+          "#04378E",
+          "#1955BF",
+          "#3D7BE9",
+          "#6AA0FF",
+          "#A9C8FE",
+          "#E6EFFE"
+        ]
+      },
+      "rarity-epic": {
+        "role": "tertiary",
+        "displayName": "Cadre épique",
+        "canonical": "#A46BFF",
+        "oklch": "oklch(65.8% 0.212 298.1)",
+        "tonalRamp": [
+          "#0E061B",
+          "#2E0A56",
+          "#4F168E",
+          "#7031BF",
+          "#9259EA",
+          "#B085FF",
+          "#CFBAFF",
+          "#F0EBFE"
+        ]
+      },
+      "rarity-legendary": {
+        "role": "tertiary",
+        "displayName": "Cadre légendaire",
+        "canonical": "#FFC93D",
+        "oklch": "oklch(86.1% 0.159 86.3)",
+        "tonalRamp": [
+          "#110A00",
+          "#2F2200",
+          "#513C01",
+          "#765904",
+          "#A07A00",
+          "#C79A1C",
+          "#E3C37C",
+          "#F8EED6"
+        ]
+      },
+      "rarity-mythic": {
+        "role": "tertiary",
+        "displayName": "Cadre mythique",
+        "canonical": "#FF4D8D",
+        "oklch": "oklch(68.6% 0.218 3.1)",
+        "tonalRamp": [
+          "#1A0309",
+          "#48011F",
+          "#780038",
+          "#AC0253",
+          "#DE2D74",
+          "#FD6496",
+          "#FFACC1",
+          "#FFE8ED"
+        ]
+      },
+      "rarity-locked": {
+        "role": "tertiary",
+        "displayName": "Cadre non acquise",
+        "canonical": "#6E6A83",
+        "oklch": "oklch(53.7% 0.039 292.4)",
+        "tonalRamp": [
+          "#0B0B0E",
+          "#24222E",
+          "#403D50",
+          "#5E5A72",
+          "#807C96",
+          "#A29EB5",
+          "#C7C5D6",
+          "#EEEEF4"
+        ]
+      },
+      "branch-gammes": {
+        "role": "tertiary",
+        "displayName": "Branche Gammes",
+        "canonical": "#0B7769",
+        "oklch": "oklch(51.1% 0.090 180.6)",
+        "tonalRamp": [
+          "#030E0B",
+          "#002B25",
+          "#034B41",
+          "#046D60",
+          "#369283",
+          "#66B2A4",
+          "#A0D4C9",
+          "#E2F3EF"
+        ]
+      },
+      "branch-vitesse": {
+        "role": "tertiary",
+        "displayName": "Branche Vitesse",
+        "canonical": "#C22B26",
+        "oklch": "oklch(53.3% 0.188 27.7)",
+        "tonalRamp": [
+          "#190403",
+          "#4B0002",
+          "#7C0106",
+          "#AE1717",
+          "#D9453C",
+          "#F77366",
+          "#FEB0A6",
+          "#FEE9E6"
+        ]
+      },
+      "branch-impro": {
+        "role": "tertiary",
+        "displayName": "Branche Impro",
+        "canonical": "#926019",
+        "oklch": "oklch(53.1% 0.105 70.3)",
+        "tonalRamp": [
+          "#110903",
+          "#351E01",
+          "#5A3700",
+          "#815204",
+          "#A77433",
+          "#C69860",
+          "#E3C19A",
+          "#F8ECDF"
+        ]
+      },
+      "branch-oreille": {
+        "role": "tertiary",
+        "displayName": "Branche Oreille",
+        "canonical": "#1F60D1",
+        "oklch": "oklch(51.8% 0.187 260.8)",
+        "tonalRamp": [
+          "#030B1B",
+          "#011E57",
+          "#013790",
+          "#1555C2",
+          "#3A7AEC",
+          "#69A0FF",
+          "#A8C8FF",
+          "#E6EFFF"
+        ]
+      },
+      "branch-riffs": {
+        "role": "tertiary",
+        "displayName": "Branche Riffs et solos",
+        "canonical": "#A93392",
+        "oklch": "oklch(52.9% 0.185 336.7)",
+        "tonalRamp": [
+          "#150511",
+          "#410437",
+          "#6D095D",
+          "#972482",
+          "#C04BA8",
+          "#DF76C6",
+          "#F7ABE3",
+          "#FFE6F7"
+        ]
+      },
+      "night-wall": {
+        "role": "neutral",
+        "displayName": "Salle obscure (mur de nuit)",
+        "canonical": "#0B0B12",
+        "oklch": "oklch(15.3% 0.015 284.5)",
+        "tonalRamp": [
+          "#0B0B0C",
+          "#232328",
+          "#3F3F46",
+          "#5C5D66",
+          "#7F7F89",
+          "#A0A1AA",
+          "#C6C7CD",
+          "#EEEEF0"
+        ]
+      },
+      "night-row": {
+        "role": "neutral",
+        "displayName": "Rangée de nuit",
+        "canonical": "#12121C",
+        "oklch": "oklch(18.7% 0.020 284.3)",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#23232A",
+          "#3E3F49",
+          "#5C5C69",
+          "#7E7F8C",
+          "#A0A0AC",
+          "#C6C6CF",
+          "#EEEEF1"
+        ]
+      },
+      "night-tile": {
+        "role": "neutral",
+        "displayName": "Tuile ardoise",
+        "canonical": "#1A1A26",
+        "oklch": "oklch(22.4% 0.023 284.4)",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#23232B",
+          "#3E3E4A",
+          "#5C5C6A",
+          "#7E7F8E",
+          "#A0A0AE",
+          "#C6C6D0",
+          "#EEEEF2"
+        ]
+      },
+      "night-tile2": {
+        "role": "neutral",
+        "displayName": "Ardoise relevée",
+        "canonical": "#232333",
+        "oklch": "oklch(26.4% 0.030 284.2)",
+        "tonalRamp": [
+          "#0B0B0E",
+          "#23232C",
+          "#3E3E4D",
+          "#5B5C6E",
+          "#7E7E92",
+          "#9FA0B2",
+          "#C5C6D3",
+          "#EEEEF3"
+        ]
+      },
+      "night-line": {
+        "role": "neutral",
+        "displayName": "Filet de nuit",
+        "canonical": "#2A2A3A",
+        "oklch": "oklch(29.2% 0.029 284.5)",
+        "tonalRamp": [
+          "#0B0B0E",
+          "#23232C",
+          "#3E3E4C",
+          "#5B5C6D",
+          "#7E7E91",
+          "#9FA0B1",
+          "#C6C6D3",
+          "#EEEEF2"
+        ]
+      },
+      "night-ink": {
+        "role": "neutral",
+        "displayName": "Papier crème (encre de nuit)",
+        "canonical": "#EDEAE4",
+        "oklch": "oklch(93.8% 0.009 84.6)",
+        "tonalRamp": [
+          "#0B0B0A",
+          "#252421",
+          "#413F3B",
+          "#605D58",
+          "#82807B",
+          "#A4A19C",
+          "#C9C7C3",
+          "#EFEEED"
+        ]
+      },
+      "night-muted": {
+        "role": "neutral",
+        "displayName": "Gris lavande",
+        "canonical": "#ABA8BA",
+        "oklch": "oklch(74.0% 0.026 293.4)",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#24232B",
+          "#403E4A",
+          "#5E5B6B",
+          "#807E8E",
+          "#A29FAF",
+          "#C7C6D1",
+          "#EEEEF2"
+        ]
+      },
+      "day-wall": {
+        "role": "neutral",
+        "displayName": "Papier lavande (mur de jour)",
+        "canonical": "#F3F2F8",
+        "oklch": "oklch(96.4% 0.008 293.9)",
+        "tonalRamp": [
+          "#0B0B0C",
+          "#242426",
+          "#403F43",
+          "#5E5D62",
+          "#807F85",
+          "#A1A1A5",
+          "#C7C7CA",
+          "#EEEEEF"
+        ]
+      },
+      "day-row": {
+        "role": "neutral",
+        "displayName": "Blanc de toile (rangée)",
+        "canonical": "#FFFFFF",
+        "oklch": "oklch(100.0% 0.000 0)",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#242424",
+          "#404040",
+          "#5D5D5D",
+          "#808080",
+          "#A1A1A1",
+          "#C7C7C7",
+          "#EEEEEE"
+        ]
+      },
+      "day-tile": {
+        "role": "neutral",
+        "displayName": "Blanc de toile (tuile)",
+        "canonical": "#FFFFFF",
+        "oklch": "oklch(100.0% 0.000 0)",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#242424",
+          "#404040",
+          "#5D5D5D",
+          "#808080",
+          "#A1A1A1",
+          "#C7C7C7",
+          "#EEEEEE"
+        ]
+      },
+      "day-tile2": {
+        "role": "neutral",
+        "displayName": "Lavande enfoncée",
+        "canonical": "#ECEAF4",
+        "oklch": "oklch(94.1% 0.014 295.3)",
+        "tonalRamp": [
+          "#0B0B0C",
+          "#242328",
+          "#403F45",
+          "#5E5C64",
+          "#817F88",
+          "#A2A0A8",
+          "#C7C6CC",
+          "#EEEEF0"
+        ]
+      },
+      "day-line": {
+        "role": "neutral",
+        "displayName": "Filet de jour",
+        "canonical": "#DEDBEA",
+        "oklch": "oklch(89.8% 0.021 295.2)",
+        "tonalRamp": [
+          "#0B0B0D",
+          "#242329",
+          "#403E48",
+          "#5E5C68",
+          "#817E8B",
+          "#A29FAC",
+          "#C8C6CF",
+          "#EEEEF1"
+        ]
+      },
+      "day-ink": {
+        "role": "neutral",
+        "displayName": "Encre aubergine (encre de jour)",
+        "canonical": "#1B1733",
+        "oklch": "oklch(22.6% 0.053 287.9)",
+        "tonalRamp": [
+          "#0B0A10",
+          "#232232",
+          "#3E3C56",
+          "#5C597A",
+          "#7E7C9E",
+          "#9F9DBE",
+          "#C6C4DC",
+          "#EEEDF6"
+        ]
+      },
+      "day-muted": {
+        "role": "neutral",
+        "displayName": "Gris ardoise violet",
+        "canonical": "#5A5674",
+        "oklch": "oklch(46.9% 0.048 290.5)",
+        "tonalRamp": [
+          "#0B0A0F",
+          "#242231",
+          "#3F3C54",
+          "#5D5977",
+          "#807C9B",
+          "#A19DBB",
+          "#C7C4DA",
+          "#EEEDF5"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Titre de la vitrine d’accueil."
+      },
+      "display-stage": {
+        "displayName": "Display de scène",
+        "purpose": "Titre de mission en plein écran et « Séance terminée » ; plus de 18 caractères : clamp(2.2rem, 3.6vw, 3.4rem)."
+      },
+      "numeral": {
+        "displayName": "Chrono",
+        "purpose": "Le chrono de la séance ; le tempo du métronome reprend la voix à 2.6rem."
+      },
+      "stat": {
+        "displayName": "Chiffre de bilan",
+        "purpose": "Chiffres du récapitulatif de fin (temps joué, XP, série)."
+      },
+      "title": {
+        "displayName": "Titre de rangée",
+        "purpose": "Titres de rangée, suivis d’un compteur en Label."
+      },
+      "tile-title": {
+        "displayName": "Titre de tuile",
+        "purpose": "Titres de tuiles ; 1.02rem dans « À suivre », 1.35rem dans la carte « Mission suivante »."
+      },
+      "action": {
+        "displayName": "Action",
+        "purpose": "Texte du grand bouton or."
+      },
+      "lede": {
+        "displayName": "Consigne",
+        "purpose": "Consigne de la mission, 34ch au plus ; 1.15rem sur 40ch dans la vitrine d’accueil."
+      },
+      "body": {
+        "displayName": "Texte",
+        "purpose": "Texte courant, tiroir du guide."
+      },
+      "label": {
+        "displayName": "Repère",
+        "purpose": "Ligne de repères sous un titre, sous-titres de tuiles, état du chrono ; toujours en muted."
+      },
+      "button": {
+        "displayName": "Bouton",
+        "purpose": "Boutons secondaires (onglets en 600)."
+      },
+      "keycap": {
+        "displayName": "Touche",
+        "purpose": "Touches clavier dans les boutons de la séance."
+      }
+    },
+    "shadows": [
+      {
+        "name": "portee-jour",
+        "value": "0 10px 30px rgba(27, 23, 51, .12)",
+        "purpose": "Vitrine, tiroir du guide et toast en lumière de jour (--shadow)."
+      },
+      {
+        "name": "portee-nuit",
+        "value": "0 12px 34px rgba(0, 0, 0, .5)",
+        "purpose": "Vitrine, tiroir du guide et toast la nuit (--shadow)."
+      },
+      {
+        "name": "tuile-au-point",
+        "value": "0 16px 36px rgba(0, 0, 0, .55)",
+        "purpose": "Tuile survolée ou au point dans un rail du Mur en ligne, avec scale(1.04)."
+      },
+      {
+        "name": "anneau-or",
+        "value": "0 0 0 1px #FFD166",
+        "purpose": "Tuile de la mission au point, en plus de la bordure or de 2px."
+      },
+      {
+        "name": "verre-outil",
+        "value": "background: rgba(var(--fade), .72); backdrop-filter: blur(6px)",
+        "purpose": "Plateau d’outil posé sur l’œuvre pendant la séance."
+      },
+      {
+        "name": "voile-oeuvre",
+        "value": "linear-gradient(90deg, rgb(var(--fade)) 36%, rgba(var(--fade), .86) 50%, rgba(var(--fade), 0) 82%)",
+        "purpose": "Voile de la vitrine d’accueil ; en séance : 0 %, .88 à 22 %, .22 à 55 %, 0, plus un voile de bas en haut sur 36 %."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-expo-out",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Courbe du système (maquette, --ease) pour toutes les transitions."
+      },
+      {
+        "name": "ease-out-mur-en-ligne",
+        "value": "cubic-bezier(.2, .8, .3, 1)",
+        "purpose": "Courbe encore utilisée par le Mur en ligne (--ease-out) ; à aligner."
+      },
+      {
+        "name": "press",
+        "value": "140ms transform scale(.97)",
+        "purpose": "Pression d’un bouton."
+      },
+      {
+        "name": "tile-lift",
+        "value": "200ms transform translateY(-3px)",
+        "purpose": "Survol d’une tuile de mission (maquette)."
+      },
+      {
+        "name": "tile-focus-grow",
+        "value": "220ms transform scale(1.04)",
+        "purpose": "Tuile au point du Mur en ligne ; voisines à .7, autres rangées à .55 (250ms)."
+      },
+      {
+        "name": "mission-swap",
+        "value": "out 260ms translateX(-28px) + fade; in 500ms from translateX(36px)",
+        "purpose": "Passage à la mission suivante."
+      },
+      {
+        "name": "drawer",
+        "value": "380ms translateX(104%) -> none",
+        "purpose": "Tiroir du guide depuis la droite."
+      },
+      {
+        "name": "toast",
+        "value": "200ms opacity, 300ms translateY(10px)",
+        "purpose": "Apparition du toast d’annulation (reste 6 s)."
+      },
+      {
+        "name": "progress-fill",
+        "value": "600ms transform scaleX",
+        "purpose": "Segments de séance."
+      },
+      {
+        "name": "art-crossfade",
+        "value": "500ms opacity",
+        "purpose": "Changement d’œuvre ; accueil vers séance par view-transition-name art et title."
+      },
+      {
+        "name": "stamp",
+        "value": "900ms keyframes scale .6 -> 1.06 -> 1, puis fondu",
+        "purpose": "Tampon ✓ de validation."
+      },
+      {
+        "name": "countdown",
+        "value": "3s linear scaleX(0 -> 1)",
+        "purpose": "Carte « Mission suivante » ; mise en pause avec Espace."
+      },
+      {
+        "name": "boss-hit",
+        "value": "600ms secousse translateX ±10px",
+        "purpose": "Le boss encaisse le coup au récapitulatif."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation et transition à .01ms",
+        "purpose": "prefers-reduced-motion : tout est coupé, la barre du compte à rebours s’affiche pleine."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "max-width: 760px"
+      },
+      {
+        "name": "medium",
+        "value": "max-width: 1023px"
+      },
+      {
+        "name": "low-height",
+        "value": "min-width: 761px and max-height: 820px"
+      },
+      {
+        "name": "mur-en-ligne-phone",
+        "value": "max-width: 560px"
+      },
+      {
+        "name": "site-bottom-nav",
+        "value": "max-width: 860px"
+      },
+      {
+        "name": "minimum",
+        "value": "390px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Bouton or",
+      "kind": "button",
+      "refersTo": "button-gold",
+      "description": "L’unique action principale de l’écran (Jouer la séance, Validée, Ouvrir le booster), avec sa touche ; identique dans les deux lumières.",
+      "html": "<div class=\"ds-gold-stage\"><button type=\"button\" class=\"ds-btn-gold\">Validée <span class=\"ds-gold-key\">Entrée</span></button><button type=\"button\" class=\"ds-btn-gold ds-btn-gold-sm\">Lancer <span class=\"ds-gold-key\">Entrée</span></button></div>",
+      "css": ".ds-gold-stage { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 24px; border-radius: 16px; background: #0B0B12; } .ds-btn-gold { display: inline-flex; align-items: center; gap: 10px; min-height: 64px; padding: 0 28px; border-radius: 16px; border: 1px solid #FFD166; background: #FFD166; color: #1B1733; font-family: Archivo, \"Arial Black\", sans-serif; font-stretch: 125%; font-weight: 900; font-size: 1.35rem; cursor: pointer; transition: transform .14s cubic-bezier(.16, 1, .3, 1), border-color .15s; } .ds-btn-gold:hover { border-color: #1B1733; } .ds-btn-gold:active { transform: scale(.97); } .ds-btn-gold:focus-visible { outline: 3px solid #FFD166; outline-offset: 3px; } .ds-btn-gold-sm { min-height: 40px; padding: 0 12px; border-radius: 10px; font-size: .92rem; } .ds-gold-key { display: inline-grid; place-items: center; min-width: 26px; height: 24px; padding: 0 6px; border: 1px solid rgba(27, 23, 51, .45); border-bottom-width: 3px; border-radius: 6px; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 700; font-size: .75rem; line-height: 1; color: #1B1733; background: transparent; } @media (prefers-reduced-motion: reduce) { .ds-btn-gold { transition: none; } .ds-btn-gold:active { transform: none; } }"
+    },
+    {
+      "name": "Boutons secondaires et touches (nuit)",
+      "kind": "button",
+      "refersTo": "button-night",
+      "description": "Boutons de séance en Inter 700 avec leur touche clavier ; pressé (bascule) en aplat crème ; bouton-icône rond pour la lune.",
+      "html": "<div class=\"ds-sec-stage\"><button type=\"button\" class=\"ds-btn\">Pause <span class=\"ds-key\">Espace</span></button><button type=\"button\" class=\"ds-btn\" aria-pressed=\"true\">Métronome <span class=\"ds-key\">M</span></button><button type=\"button\" class=\"ds-btn ds-btn-icon\" aria-pressed=\"true\" aria-label=\"Mode sombre\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z\"/></svg></button><button type=\"button\" class=\"ds-btn ds-btn-sm\">Quitter <span class=\"ds-key\">Échap</span></button></div>",
+      "css": ".ds-sec-stage { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 24px; border-radius: 16px; background: #0B0B12; } .ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 18px; border-radius: 12px; border: 1px solid #2A2A3A; background: #1A1A26; color: #EDEAE4; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform .14s cubic-bezier(.16, 1, .3, 1), background-color .15s, border-color .15s; } .ds-btn:hover { border-color: #ABA8BA; } .ds-btn:active { transform: scale(.97); } .ds-btn:focus-visible { outline: 3px solid #FFD166; outline-offset: 3px; } .ds-btn[aria-pressed=\"true\"] { background: #EDEAE4; color: #0B0B12; border-color: #EDEAE4; } .ds-btn-icon { width: 44px; height: 44px; min-height: 44px; padding: 0; border-radius: 50%; } .ds-btn-sm { min-height: 40px; padding: 0 12px; font-size: .92rem; border-radius: 10px; } .ds-key { display: inline-grid; place-items: center; min-width: 26px; height: 24px; padding: 0 6px; border: 1px solid #2A2A3A; border-bottom-width: 3px; border-radius: 6px; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 700; font-size: .75rem; line-height: 1; color: #EDEAE4; background: #1A1A26; } .ds-btn[aria-pressed=\"true\"] .ds-key { background: transparent; color: inherit; border-color: currentColor; } @media (prefers-reduced-motion: reduce) { .ds-btn { transition: none; } .ds-btn:active { transform: none; } }"
+    },
+    {
+      "name": "Barre du haut",
+      "kind": "nav",
+      "refersTo": "nav-link-active-night",
+      "description": "Marque, onglets (actif en aplat d’encre), bouton lune rond à droite ; rendu de nuit.",
+      "html": "<header class=\"ds-top\"><span class=\"ds-brand\">Gratte Quest</span><nav class=\"ds-nav\" aria-label=\"Sections\"><a href=\"#\" aria-current=\"page\">Accueil</a><a href=\"#\">Paliers</a><a href=\"#\">Collection</a><a href=\"#\">Trophées</a><a href=\"#\">Docs</a><a href=\"#\">Progrès</a></nav><button type=\"button\" class=\"ds-moon\" aria-pressed=\"true\" aria-label=\"Mode sombre\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z\"/></svg></button></header>",
+      "css": ".ds-top { display: flex; align-items: center; gap: 18px; padding: 12px 24px; background: #0B0B12; border-radius: 16px; flex-wrap: wrap; } .ds-brand { font-family: Archivo, \"Arial Black\", sans-serif; font-stretch: 125%; font-weight: 900; font-size: 1.15rem; color: #EDEAE4; white-space: nowrap; } .ds-nav { display: flex; gap: 2px; flex: 1; flex-wrap: wrap; } .ds-nav a { padding: 10px 12px; border-radius: 10px; color: #EDEAE4; text-decoration: none; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 600; } .ds-nav a:hover:not([aria-current]) { background: #232333; } .ds-nav a[aria-current] { background: #EDEAE4; color: #0B0B12; } .ds-nav a:focus-visible, .ds-moon:focus-visible { outline: 3px solid #FFD166; outline-offset: 3px; } .ds-moon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid #2A2A3A; background: #1A1A26; color: #EDEAE4; cursor: pointer; transition: transform .14s cubic-bezier(.16, 1, .3, 1); } .ds-moon[aria-pressed=\"true\"] { background: #EDEAE4; color: #0B0B12; border-color: #EDEAE4; } .ds-moon:active { transform: scale(.97); }"
+    },
+    {
+      "name": "Vitrine",
+      "kind": "card",
+      "refersTo": "vitrine-night",
+      "description": "La prochaine action en grand, l’œuvre du domaine public sur les 62 % de droite sous le voile du mur. Le dégradé de droite remplace ici la peinture.",
+      "html": "<section class=\"ds-bill\"><div class=\"ds-bill-art\" aria-hidden=\"true\"></div><div class=\"ds-bill-in\"><h1 class=\"ds-bill-t\">Trois petits pas</h1><p class=\"ds-bill-meta\">Mission 1 sur 4 · Vitesse · Séquences par 3 · 6 minutes</p><p class=\"ds-bill-lede\">Dans la penta : notes 1-2-3, puis 2-3-4, jusqu’en haut, et retour. Tempo propre, puis une pointe à +15 bpm.</p><div><button type=\"button\" class=\"ds-bill-go\">Jouer la séance</button></div></div><p class=\"ds-bill-credit\">William Turner, Pluie, vapeur et vitesse, 1844</p></section>",
+      "css": ".ds-bill { position: relative; min-height: 380px; border-radius: 24px; overflow: hidden; background: #12121C; isolation: isolate; box-shadow: 0 12px 34px rgba(0, 0, 0, .5); color: #EDEAE4; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; } .ds-bill-art { position: absolute; right: 0; top: 0; width: 62%; height: 100%; z-index: -2; background: radial-gradient(60% 70% at 70% 60%, #6B5A3E, transparent 70%), linear-gradient(160deg, #8C8A7E, #4A4E52 55%, #2E2A24); } .ds-bill::before { content: \"\"; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, #0B0B12 36%, rgba(11, 11, 18, .86) 50%, rgba(11, 11, 18, 0) 82%); } .ds-bill-in { padding: 40px 44px; max-width: min(620px, 56%); display: flex; flex-direction: column; gap: 14px; } .ds-bill-t { margin: 0; font-family: Archivo, \"Arial Black\", sans-serif; font-stretch: 125%; font-weight: 900; font-size: clamp(2.4rem, 5vw, 4rem); line-height: .96; letter-spacing: -.02em; text-wrap: balance; } .ds-bill-meta { margin: 0; color: #ABA8BA; font-weight: 600; } .ds-bill-lede { margin: 0; font-size: 1.15rem; max-width: 40ch; font-weight: 500; line-height: 1.5; } .ds-bill-go { min-height: 64px; padding: 0 28px; border-radius: 16px; border: 1px solid #FFD166; background: #FFD166; color: #1B1733; font-family: Archivo, \"Arial Black\", sans-serif; font-stretch: 125%; font-weight: 900; font-size: 1.35rem; cursor: pointer; transition: transform .14s cubic-bezier(.16, 1, .3, 1); } .ds-bill-go:hover { border-color: #1B1733; } .ds-bill-go:active { transform: scale(.97); } .ds-bill-go:focus-visible { outline: 3px solid #FFD166; outline-offset: 3px; } .ds-bill-credit { position: absolute; right: 14px; bottom: 10px; margin: 0; font-size: .72rem; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .8); } @media (max-width: 760px) { .ds-bill { min-height: 0; } .ds-bill-art { position: relative; display: block; width: 100%; height: 190px; } .ds-bill::before { height: 190px; background: linear-gradient(0deg, #12121C 0%, transparent 40%); } .ds-bill-in { max-width: none; padding: 18px 18px 22px; } .ds-bill-credit { top: 162px; bottom: auto; right: 10px; } }"
+    },
+    {
+      "name": "Tuiles de mission (nuit)",
+      "kind": "card",
+      "refersTo": "tile-mission-night",
+      "description": "Rangée « Ta séance » : mission au point (bordure et anneau or), mission faite (ardoise relevée, pastille ✓ menthe à coche sombre), booster verrouillé.",
+      "html": "<div class=\"ds-tiles-n\"><button type=\"button\" class=\"ds-tn ds-tn-next\"><svg class=\"ds-emo\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" aria-hidden=\"true\"><path fill=\"#ff822d\" d=\"m17.831 3.306l-9.726 13.9c-.26.37-.045.794.395.794h4c.35 0 .5.14.5.5v10.763c0 .71.86 1.02 1.27.45l9.618-12.828c.27-.37.052-.885-.388-.885H20c-.5 0-1-.5-1-1V3.5c0-.5-.76-.774-1.169-.194\"/></svg><span><b>Trois petits pas</b><span>Vitesse · 6 min</span></span></button><button type=\"button\" class=\"ds-tn ds-tn-done\" aria-disabled=\"true\"><span><b>Camp de base</b><span>Gammes · faite</span></span></button><div class=\"ds-tn ds-tn-lock\" role=\"group\" aria-label=\"Booster du jour\"><svg class=\"ds-emo\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" aria-hidden=\"true\"><g fill=\"none\"><path fill=\"#fcd53f\" d=\"M24.888 30H7.112A2.093 2.093 0 0 1 5 27.914V15l10.877-3.06L27 15v12.914C27 29.06 26.06 30 24.888 30\"/><path fill=\"#f8312f\" d=\"M27 5.847c0-3.384-4.045-5.106-6.466-2.763L16 7.479l-4.533-4.395C9.045.73 5 2.463 5 5.847C5 7.04 5.957 8 7.142 8L16 10.17L24.858 8A2.157 2.157 0 0 0 27 5.847\"/><path fill=\"#ffb02e\" d=\"M27.662 8H4.337C3.6 8 3 8.6 3 9.342v4.316C3 14.4 3.6 15 4.338 15h23.324C28.4 15 29 14.4 29 13.658V9.342C29 8.6 28.4 8 27.662 8\"/><path fill=\"#ca0b4a\" d=\"M16.005 3C14.345 3 13 4.37 13 6.06V30h6V6.06C19.01 4.37 17.666 3 16.005 3\"/></g></svg><span><b>Booster du jour</b><span>1 mission sur 4</span></span></div></div>",
+      "css": ".ds-tiles-n { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; padding: 24px; border-radius: 16px; background: #0B0B12; } .ds-tn { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; min-height: 160px; padding: 16px; border-radius: 16px; border: 2px solid #2A2A3A; background: #1A1A26; color: #EDEAE4; text-align: left; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; cursor: pointer; transition: transform .2s cubic-bezier(.16, 1, .3, 1), border-color .15s; } .ds-tn b { display: block; font-family: Archivo, \"Arial Black\", sans-serif; font-stretch: 125%; font-weight: 900; font-size: 1.08rem; line-height: 1.15; } .ds-tn span span { color: #ABA8BA; font-size: .9rem; font-weight: 500; } .ds-tn:hover { transform: translateY(-3px); border-color: #ABA8BA; } .ds-tn:focus-visible { outline: 3px solid #FFD166; outline-offset: 3px; } .ds-tn-next { border-color: #FFD166; box-shadow: 0 0 0 1px #FFD166; } .ds-tn-next:hover { border-color: #FFD166; } .ds-tn-done, .ds-tn-lock { cursor: default; } .ds-tn-done { background: #232333; justify-content: flex-end; } .ds-tn-done b { padding-right: 30px; } .ds-tn-done:hover, .ds-tn-lock:hover { transform: none; border-color: #2A2A3A; } .ds-tn-done::after { content: \"\"; position: absolute; top: 12px; right: 12px; width: 26px; height: 26px; border-radius: 50%; background: #3DDC97 url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230B0B12' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E\") center / 16px no-repeat; } @media (prefers-reduced-motion: reduce) { .ds-tn { transition: none; } .ds-tn:hover { transform: none; } }"
+    },
+    {
+      "name": "Rangée de séance (jour)",
+      "kind": "card",
+      "refersTo": "tile-mission-day",
+      "description": "Même rangée sous la lumière de jour : tuiles blanches sur papier lavande, faite en lavande enfoncée avec coche blanche sur vert sapin, bouton secondaire avec sa touche, focus violet.",
+      "html": "<div class=\"ds-tiles-d\"><button type=\"button\" class=\"ds-td\"><svg class=\"ds-emo\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" aria-hidden=\"true\"><path fill=\"#ff822d\" d=\"m17.831 3.306l-9.726 13.9c-.26.37-.045.794.395.794h4c.35 0 .5.14.5.5v10.763c0 .71.86 1.02 1.27.45l9.618-12.828c.27-.37.052-.885-.388-.885H20c-.5 0-1-.5-1-1V3.5c0-.5-.76-.774-1.169-.194\"/></svg><span><b>Trois petits pas</b><span>Vitesse · 6 min</span></span></button><button type=\"button\" class=\"ds-td ds-td-done\" aria-disabled=\"true\"><span><b>Camp de base</b><span>Gammes · faite</span></span></button><button type=\"button\" class=\"ds-td-btn\">Comment bien faire l’exo <span class=\"ds-td-key\">G</span></button></div>",
+      "css": ".ds-tiles-d { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); align-items: start; gap: 14px; padding: 24px; border-radius: 16px; background: #F3F2F8; } .ds-td { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; min-height: 160px; padding: 16px; border-radius: 16px; border: 2px solid #DEDBEA; background: #FFFFFF; color: #1B1733; text-align: left; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; cursor: pointer; transition: transform .2s cubic-bezier(.16, 1, .3, 1), border-color .15s; } .ds-td b { display: block; font-family: Archivo, \"Arial Black\", sans-serif; font-stretch: 125%; font-weight: 900; font-size: 1.08rem; line-height: 1.15; } .ds-td span span { color: #5A5674; font-size: .9rem; font-weight: 500; } .ds-td:hover { transform: translateY(-3px); border-color: #5A5674; } .ds-td:focus-visible, .ds-td-btn:focus-visible { outline: 3px solid #4B3BEF; outline-offset: 3px; } .ds-td-done { background: #ECEAF4; cursor: default; justify-content: flex-end; } .ds-td-done b { padding-right: 30px; } .ds-td-done:hover { transform: none; border-color: #DEDBEA; } .ds-td-done::after { content: \"\"; position: absolute; top: 12px; right: 12px; width: 26px; height: 26px; border-radius: 50%; background: #177750 url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E\") center / 16px no-repeat; } .ds-td-btn { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 18px; border-radius: 12px; border: 1px solid #DEDBEA; background: #FFFFFF; color: #1B1733; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform .14s cubic-bezier(.16, 1, .3, 1), border-color .15s; } .ds-td-btn:hover { border-color: #5A5674; } .ds-td-btn:active { transform: scale(.97); } .ds-td-key { display: inline-grid; place-items: center; min-width: 26px; height: 24px; padding: 0 6px; border: 1px solid #DEDBEA; border-bottom-width: 3px; border-radius: 6px; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 700; font-size: .75rem; line-height: 1; color: #1B1733; background: #FFFFFF; } @media (prefers-reduced-motion: reduce) { .ds-td, .ds-td-btn { transition: none; } .ds-td:hover, .ds-td-btn:active { transform: none; } }"
+    },
+    {
+      "name": "Carte de morceau",
+      "kind": "card",
+      "refersTo": "song-card",
+      "description": "Carte à collectionner du Mur en ligne (fond de nuit) : ratio 5:7,4, cadre de rareté de 3px, légende sous le voile ; ici en affiche (sans œuvre) : légendaire acquise, puis légendaire non acquise avec son drapeau de boss.",
+      "html": "<div class=\"ds-cards\"><button type=\"button\" class=\"ds-cd ds-cd-l\"><span class=\"ds-poster\" aria-hidden=\"true\">Hysteria</span><span class=\"ds-cap\"><b>Hysteria</b><span>Muse · Acquise</span></span></button><button type=\"button\" class=\"ds-cd ds-cd-todo\"><span class=\"ds-poster\" aria-hidden=\"true\">Knights of Cydonia</span><span class=\"ds-flag\">Mini-boss</span><span class=\"ds-cap\"><b>Knights of Cydonia</b><span>Muse · Légendaire</span></span></button></div>",
+      "css": ".ds-cards { display: flex; gap: 14px; padding: 24px; border-radius: 16px; background: #0B0B12; } .ds-cd { position: relative; width: 150px; aspect-ratio: 5 / 7.4; padding: 0; border-radius: 12px; overflow: hidden; border: 3px solid #8E96A8; background: #1F1C30; color: #EDEAE4; text-align: left; cursor: pointer; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; transition: transform .22s cubic-bezier(.16, 1, .3, 1), box-shadow .22s; } .ds-cd::after { content: \"\"; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(8, 8, 14, .94) 10%, rgba(8, 8, 14, 0) 58%); } .ds-cd:hover, .ds-cd:focus-visible { transform: scale(1.04); box-shadow: 0 16px 36px rgba(0, 0, 0, .55); } .ds-cd:focus-visible { outline: 3px solid #FFD166; outline-offset: 3px; } .ds-cd-l { border-color: #FFC93D; } .ds-cd-todo { border-color: #6E6A83; } .ds-poster { position: absolute; inset: 0; padding: 12px; display: flex; align-items: flex-start; font-family: Archivo, \"Arial Black\", sans-serif; font-stretch: 125%; font-weight: 900; font-size: .95rem; line-height: 1; text-transform: uppercase; color: #A9A5C4; overflow-wrap: anywhere; } .ds-cap { position: absolute; left: 10px; right: 10px; bottom: 9px; z-index: 1; display: flex; flex-direction: column; gap: 2px; } .ds-cap b { font-family: Archivo, \"Arial Black\", sans-serif; font-stretch: 125%; font-weight: 900; font-size: .88rem; line-height: 1.1; color: #fff; } .ds-cap span { font-size: .74rem; font-weight: 600; color: #D4D1DE; } .ds-flag { position: absolute; top: 8px; left: 8px; z-index: 1; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 800; font-size: .7rem; letter-spacing: .04em; text-transform: uppercase; background: #C7321F; color: #fff; border-radius: 5px; padding: 2px 6px; } @media (prefers-reduced-motion: reduce) { .ds-cd { transition: none; } .ds-cd:hover, .ds-cd:focus-visible { transform: none; } }"
+    },
+    {
+      "name": "Carte « Mission suivante »",
+      "kind": "custom",
+      "refersTo": "next-card-night",
+      "description": "Le moment signature : titre d’abord, barre or qui se remplit en 3 s, légende, puis Lancer (or) et Attendre ; rendu de nuit.",
+      "html": "<div class=\"ds-up-stage\"><div class=\"ds-up\"><b>Détective sans tablature</b><div class=\"ds-up-bar\"><i></i></div><span class=\"ds-up-l\">Mission suivante dans 3 s</span><div class=\"ds-up-a\"><button type=\"button\" class=\"ds-up-go\">Lancer <span class=\"ds-up-key ds-up-key-g\">Entrée</span></button><button type=\"button\" class=\"ds-up-wait\">Attendre <span class=\"ds-up-key\">Espace</span></button></div></div></div>",
+      "css": ".ds-up-stage { padding: 18px 32px 22px; background: #12121C; border-top: 1px solid #2A2A3A; border-radius: 16px; } .ds-up { width: min(440px, 100%); display: flex; flex-direction: column; justify-content: space-between; gap: 10px; padding: 14px 18px; border-radius: 16px; background: #232333; border: 2px solid #FFD166; color: #EDEAE4; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; } .ds-up b { font-family: Archivo, \"Arial Black\", sans-serif; font-stretch: 125%; font-weight: 900; font-size: 1.35rem; line-height: 1.1; } .ds-up-bar { height: 8px; border-radius: 4px; background: #2A2A3A; overflow: hidden; } .ds-up-bar i { display: block; height: 100%; width: 100%; background: #FFD166; transform: scaleX(0); transform-origin: left; animation: ds-up-fill 3s linear forwards; } @keyframes ds-up-fill { to { transform: scaleX(1); } } .ds-up-l { font-weight: 700; font-size: .9rem; } .ds-up-a { display: flex; gap: 10px; flex-wrap: wrap; } .ds-up-go, .ds-up-wait { display: inline-flex; align-items: center; gap: 10px; min-height: 38px; padding: 0 12px; border-radius: 10px; font-size: .92rem; cursor: pointer; transition: transform .14s cubic-bezier(.16, 1, .3, 1); } .ds-up-go { border: 1px solid #FFD166; background: #FFD166; color: #1B1733; font-family: Archivo, \"Arial Black\", sans-serif; font-stretch: 125%; font-weight: 900; } .ds-up-wait { border: 1px solid #2A2A3A; background: #1A1A26; color: #EDEAE4; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 700; } .ds-up-go:active, .ds-up-wait:active { transform: scale(.97); } .ds-up-go:focus-visible, .ds-up-wait:focus-visible { outline: 3px solid #FFD166; outline-offset: 3px; } .ds-up-key { display: inline-grid; place-items: center; min-width: 26px; height: 24px; padding: 0 6px; border: 1px solid #2A2A3A; border-bottom-width: 3px; border-radius: 6px; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 700; font-size: .75rem; line-height: 1; color: #EDEAE4; background: #1A1A26; } .ds-up-key-g { background: transparent; color: #1B1733; border-color: rgba(27, 23, 51, .45); } @media (prefers-reduced-motion: reduce) { .ds-up-bar i { animation: none; transform: scaleX(1); } .ds-up-go, .ds-up-wait { transition: none; } }"
+    },
+    {
+      "name": "Barre de séance",
+      "kind": "nav",
+      "refersTo": "progress-segment-night",
+      "description": "Haut de la séance plein écran : titre, quatre segments aux couleurs de branche (largeur selon la durée), position, lune et Quitter (Échap).",
+      "html": "<header class=\"ds-sx-top\"><span class=\"ds-sx-t\">Séance du jour</span><div class=\"ds-prog\" aria-hidden=\"true\"><i style=\"--m:6;--c:#C22B26;--p:1\"></i><i style=\"--m:8;--c:#0B7769;--p:.45\"></i><i style=\"--m:5;--c:#1F60D1;--p:0\"></i><i style=\"--m:11;--c:#926019;--p:0\"></i></div><span class=\"ds-sx-count\">Mission 2 sur 4</span><span class=\"ds-sx-sp\"></span><button type=\"button\" class=\"ds-sx-moon\" aria-pressed=\"true\" aria-label=\"Mode sombre\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z\"/></svg></button><button type=\"button\" class=\"ds-sx-quit\">Quitter <span class=\"ds-sx-key\">Échap</span></button></header>",
+      "css": ".ds-sx-top { display: flex; align-items: center; gap: 18px; padding: 14px 32px; background: #0B0B12; color: #EDEAE4; border-radius: 16px; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; flex-wrap: wrap; } .ds-sx-t { font-family: Archivo, \"Arial Black\", sans-serif; font-stretch: 125%; font-weight: 900; font-size: 1.05rem; white-space: nowrap; } .ds-prog { display: flex; gap: 6px; flex: 1; max-width: 420px; min-width: 160px; } .ds-prog i { flex: var(--m) 1 0; height: 8px; border-radius: 4px; background: #232333; position: relative; overflow: hidden; } .ds-prog i::after { content: \"\"; position: absolute; inset: 0; background: var(--c); transform: scaleX(var(--p, 0)); transform-origin: left; transition: transform .6s cubic-bezier(.16, 1, .3, 1); } .ds-sx-count { color: #ABA8BA; font-weight: 600; white-space: nowrap; } .ds-sx-sp { flex: 1; } .ds-sx-moon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid #EDEAE4; background: #EDEAE4; color: #0B0B12; cursor: pointer; } .ds-sx-quit { display: inline-flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #2A2A3A; background: #1A1A26; color: #EDEAE4; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 700; font-size: .92rem; cursor: pointer; } .ds-sx-quit:hover { border-color: #ABA8BA; } .ds-sx-moon:focus-visible, .ds-sx-quit:focus-visible { outline: 3px solid #FFD166; outline-offset: 3px; } .ds-sx-key { display: inline-grid; place-items: center; min-width: 26px; height: 24px; padding: 0 6px; border: 1px solid #2A2A3A; border-bottom-width: 3px; border-radius: 6px; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 700; font-size: .75rem; line-height: 1; color: #EDEAE4; background: #1A1A26; }"
+    },
+    {
+      "name": "Toast d’annulation",
+      "kind": "custom",
+      "refersTo": "toast-night",
+      "description": "Après « Validée » : message inversé (aplat d’encre) en haut à droite sur l’œuvre, avec Annuler (Ctrl Z), pendant 6 s.",
+      "html": "<div class=\"ds-toast-stage\"><div class=\"ds-toast\" role=\"status\"><span>Mission validée · +25 XP</span><button type=\"button\" class=\"ds-toast-b\">Annuler <span class=\"ds-toast-key\">Ctrl</span><span class=\"ds-toast-key\">Z</span></button></div></div>",
+      "css": ".ds-toast-stage { padding: 24px; border-radius: 16px; background: #0B0B12; } .ds-toast { display: inline-flex; align-items: center; gap: 14px; padding: 12px 14px 12px 18px; border-radius: 14px; background: #EDEAE4; color: #0B0B12; box-shadow: 0 12px 34px rgba(0, 0, 0, .5); font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 700; animation: ds-toast-in .3s cubic-bezier(.16, 1, .3, 1) both; } @keyframes ds-toast-in { from { opacity: 0; transform: translateY(10px); } } .ds-toast-b { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 12px; border-radius: 10px; border: 1px solid currentColor; background: transparent; color: inherit; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 700; font-size: .92rem; cursor: pointer; transition: transform .14s cubic-bezier(.16, 1, .3, 1); } .ds-toast-b:active { transform: scale(.97); } .ds-toast-b:focus-visible { outline: 3px solid #FFD166; outline-offset: 3px; } .ds-toast-key { display: inline-grid; place-items: center; min-width: 26px; height: 24px; padding: 0 6px; border: 1px solid currentColor; border-bottom-width: 3px; border-radius: 6px; font-family: Inter, \"Segoe UI\", system-ui, sans-serif; font-weight: 700; font-size: .75rem; line-height: 1; color: inherit; background: transparent; } @media (prefers-reduced-motion: reduce) { .ds-toast { animation: none; } .ds-toast-b { transition: none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Le Mur de cartes sous deux lumières",
+    "overview": "Gratte Quest est un mur d'œuvres qu'on parcourt un axe à la fois. En haut, la vitrine : la prochaine action de pratique, en très grand titre, avec son œuvre du domaine public fondue dans le fond depuis la droite. Dessous, des rangées de tuiles (la séance, la collection, les paliers, les trophées) qu'on balaie de côté sans changer de page. La séance du jour est cette même vitrine portée en plein écran : une mission à la fois, un chrono géant, le bouton or « Validée » toujours à la même place, et la mission suivante qui s'annonce comme un épisode.\n\nLe Mur est né comme mode sombre du site. Depuis la décision du 22 novembre 2026, il est la grammaire des deux modes : mise en page, formes, typographie et mouvement sont identiques de jour comme de nuit, seules les valeurs de couleur changent (`:root` pour le jour, `:root[data-theme=\"dark\"]` pour la nuit ; choix mémorisé dans `gq-theme`, sinon réglage de l'appareil, appliqué avant l'affichage). Les fonds sont neutres et froids, les surfaces se distinguent par paliers de ton, les peintures sont les seuls grands champs de couleur et un or unique porte l'action. Archivo, très large et très grasse, donne la voix des titres et des chiffres ; Inter porte tout le texte. La densité est basse par principe : la guitare est dans les mains, chaque clic coûte.\n\nLes valeurs de ce document viennent de la maquette du mode séance. Le Mur sombre en ligne en est la première version et s'en écarte encore sur quelques points (bouton principal crème au lieu d'or, Archivo à largeur 112 % dans les rangées, autre courbe de sortie). Le design clair « Kyara » (pages claires, panneaux sombres et brillants, accent violet `#5B4BFF`, or `#F5C518`), encore servi en mode clair sur le site en ligne, est le prédécesseur : il est remplacé et ne fait pas partie de ce système. Refus confirmés par les contrats de direction : le tableau de bord de panneaux empilés, et la fenêtre modale posée par-dessus pour chaque action.",
+    "keyCharacteristics": [
+      "Une vitrine puis des rangées, sur chaque page ; la séance est la vitrine en plein écran.",
+      "Deux lumières, une seule mise en page : nuit sur `night-wall`, jour sur `day-wall`.",
+      "L'œuvre du domaine public est le seul grand champ de couleur, fondue dans le mur par un voile.",
+      "Un seul or : action principale, mission au point, compte à rebours, et focus la nuit.",
+      "Archivo largeur 125 % graisse 900 pour les titres, les tuiles et les chiffres ; Inter pour le texte.",
+      "Coins doux partout, tuiles à bordure de 2 px, cadres de rareté fins sur les cartes.",
+      "Mouvement court en sortie exponentielle, entièrement coupé en mouvement réduit.",
+      "Raccourcis clavier affichés en touches dans les boutons de la séance."
+    ],
+    "rules": [
+      {
+        "name": "La règle de l'or unique",
+        "body": "Un seul élément or actif par écran. Quand une seconde action or apparaît (« Lancer » pendant le compte à rebours), la première reste à sa place, inerte, à 40 % d'opacité. L'or ne sert jamais de décor.",
+        "section": "colors"
+      },
+      {
+        "name": "La règle de l'œuvre seule couleur",
+        "body": "Les surfaces restent neutres ; la couleur vient de la peinture de la mission ou de la carte, toujours fondue dans le mur par un voile de la couleur exacte du fond.",
+        "section": "colors"
+      },
+      {
+        "name": "La règle des deux lumières",
+        "body": "Une même mise en page, deux jeux de valeurs. Tout nouveau composant lit ses couleurs dans les jetons (`--bg`, `--row`, `--tile`, `--tile2`, `--line`, `--ink`, `--muted`, `--gold`, `--on-gold`, `--focus`, `--ok`, `--bad`, `--root`, `--fade`, `--shadow`) et se vérifie dans les deux lumières.",
+        "section": "colors"
+      },
+      {
+        "name": "La règle de la largeur 125",
+        "body": "Dans le Mur, Archivo est toujours à largeur 125 % et graisse 900, titres de rangée et de tuile compris.",
+        "section": "typography"
+      },
+      {
+        "name": "La règle des chiffres fixes",
+        "body": "Tout chiffre qui change (chrono, tempo, XP, compteurs) est en chiffres tabulaires, pour que rien ne bouge pendant le décompte.",
+        "section": "typography"
+      },
+      {
+        "name": "La règle de la place fixe",
+        "body": "Le bouton principal de la séance ne bouge jamais : la rangée sous lui a une hauteur fixe, le compte à rebours le rend inerte sans le déplacer, et ce qui déborde défile dans la colonne de mission, pas autour du bouton.",
+        "section": "layout"
+      },
+      {
+        "name": "La règle du voile",
+        "body": "Une œuvre ne passe jamais sous le texte à pleine force : elle occupe la droite (un bandeau en haut sur téléphone) et un dégradé de la couleur exacte du mur (`--fade`) la fond vers le texte. Le crédit de l'œuvre est posé sur l'œuvre.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Réserver** l'or à une seule action active par écran, à la mission au point et au compte à rebours, toujours avec du texte `on-gold` dessus.",
+      "**Construire** chaque écran en vitrine puis rangées, l'œuvre à droite (en bandeau en haut sur téléphone), fondue vers le texte par un voile de la couleur du mur.",
+      "**Écrire** les titres, les titres de tuile et les chiffres en Archivo largeur 125 % graisse 900, tout le reste en Inter.",
+      "**Vérifier** chaque composant dans les deux lumières : seules les valeurs des jetons changent, jamais la mise en page.",
+      "**Garder** le bouton principal de la séance à une place fixe et la rangée « À suivre » à hauteur fixe (188 px, 142 px sur écran bas).",
+      "**Prendre** les œuvres dans le domaine public de Wikimedia Commons (`SONGS[].art`, `ART_PATH`), les demander sans référent et afficher leur crédit sur l'œuvre.",
+      "**Montrer** les raccourcis de la séance en touches dans les boutons (Entrée, Espace, Échap, G, M), et les masquer sur téléphone.",
+      "**Animer** en sortie exponentielle (`cubic-bezier(.16, 1, .3, 1)`), de 140 à 600 ms (0,9 s pour le tampon ✓, 3 s à vitesse constante pour le compte à rebours), et couper toutes les durées sous `prefers-reduced-motion` (la barre du compte à rebours s'affiche alors pleine).",
+      "**Utiliser** les emoji Fluent en SVG de `assets/emoji` (20 à 32 px, texte alternatif vide) et, pour les icônes de trait, des SVG inline en `currentColor`."
+    ],
+    "donts": [
+      "**Ne pas** poser de fenêtre modale sur le Mur pour pratiquer : la séance passe en plein écran, le guide en tiroir latéral, et le chrono reste visible.",
+      "**Ne pas** empiler des panneaux façon tableau de bord.",
+      "**Ne pas** laisser l'or porter seul un texte, un trait ou un état sur un fond de jour (1,3:1 sur `day-wall`, sous le 3:1 requis) : le jour, l'or est un aplat sous un texte `on-gold`, le focus est violet, et un trait or y double toujours un repère lisible (texte, encre ou violet).",
+      "**Ne pas** teinter les surfaces avec les couleurs de branche : elles ne servent qu'aux segments de la barre de séance.",
+      "**Ne pas** placer de surtitre au-dessus d'un titre : le titre d'abord, la ligne de repères dessous.",
+      "**Ne pas** afficher d'emoji en caractères du système.",
+      "**Ne pas** charger de police, de feuille de style, de script ou d'image venant d'un autre domaine que le site et `upload.wikimedia.org`."
+    ]
+  }
+}

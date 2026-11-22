@@ -132,3 +132,7 @@ Archivo (The Archivo Project Authors) et Inter (The Inter Project Authors), lice
 ## Sons de guitare
 
 `assets/sounds/guitare-claire/` : 49 notes de guitare électrique en son clair (instrument « Electric Guitar (clean) », midi 40 à 88), tirées de la banque de sons FluidR3_GM de Frank Wen, dans le rendu en MP3 de MIDI.js Soundfonts par Benjamin Gleitzman (https://github.com/gleitz/midi-js-soundfonts). Licence Creative Commons Attribution 3.0 (https://creativecommons.org/licenses/by/3.0/). Fichiers non modifiés ; le site ajuste seulement leur volume et leur durée au moment de les jouer.
+
+## Fiches « D'après le livre » (onglet Documentation)
+
+Les cinq fiches de la section « D'après le livre » s'appuient sur *The Only Guitar Book You'll Ever Need*, de Marc Schonbrun et Ernie Jackson (chapitres 3, 7, 9 et 19, annexe A). Les idées y sont reformulées pour Gratte Quest : aucun texte, aucune figure ni aucune photo du livre n'est reproduit sur le site. Chaque fiche indique le chapitre et les pages d'origine.

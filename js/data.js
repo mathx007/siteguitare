@@ -301,6 +301,125 @@ const GUIDES = {
 };
 const GUIDE_BASES = ['mediator', 'tempo', 'mute', 'posture'];
 
+/* Fiches « D'après le livre » : idées du livre reformulées pour Gratte Quest (aucun texte ni image reproduits). src : chapitre et pages. */
+const BOOK = { t: 'The Only Guitar Book You\'ll Ever Need', a: 'Marc Schonbrun et Ernie Jackson' };
+Object.assign(GUIDES, {
+  'l-position': {
+    kind: 'book', t: 'Tenir la guitare et placer la main gauche', e: 'compass', src: 'chapitre 3, pages 35 à 39', yt: 'position main gauche guitare pouce débutant',
+    goal: 'Une position qui laisse les deux mains libres et fait sonner chaque note sans forcer.',
+    setup: [
+      'Debout, règle la sangle pour que la guitare reste contre toi, le manche relevé d\'environ 45 degrés : le chevalet vers la taille, la tête du manche vers l\'épaule.',
+      'Assis comme debout, garde la sangle : la guitare reste à la même hauteur et tes deux bras sont libres.',
+      'Main gauche : laisse d\'abord le manche reposer contre le bord de la paume, puis place le pouce au milieu du dos du manche, entre l\'index et le majeur, avec un petit espace entre la paume et le manche.',
+      'Appuie avec le bout du doigt, les doigts aussi perpendiculaires que possible aux cordes, le poignet légèrement arrondi comme un cou de cygne.',
+    ],
+    steps: [
+      'Trouve la pression juste : appuie très peu, puis un peu plus, jusqu\'au moment où la note sonne net. C\'est la bonne pression, pas davantage.',
+      'Place le doigt dans la case, entre le milieu et la frette : trop près de la frette, la note peut s\'étouffer ; trop loin, elle frise.',
+      'Imagine que tu pinces le manche entre le pouce et le doigt qui appuie : avec le pouce juste derrière, la note sonne avec un minimum d\'effort.',
+      'Vérifie que ta main peut pivoter sur le pouce sans que la paume touche le manche.',
+    ],
+    errors: [
+      ['La guitare pend très bas, comme sur certaines scènes.', 'Mains, poignets, épaules et dos forcent. Remonte-la entre la poitrine et la taille.'],
+      ['Assis, tu te penches au-dessus de la guitare.', 'Le dos fatigue vite : redresse-toi et incline plutôt la guitare vers toi.'],
+      ['Tu appuies plus fort que nécessaire.', 'Plus de douleur, pas plus de son. Relâche jusqu\'à ce que la note frise, puis ajoute à peine.'],
+      ['Le pouce passe par-dessus le manche dès le début.', 'Pour les gammes et la vitesse, la main se crispe et les notes frisent : garde-le derrière, au milieu.'],
+      ['Tu continues malgré la douleur.', 'Arrête dès que ça fait mal. Jouer un peu, souvent, vaut mieux que beaucoup d\'un coup.'],
+    ],
+    check: ['La note sonne clair avec une pression légère.', 'Ton dos est droit et tes épaules basses, debout comme assis.', 'Après la séance, ni les doigts ni le poignet ne font mal.'],
+  },
+  'l-mediator': {
+    kind: 'book', t: 'Choisir et tenir son médiator', e: 'bullseye', src: 'chapitre 3, page 38, et annexe A, pages 376 à 377', yt: 'choisir médiator épaisseur guitare',
+    goal: 'Un médiator adapté à ce que tu joues, tenu sans crispation, et un mouvement qui vient du poignet.',
+    setup: [
+      'Pour commencer, un médiator moyen en taille et en épaisseur. Prends-en deux ou trois différents : ils coûtent peu et chacun sonne autrement.',
+      'Pose-le à plat sur l\'index, puis tiens-le avec le pouce par-dessus.',
+      'Pour gratter des accords, un médiator fin et souple glisse mieux sur les cordes. Pour jouer vite, un médiator petit et dur répond plus directement.',
+    ],
+    steps: [
+      'Le geste : main tendue, pouce et index qui se touchent du bout, secoue doucement la main depuis le poignet. C\'est ce mouvement, et non celui des doigts, qui sert à gratter et à attaquer.',
+      'Joue le même passage avec deux médiators différents et écoute la différence d\'attaque.',
+      'Pour un son plus doux, essaie le côté arrondi du médiator, ou joue aux doigts.',
+    ],
+    errors: [
+      ['Le mouvement vient des doigts.', 'Le geste devient irrégulier et fatigue vite : les doigts tiennent, le poignet bouge.'],
+      ['Tu gardes toujours le même médiator usé.', 'Une pointe usée change l\'attaque : remplace-le et compare plusieurs modèles.'],
+      ['Un médiator très souple pour les passages rapides.', 'Il plie et retarde l\'attaque : pour la vitesse, prends-en un plus dur.'],
+    ],
+    check: ['Le médiator ne tourne pas pendant une minute de jeu.', 'Tu sens que le mouvement part du poignet.'],
+  },
+  'l-penta': {
+    kind: 'book', t: 'La pentatonique, la gamme du guitariste', e: 'world-map', src: 'chapitre 7, pages 78 à 79, et chapitre 9, page 117', yt: 'gamme pentatonique mineure position 1 guitare',
+    goal: 'Comprendre pourquoi on travaille autant la penta, et comment bien la mémoriser.',
+    setup: [
+      'Penta veut dire cinq : cinq notes qui reviennent d\'octave en octave. En La mineur : La, Do, Ré, Mi, Sol.',
+      'La « boîte » de la case 5 (ta position 1) est la forme de solo la plus utilisée, dans tous les styles.',
+      'Penta mineure : degrés 1, ♭3, 4, 5, ♭7. C\'est le son du rock et du blues, pour les morceaux en mineur.',
+      'Penta majeure : degrés 1, 2, 3, 5, 6. Plus lumineuse, elle sonne bien sur des accords majeurs (folk, country, rock).',
+      'La gamme mineure complète (le mode éolien) ajoute deux notes à la penta mineure : le 2 et le ♭6. La penta en est une version allégée, plus facile à faire sonner.',
+    ],
+    steps: [
+      'Joue la boîte de la case 5 lentement, en montée puis en descente, en regardant la forme que dessinent tes doigts.',
+      'Rejoue-la en disant le nom de chaque note : tu vois les cinq notes revenir.',
+      'Rejoue-la les yeux fermés : le but est de la connaître par cœur dans les deux sens.',
+      'Dans le site, le manche complet et le contrôle au micro t\'aident à vérifier chaque position.',
+    ],
+    errors: [
+      ['Tu joues la forme sans savoir quelles notes tu joues.', 'Tu ne pourras pas la déplacer dans une autre tonalité : nomme les notes, au moins les toniques.'],
+      ['Tu n\'apprends que la montée.', 'En solo, la descente sert autant : travaille les deux sens.'],
+      ['Tu joues la penta mineure sur un morceau très majeur.', 'Ça peut sonner faux : essaie la penta majeure de la même tonalité.'],
+    ],
+    check: ['Tu joues la position 1 en montée et en descente sans regarder.', 'Tu sais montrer où sont les La dans la boîte.'],
+  },
+  'l-techniques': {
+    kind: 'book', t: 'Liés, bends, vibrato et harmoniques', e: 'hammer', src: 'annexe A, pages 378 à 380', yt: 'harmoniques artificielles guitare tuto',
+    goal: 'Les techniques qui font chanter une phrase, avec un exemple concret pour chacune.',
+    setup: [
+      'Hammer-on : index case 5 de la corde de La (Ré) ; pendant que la note sonne, l\'annulaire frappe la case 7 (Mi) et y reste.',
+      'Pull-off : l\'inverse. Les deux doigts sont posés, tu joues le Mi, puis tu retires l\'annulaire pour faire sonner le Ré.',
+      'Trille : enchaîne très vite hammer-on et pull-off entre les deux mêmes notes.',
+      'Bend : la note frettée, pousse ou tire la corde pour monter jusqu\'à la note visée. C\'est plus facile avec des cordes fines.',
+      'Vibrato : fais osciller la note en balançant le doigt ; plus le mouvement est ample, plus le vibrato est large.',
+    ],
+    steps: [
+      'Bend double : pose deux doigts à l\'avance, Ré case 7 de la corde de Sol et Mi case 5 de la corde de Si. Monte le Ré jusqu\'au Mi, puis joue le Mi de la corde de Si pendant que la note tirée sonne encore.',
+      'Harmonique naturelle : effleure la corde juste au-dessus de la frette 12, sans appuyer, joue, puis retire le doigt pour laisser sonner. Essaie aussi au-dessus des frettes 7 et 5.',
+      'Harmonique pincée : tiens le médiator très court et attaque en laissant le bord du pouce toucher la corde juste après le médiator. Avec de la saturation et le micro chevalet, elle sort plus facilement.',
+    ],
+    errors: [
+      ['Pull-off sans avoir posé le doigt de la note d\'arrivée.', 'C\'est la corde à vide qui sonne : pose toujours les deux doigts avant.'],
+      ['Harmonique jouée en appuyant la corde.', 'Tu obtiens la note normale : effleure seulement, pile au-dessus de la frette.'],
+      ['L\'harmonique pincée donne un bruit sourd.', 'Le pouce touche trop tôt ou trop tard. Garde le médiator très court et cherche le bon endroit entre les micros.'],
+      ['Le bend n\'atteint pas la note.', 'Compare avec la note de la case visée, et pousse avec plusieurs doigts.'],
+    ],
+    check: ['Les notes liées sonnent aussi fort que la note attaquée.', 'Ton bend arrive juste sur la note visée.', 'Tu obtiens une harmonique nette aux frettes 12, 7 et 5.'],
+  },
+  'l-son': {
+    kind: 'book', t: 'Régler son son : guitare, ampli, effets', e: 'headphone', src: 'annexe A, pages 374 à 377, et chapitre 19, pages 340 à 344', yt: 'réglage son guitare électrique micros volume tonalité',
+    goal: 'Savoir ce que change chaque bouton et chaque effet, pour trouver le son voulu sans chercher pendant la séance.',
+    setup: [
+      'Le son vient d\'abord des mains. L\'endroit où tu attaques compte : près du chevalet, un son plus métallique qui ressort ; près du manche, un son plus doux.',
+      'Sélecteur de micros : le micro manche est plus rond (solos, son clair), le micro chevalet plus brillant et mordant (rythmiques saturées). Sur trois micros, la position du milieu donne un entre-deux.',
+      'Volume de la guitare : avec de la saturation, il dose aussi la distorsion. Le baisser un peu donne un son presque clair sans toucher à l\'ampli ni au pédalier.',
+      'Tonalité de la guitare : à 10, rien n\'est filtré ; en la baissant, tu coupes les aigus pour un son plus chaud.',
+      'Ampli : le gain et l\'égaliseur du préampli font le caractère du son ; le volume général ne règle que la puissance.',
+    ],
+    steps: [
+      'En son clair, joue la même phrase au micro manche puis au micro chevalet, et note la différence.',
+      'Avec de la saturation, baisse le volume de la guitare vers 6 ou 7 : écoute le son se nettoyer, puis remonte pour un solo.',
+      'Dans ton multi-effet, teste un effet à la fois (réverbération, délai, chorus, compresseur), puis combine-les : l\'ordre des effets change le résultat.',
+      'Délai en croches : une seule répétition, calée sur la croche du tempo, double chaque note. C\'est le son de The Edge, de U2.',
+    ],
+    errors: [
+      ['Compter sur les effets pour cacher des imprécisions.', 'Ils les font souvent ressortir : travaille la technique en son clair, ajoute les effets ensuite.'],
+      ['Trop d\'effets à la fois.', 'Le son devient flou et donne l\'impression de jouer en retard : garde-en peu, choisis-les avec goût.'],
+      ['Passer d\'un coup à des cordes beaucoup plus grosses.', 'Le son grossit, mais les bends deviennent durs et la guitare peut demander un réglage : monte d\'un tirant à la fois.'],
+    ],
+    check: ['Tu sais quel micro et quel réglage choisir pour un solo et pour une rythmique.', 'Tu passes d\'un son saturé à un son presque clair avec le seul volume de la guitare.'],
+  },
+});
+const GUIDE_BOOK = ['l-position', 'l-mediator', 'l-penta', 'l-techniques', 'l-son'];
+
 /* Pourquoi chaque mission : une ligne, sans promesse exagérée. */
 const WHY = {
   vit: 'Tempo propre d\'abord, puis de courtes pointes plus rapides : alterner les deux fait monter la vitesse sans sacrifier la précision.',
