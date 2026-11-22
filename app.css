@@ -834,7 +834,7 @@ button.w-mt, a.w-mt { cursor: pointer; }
 .gf-dt { fill: var(--surface); font: 800 11px var(--body); }
 .gf-dot.root { fill: #FF4D2E; }
 .gf-dt.root { fill: #17132B; }
-.gf-dot.ghost { fill: none; stroke: #8E89A3; stroke-width: 1.5; }
+.gf-dot.ghost { fill: #ECE5D8; stroke: #8E89A3; stroke-width: 1.5; }
 .gf-dt.ghost { fill: var(--muted); }
 .gf-hand { fill: #D9D4EA; stroke: #8E89A3; stroke-width: 1.5; }
 .gf-hand.hot { fill: #C9C1EE; stroke: #5B4BFF; }
@@ -877,13 +877,13 @@ text.gf-bad { fill: var(--bad); stroke: none; font-weight: 800; }
 [data-theme="dark"] .g-fix b { color: #6EE7B7; }
 [data-theme="dark"] .g-okbox { background: #102A20; }
 [data-theme="dark"] .g-okbox .g-list li::before { background: var(--w-ok); }
-[data-theme="dark"] .gf-wood { fill: #2B2636; }
+[data-theme="dark"] .gf-wood, [data-theme="dark"] .gf-dot.ghost { fill: #2B2636; }
 [data-theme="dark"] .gf-fret, [data-theme="dark"] .gf-body { stroke: #6B6478; }
 [data-theme="dark"] .gf-fretb { fill: #6B6478; }
 [data-theme="dark"] .gf-str, [data-theme="dark"] .gf-strl { stroke: #B5B0C4; }
 [data-theme="dark"] .gf-string { fill: #B5B0C4; }
-[data-theme="dark"] .gf-dot { fill: var(--ink); }
-[data-theme="dark"] .gf-dt { fill: #0B0B12; }
+[data-theme="dark"] .gf-dot:not(.root):not(.ghost) { fill: var(--ink); }
+[data-theme="dark"] .gf-dt:not(.ghost) { fill: #0B0B12; }
 [data-theme="dark"] .gf-hand { fill: #3A3650; stroke: #7A7490; }
 [data-theme="dark"] .gf-hand.hot { fill: #4A4170; stroke: #B9B0FF; }
 [data-theme="dark"] .gf-good { stroke: #6EE7B7; }
