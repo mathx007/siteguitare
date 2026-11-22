@@ -10,7 +10,8 @@
   const ALL_PAL = BRANCHES.flatMap((b) => PALIERS[b.id].map((p, i) => ({ ...p, br: b.id, idx: i })));
   const MIC_OK = !!(window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
   const POS_COL = ['#2BC4AE', '#FFC53D', '#FF6B6B', '#6EA8FF', '#F47BE0'];
-  const TABS = [['accueil', 'Accueil', 'guitar'], ['paliers', 'Paliers', 'chart-increasing'], ['collection', 'Collection', 'card-file-box'], ['trophees', 'Trophées', 'trophy'], ['progres', 'Progrès', 'sparkles']];
+  /* [id, nom, icône, nom court affiché dans la barre du bas sur téléphone] */
+  const TABS = [['accueil', 'Accueil', 'guitar'], ['paliers', 'Paliers', 'chart-increasing'], ['collection', 'Collection', 'card-file-box'], ['trophees', 'Trophées', 'trophy'], ['doc', 'Documentation', 'scroll', 'Docs'], ['progres', 'Progrès', 'sparkles']];
   const VIEWS = TABS.map((t) => t[0]).concat(['manche', 'oreille']);
   /* Miniature Wikimedia en taille standard (500 ou 1280 px), demandée sans cookie ni référent. */
   const commons = (file, w) => {
@@ -339,7 +340,7 @@
     const initial = st.name ? st.name.trim().charAt(0).toUpperCase() : u && u.email ? u.email.charAt(0).toUpperCase() : '?';
     $('#top').innerHTML = `<div class="wrap topin">
       <a class="brand" href="#accueil">${E('guitar', 30)}<span>Gratte Quest</span></a>
-      <nav id="nav" aria-label="Sections">${TABS.map(([id, n, ic]) => `<a href="#${id}" class="${ui.tab === id ? 'on' : ''}"${ui.tab === id ? ' aria-current="page"' : ''}>${E(ic, 20, 'navic')}<span>${n}</span></a>`).join('')}</nav>
+      <nav id="nav" aria-label="Sections">${TABS.map(([id, n, ic, sh]) => `<a href="#${id}" class="${ui.tab === id ? 'on' : ''}"${ui.tab === id ? ' aria-current="page"' : ''}>${E(ic, 20, 'navic')}${sh ? `<span class="nav-full">${n}</span><span class="nav-short">${sh}</span>` : `<span>${n}</span>`}</a>`).join('')}</nav>
       <div class="hud">
         <span class="streak" title="Jours validés d'affilée">${E('fire', 20)}<b class="num">${s.streak}</b><span class="hide-s">jour${s.streak > 1 ? 's' : ''}</span></span>
         <span class="lvl hide-s"><span>Niveau ${li.level} · <span class="num">${li.into} / ${li.need}</span> XP</span><span class="bar" role="progressbar" aria-label="Expérience" aria-valuemin="0" aria-valuemax="${li.need}" aria-valuenow="${li.into}"><i style="width:${(100 * li.into / li.need).toFixed(1)}%"></i></span></span>
@@ -416,10 +417,11 @@
     const head = `<tr><td class="rep-c"></td>${strings.map(([s, nm]) => `<th scope="col">${'EADGBE'[s]}<span class="sr-only"> : corde de ${nm}</span></th>`).join('')}</tr>`;
     const rows = frets.map((f) => `<tr class="${f === 0 ? 'f0' : f === 1 ? 'f1' : ''}"><th scope="row" class="rep-c"><span class="sr-only">Case </span>${f}<span class="rep-dots" aria-hidden="true">${f === 12 ? '<i class="rep-dot"></i><i class="rep-dot"></i>' : [3, 5, 7, 9].includes(f) ? '<i class="rep-dot"></i>' : ''}</span></th>${strings.map(([s, nm]) => {
       const midi = Core.OPEN_MIDI[s] + f, pc = Core.mod(midi, 12), n = Core.NOTE_EN[pc], root = pc === ui.fb.root;
-      return `<td><button type="button" class="rn ${n.length > 1 ? 'sh' : 'nat'}${root ? ' root' : ''}" data-act="pluck" data-midi="${midi}" aria-label="Corde de ${nm}, case ${f} : ${n}${root ? ', tonique de la gamme choisie' : ''}">${n}</button></td>`;
+      /* Notes naturelles seulement (A à G), comme en mode sombre : une case vide porte un dièse ou un bémol. */
+      return n.length > 1 ? '<td></td>' : `<td><button type="button" class="rn nat${root ? ' root' : ''}" data-act="pluck" data-midi="${midi}" aria-label="Corde de ${nm}, case ${f} : ${n}${root ? ', tonique de la gamme choisie' : ''}">${n}</button></td>`;
     }).join('')}</tr>`).join('');
-    return `<section class="panel dark repere" aria-labelledby="rep-title"><div><div class="kicker">Repère</div><h2 class="h2" id="rep-title">Notes des cordes de Mi grave et de La</h2><p class="muted">Pour placer la tonique d'un accord barré ou d'une gamme.</p></div>
-      <div class="rep-wrap"><table class="rep"><caption class="sr-only">Notes des cases 0 à 12 des cordes de Mi grave et de La ; les notes se répètent ensuite.</caption><thead>${head}</thead><tbody>${rows}</tbody></table></div>
+    return `<section class="panel dark repere" aria-labelledby="rep-title"><div><div class="kicker">Repère</div><h2 class="h2" id="rep-title">Notes des cordes de Mi grave et de La</h2><p class="muted">Notes naturelles, cases 0 à 12. Pour placer la tonique d'un accord barré ou d'une gamme.</p></div>
+      <div class="rep-wrap"><table class="rep"><caption class="sr-only">Notes naturelles des cordes de Mi grave et de La, cases 0 à 12 ; une case vide porte un dièse ou un bémol. Les notes se répètent ensuite.</caption><thead>${head}</thead><tbody>${rows}</tbody></table></div>
       <p class="small muted">En orange : la tonalité choisie dans le manche complet, en bas de page. Clique sur une case pour l'entendre.</p></section>`;
   }
   function mancheBlock() {
@@ -883,6 +885,98 @@
         <div class="cards">${SONGS.filter((s) => s.ear).map((s) => songCardHtml(s)).join('')}</div></section>`;
   }
 
+  /* ---------- Documentation : guides « Comment bien faire l'exo » et fiches de base ---------- */
+  const GUIDE_ICON = { trem: 'bird', penta16: 'rocket', seq3: 'person-running', saut: 'rabbit-face', legato: 'water-wave', araignee: 'spider' };
+  const guideTitle = (id) => (EXOS[id] ? EXOS[id].t : GUIDES[id].t);
+  const guideIcon = (id) => GUIDE_ICON[id] || GUIDES[id].e || 'scroll';
+  const ytSearch = (q) => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+  /* Schémas : SVG décoratifs (aria-hidden), tout est décrit dans la légende. Couleurs par classes gf-*, thémées en CSS. */
+  const STR_FR = ['Mi', 'Si', 'Sol', 'Ré', 'La', 'Mi'];
+  function gFb(from, to, dots, extra = '') {
+    const fw = 62, ss = 22, x0 = 42, y0 = 16, nF = to - from + 1, W = x0 + nF * fw + (extra ? 64 : 12), H = y0 + 5 * ss + 34;
+    let o = `<svg class="gf" viewBox="0 0 ${W} ${H}" aria-hidden="true" focusable="false"><rect class="gf-wood" x="${x0}" y="${y0 - 8}" width="${nF * fw}" height="${5 * ss + 16}" rx="4"/>`;
+    if (from === 1) o += `<rect class="gf-nut" x="${x0 - 4}" y="${y0 - 8}" width="6" height="${5 * ss + 16}"/>`;
+    for (let i = from === 1 ? 1 : 0; i <= nF; i++) o += `<line class="gf-fret" x1="${x0 + i * fw}" y1="${y0 - 8}" x2="${x0 + i * fw}" y2="${y0 + 5 * ss + 8}"/>`;
+    for (let s = 0; s < 6; s++) o += `<line class="gf-str" x1="${x0}" y1="${y0 + s * ss}" x2="${x0 + nF * fw}" y2="${y0 + s * ss}" stroke-width="${1 + s * 0.35}"/><text class="gf-tx" x="${x0 - 8}" y="${y0 + s * ss + 4}" text-anchor="end">${STR_FR[s]}</text>`;
+    for (let f = from; f <= to; f++) o += `<text class="gf-tx" x="${x0 + (f - from + 0.5) * fw}" y="${H - 6}" text-anchor="middle">case ${f}</text>`;
+    for (const d of dots) { const x = x0 + (d.f - from + 0.5) * fw, y = y0 + (d.s - 1) * ss; o += `<circle class="gf-dot ${d.c || ''}" cx="${x}" cy="${y}" r="9.5"/><text class="gf-dt ${d.c || ''}" x="${x}" y="${y + 4}" text-anchor="middle">${d.l}</text>`; }
+    return o + (extra ? extra(x0 + nF * fw + 14, y0, ss) : '') + '</svg>';
+  }
+  const PENTA1 = [[6, 5, 1], [6, 8, 4], [5, 5, 1], [5, 7, 3], [4, 5, 1], [4, 7, 3], [3, 5, 1], [3, 7, 3], [2, 5, 1], [2, 8, 4], [1, 5, 1], [1, 8, 4]];
+  const arrowV = (x, y1, y2, cls) => `<line class="${cls}" x1="${x}" y1="${y1}" x2="${x}" y2="${y2}"/><path class="${cls} gf-head" d="M${x - 4} ${y2 + (y2 > y1 ? -6 : 6)} L${x} ${y2} L${x + 4} ${y2 + (y2 > y1 ? -6 : 6)}"/>`;
+  const fig1 = (svg, cap, tone) => `<figure class="g-pane${tone ? ' ' + tone : ''}">${svg}<figcaption>${cap}</figcaption></figure>`;
+  function pickSvg(good) {
+    const top = good ? 52 : 56, h = good ? 60 : 30, tip = good ? 124 : 140, cls = good ? 'gf-good' : 'gf-bad', ax = good ? [104, 136] : [44, 196];
+    /* La corde (point) est à côté de la pointe, à la hauteur où une pointe courte vient juste l'accrocher. */
+    return `<svg class="gf" viewBox="0 0 240 170" aria-hidden="true" focusable="false"><line class="gf-body" x1="10" y1="156" x2="230" y2="156"/>
+      <path class="gf-pick" d="M96 ${tip - 62} Q120 ${tip - 70} 144 ${tip - 62} Q149 ${tip - 54} 141 ${tip - 40} L124 ${tip - 3} Q120 ${tip + 3} 116 ${tip - 3} L99 ${tip - 40} Q91 ${tip - 54} 96 ${tip - 62} Z"/>
+      <rect class="gf-hand" x="84" y="${top}" width="72" height="${h}" rx="22"/><text class="gf-tx" x="120" y="${top + h / 2 + 4}" text-anchor="middle">doigts</text><circle class="gf-string" cx="104" cy="120" r="6"/><text class="gf-tx" x="92" y="124" text-anchor="end">corde</text>
+      <line class="${cls}" x1="164" y1="${top + h}" x2="164" y2="${tip}"/><line class="${cls}" x1="158" y1="${top + h}" x2="170" y2="${top + h}"/><line class="${cls}" x1="158" y1="${tip}" x2="170" y2="${tip}"/>
+      <text class="gf-tx ${cls}" x="176" y="${(top + h + tip) / 2 + 4}">${good ? '1 à 2 mm' : 'trop long'}</text>
+      <line class="${cls}" x1="${ax[0]}" y1="30" x2="${ax[1]}" y2="30"/><path class="${cls} gf-head" d="M${ax[0] + 7} 25 L${ax[0]} 30 L${ax[0] + 7} 35 M${ax[1] - 7} 25 L${ax[1]} 30 L${ax[1] - 7} 35"/>
+      <text class="gf-tx" x="120" y="18" text-anchor="middle">${good ? 'petit mouvement' : 'grand mouvement'}</text></svg>`;
+  }
+  /* Coupe des 6 cordes vue depuis le chevalet : Mi grave à gauche, Mi aigu à droite. */
+  function crossSvg(inner, w = 240) {
+    const xs = [30, 66, 102, 138, 174, 210].map((x) => x * w / 240);
+    return `<svg class="gf" viewBox="0 0 ${w} 160" aria-hidden="true" focusable="false"><rect class="gf-wood" x="8" y="122" width="${w - 16}" height="12" rx="6"/>${inner(xs)}${xs.map((x, i) => `<text class="gf-tx" x="${x}" y="154" text-anchor="middle">${['Mi', 'La', 'Ré', 'Sol', 'Si', 'Mi'][i]}</text>`).join('')}</svg>`;
+  }
+  const strDots = (xs, hot) => xs.map((x, i) => `<circle class="gf-string${hot.includes(i) ? ' hot' : ''}" cx="${x}" cy="110" r="${hot.includes(i) ? 7 : 5.5}"/>`).join('');
+  function guideFig(kind) {
+    let panes = '';
+    if (kind === 'pick') panes = fig1(pickSvg(true), '<b>Bien :</b> seule la pointe dépasse et le médiator ne s\'éloigne que de quelques millimètres de la corde.', 'good')
+      + fig1(pickSvg(false), '<b>À éviter :</b> trop de pointe qui s\'enfonce dans la corde et un grand mouvement qui fait perdre du temps.', 'bad');
+    else if (kind === 'penta') panes = fig1(gFb(5, 8, PENTA1.map(([s, f, l]) => ({ s, f, l, c: (s === 6 || s === 1) && f === 5 || s === 4 && f === 7 ? 'root' : '' })),
+      (x, y0, ss) => [0, 1, 2, 3, 4, 5].map((s) => arrowV(x + 6, y0 + s * ss - 7, y0 + s * ss + 7, 'gf-ink') + arrowV(x + 30, y0 + s * ss + 7, y0 + s * ss - 7, 'gf-ink')).join('')),
+    'Position 1 de la penta de La mineur. Le chiffre est le doigt : 1 index, 3 annulaire, 4 auriculaire. En orange, les La. À droite : sur chaque corde, un coup vers le bas puis un coup vers le haut.');
+    else if (kind === 'seq') panes = fig1(gFb(5, 8, PENTA1.map(([s, f], i) => ({ s, f, l: i + 1, c: i < 3 ? 'root' : '' }))),
+      'Les notes de la position numérotées de la plus grave (1) à la plus aiguë (12). Premier groupe en orange : 1-2-3. Puis 2-3-4, 3-4-5, et ainsi de suite.');
+    else if (kind === 'skip') panes = fig1(crossSvg((xs) => strDots(xs, [0, 2]) + `<path class="gf-good gf-arc" d="M${xs[0]} 100 Q${xs[1]} 74 ${xs[2]} 100"/><path class="gf-good gf-head" d="M${xs[2] - 9} 95 L${xs[2]} 100 L${xs[2] - 2} 90"/>`),
+      '<b>Bien :</b> un arc bas qui passe juste au-dessus de la corde de La pour aller du Mi grave au Ré.', 'good')
+      + fig1(crossSvg((xs) => strDots(xs, [0, 2]) + `<path class="gf-bad gf-arc dash" d="M${xs[0]} 100 Q${xs[1]} 0 ${xs[2]} 100"/>`), '<b>À éviter :</b> un arc haut, lent et imprécis.', 'bad');
+    else if (kind === 'legato') panes = fig1(`<svg class="gf" viewBox="0 0 240 160" aria-hidden="true" focusable="false"><rect class="gf-wood" x="10" y="112" width="220" height="26" rx="4"/>${[60, 130, 200].map((x) => `<rect class="gf-fretb" x="${x - 3}" y="102" width="6" height="10" rx="2"/>`).join('')}<line class="gf-strl" x1="10" y1="100" x2="230" y2="100"/>
+        <rect class="gf-hand" x="38" y="44" width="20" height="56" rx="10"/><rect class="gf-hand hot" x="104" y="38" width="22" height="58" rx="11"/>${arrowV(115, 6, 30, 'gf-good')}<text class="gf-tx" x="132" y="22">frappe</text>
+        <text class="gf-tx" x="48" y="36" text-anchor="middle">index</text><text class="gf-tx" x="115" y="152" text-anchor="middle">annulaire</text><text class="gf-tx" x="200" y="152" text-anchor="middle">frette</text></svg>`,
+    '<b>Hammer-on :</b> l\'index tient la note grave, l\'annulaire tombe vite sur le bout du doigt, juste derrière la frette.', 'good')
+      + fig1(crossSvg((xs) => strDots(xs, [3]) + `<rect class="gf-hand hot" x="${xs[3] - 11}" y="40" width="22" height="64" rx="11"/><path class="gf-good gf-arc" d="M${xs[3] + 14} 96 Q${xs[4]} 112 ${xs[5] - 4} 100"/><path class="gf-good gf-head" d="M${xs[5] - 13} 98 L${xs[5] - 4} 100 L${xs[5] - 9} 108"/><text class="gf-tx" x="232" y="80" text-anchor="end">vers le sol</text>`),
+      '<b>Pull-off :</b> vu depuis le chevalet. Le doigt tire la corde de Sol un peu vers le sol avant de la lâcher, au lieu de se lever tout droit.', 'good');
+    else if (kind === 'spider') panes = fig1(gFb(1, 4, [6, 5, 4, 3, 2, 1].flatMap((s) => [1, 2, 3, 4].map((f) => ({ s, f, l: f, c: s === 6 ? 'root' : s > 4 ? '' : 'ghost' })))),
+      'Un doigt par case : index case 1, majeur 2, annulaire 3, auriculaire 4. On commence sur le Mi grave (en orange), puis corde par corde jusqu\'au Mi aigu, et retour.');
+    else if (kind === 'mute') panes = fig1(crossSvg((xs) => `<rect class="gf-zone r" x="${xs[0] - 16}" y="88" width="${xs[2] - xs[0] + 32}" height="40" rx="14"/><rect class="gf-zone l" x="${xs[4] - 16}" y="88" width="${xs[5] - xs[4] + 32}" height="40" rx="14"/>${strDots(xs, [3])}
+        <text class="gf-tx" x="${xs[1]}" y="76" text-anchor="middle">paume droite</text><text class="gf-tx" x="${(xs[4] + xs[5]) / 2}" y="76" text-anchor="middle">doigts gauches</text><text class="gf-tx gf-strong" x="${xs[3]}" y="40" text-anchor="middle">jouée</text>${arrowV(xs[3], 48, 96, 'gf-ink')}`, 300),
+      'Vu depuis le chevalet, en jouant la corde de Sol : la paume droite couvre les cordes plus graves, les doigts de la main gauche effleurent les plus aiguës.');
+    return panes ? `<div class="g-fig${panes.split('<figure').length > 2 ? ' two' : ''}">${panes}</div>` : '';
+  }
+  function guideSheet(id, from) {
+    const g = GUIDES[id], ex = EXOS[id], b = BR.vit, col = ex ? b.color : 'var(--accent)', soft = ex ? b.soft : '#ECEAFF';
+    const li = (a) => a.map((x) => `<li>${esc(x)}</li>`).join('');
+    return `<div class="sheet msheet gsheet" style="--col:${col};--soft:${soft}">
+      <div class="mhead"><span class="mic">${E(guideIcon(id), 40)}</span><div><div class="kicker" style="color:${col}">${ex ? 'Comment bien faire l\'exo · ' + esc(ex.fun) : 'Documentation · Les bases'}</div><h2 class="h2" id="g-title">${esc(guideTitle(id))}</h2></div></div>
+      <p class="g-goal">${esc(g.goal)}</p>${guideFig(g.fig)}
+      <section class="g-sec"><h3 class="h3">${ex ? 'Avant de commencer : position des mains' : 'Les repères'}</h3><ul class="g-list">${li(g.setup)}</ul></section>
+      <section class="g-sec"><h3 class="h3">${ex ? 'Le mouvement, étape par étape' : 'Pour t\'entraîner'}</h3><ol class="g-steps">${li(g.steps)}</ol></section>
+      <section class="g-sec"><h3 class="h3">Erreurs fréquentes</h3><ul class="g-err">${g.errors.map(([bad, fix]) => `<li><p class="g-bad"><b>À éviter :</b> ${esc(bad)}</p><p class="g-fix"><b>Correction :</b> ${esc(fix)}</p></li>`).join('')}</ul></section>
+      <section class="g-sec g-okbox"><h3 class="h3">${E('check-mark-button', 22)} Tu le fais bien si…</h3><ul class="g-list">${li(g.check)}</ul></section>
+      <div class="g-video"><a class="btn ghost sm" href="${esc(ytSearch(g.yt))}" target="_blank" rel="noopener noreferrer">${E('eye', 20)} Voir des démonstrations vidéo<span class="sr-only"> sur YouTube, nouvel onglet</span></a><span class="small muted">Recherche YouTube, dans un nouvel onglet. Les vidéos ne sont pas choisies par Gratte Quest.</span></div>
+      <div class="row between foot">${from ? `<button class="btn" data-act="mission-open" data-id="${esc(from)}" data-back="1">Retour à la mission</button>` : '<span></span>'}<button class="link" data-act="close">Fermer</button></div></div>`;
+  }
+  /* Exercice de vitesse de la séance du jour (pour le mettre en avant dans la Documentation). */
+  const todayExo = () => { const m = missionsFor(today()).find((x) => x.exo); return m ? m.exo : null; };
+  const EXO_IDS = Object.keys(EXOS);
+  function viewDoc() {
+    const te = todayExo();
+    const tile = (id) => `<button type="button" class="gtile${id === te ? ' today' : ''}" data-act="guide" data-id="${id}">${E(guideIcon(id), 40)}<span class="gt-t"><b>${esc(EXOS[id] ? EXOS[id].fun : guideTitle(id))}</b>${EXOS[id] ? `<span class="gt-s">${esc(EXOS[id].t)}</span>` : ''}<span class="gt-p">${esc(GUIDES[id].goal)}</span></span>${id === te ? '<span class="pill">Exercice du jour</span>' : ''}</button>`;
+    return `<section class="pagehead"><div><div class="kicker muted">Apprendre</div><h1 class="h1">Documentation</h1><p class="muted">Avant de lancer un exercice : la position des mains, le mouvement étape par étape et les erreurs qui bloquent la progression.</p></div></section>
+      <section class="panel"><h2 class="h3">${E('high-voltage', 26)} Exercices de vitesse</h2><div class="gtiles">${EXO_IDS.map(tile).join('')}</div></section>
+      <section class="panel"><h2 class="h3">${E('scroll', 26)} Les bases</h2><div class="gtiles">${GUIDE_BASES.map(tile).join('')}</div></section>`;
+  }
+  function wallDoc() {
+    const te = todayExo(), art = songById('johnny');
+    const tile = (id) => wTile({ act: `data-act="guide" data-id="${id}"`, icon: guideIcon(id), t: EXOS[id] ? EXOS[id].fun : guideTitle(id), s: EXOS[id] ? EXOS[id].t + (id === te ? ' · exercice du jour' : '') : 'Les bases', p: GUIDES[id].goal, cls: id === te ? 'is-focus' : '' });
+    return wBill(art, `<h1>Documentation</h1><p class="w-lede">Avant de lancer un exercice : la position des mains, le mouvement étape par étape et les erreurs qui bloquent la progression.</p>${te ? `<div class="w-acts"><button type="button" class="w-btn w-btn-1" data-act="guide" data-id="${te}">${E(guideIcon(te), 22)}Guide de l'exercice du jour</button></div><p class="w-note">${esc(EXOS[te].fun)} · ${esc(EXOS[te].t)}</p>` : ''}`)
+      + `<div class="w-wall">${wRow('Exercices de vitesse', `${EXO_IDS.length} guides`, EXO_IDS.map(tile))}${wRow('Les bases', '', GUIDE_BASES.map(tile))}</div>`;
+  }
+
   /* ---------- Modales ---------- */
   function missionSheet(m) {
     const k = today(), r = getRec(k), done = r.done.includes(m.id), b = BR[m.br], t = ui.timer && ui.timer.mid === m.id ? ui.timer : null;
@@ -898,6 +992,7 @@
     return `<div class="sheet msheet" style="--col:${b.color};--soft:${b.soft}">
       <div class="mhead"><span class="mic">${E(b.icon, 40)}</span><div><div class="kicker" style="color:${b.color}">${esc(b.name)} · ${esc(m.sub)}</div><h2 class="h2">${esc(m.fun)}</h2></div><span class="mmin">${m.min} min</span></div>
       <p>${esc(m.text)}</p><p class="why">${E('brain', 20)} <span><b>Pourquoi :</b> ${esc(m.why)}</span></p>
+      ${m.exo && GUIDES[m.exo] ? `<button type="button" class="howto" data-act="guide" data-id="${m.exo}" data-from="${m.id}">${E('scroll', 28)}<span><b>Comment bien faire l'exo</b><span>Position des mains, mouvement, erreurs à éviter</span></span><span class="howto-go" aria-hidden="true">→</span></button>` : ''}
       ${timer}${tool}
       <div class="row between foot">${done ? `<span class="pill good">${E('check-mark-button', 18)} Mission validée</span>` : m.auto ? '<span class="small muted">Se valide toute seule à 8 bonnes réponses.</span>' : `<button class="btn ok" data-act="mission" data-id="${m.id}">${E('check-mark-button', 20)} Mission validée</button>`}<button class="link" data-act="close">Fermer</button></div></div>`;
   }
@@ -954,6 +1049,7 @@
     let inner = '';
     if (m.type === 'mission') { const ms = missionsFor(today()).find((x) => x.id === m.id); if (!ms) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = missionSheet(ms); }
     else if (m.type === 'song') { const s = songById(m.id); if (!s) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = songSheet(s); }
+    else if (m.type === 'guide') { if (!GUIDES[m.id]) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = guideSheet(m.id, m.from); }
     else if (m.type === 'booster') {
       /* Séquence : le paquet tremble, le sceau se fissure, flash, carte face cachée ; au clic (ou Entrée/Espace) elle se retourne et le bandeau de rareté s'envole. */
       const b = BONUS.find((x) => x.id === m.card), r = BONUS_RAR[b.r], done = m.stage === 'revealed';
@@ -998,7 +1094,9 @@
     if (!wasOpen || inside || !el.contains(document.activeElement)) {
       const sh = el.querySelector('.sheet'); if (sh) sh.setAttribute('tabindex', '-1');
       const first = m.type === 'booster' ? el.querySelector(m.stage === 'revealed' ? '[data-act="close"]' : '.bhit') : null;
-      const target = (key && el.querySelector(key)) || first || sh;
+      /* Retour d'un guide vers sa mission : le focus revient sur le bouton « Comment bien faire l'exo ». */
+      const back = m.focusSel ? el.querySelector(m.focusSel) : null; m.focusSel = null;
+      const target = back || (key && el.querySelector(key)) || first || sh;
       if (target && (!wasOpen || inside)) target.focus({ preventScroll: true });
     }
   }
@@ -1041,8 +1139,8 @@
   /* ---------- Rendu global ---------- */
   function renderView() {
     /* Mode sombre : Accueil, Collection, Paliers et Trophées en « Mur de cartes » ; Progrès bascule lui-même ; Manche et Oreille gardent leur mise en page. */
-    const wall = isDark() ? { accueil: wallAccueil, paliers: wallPaliers, collection: wallCollection, trophees: wallTrophees } : {};
-    const v = wall[ui.tab] || { accueil: viewAccueil, paliers: viewPaliers, collection: viewCollection, trophees: viewTrophees, progres: viewProgres, manche: viewManche, oreille: viewOreille }[ui.tab] || viewAccueil;
+    const wall = isDark() ? { accueil: wallAccueil, paliers: wallPaliers, collection: wallCollection, trophees: wallTrophees, doc: wallDoc } : {};
+    const v = wall[ui.tab] || { accueil: viewAccueil, paliers: viewPaliers, collection: viewCollection, trophees: viewTrophees, doc: viewDoc, progres: viewProgres, manche: viewManche, oreille: viewOreille }[ui.tab] || viewAccueil;
     const el = $('#view'), a = document.activeElement;
     /* Après un rafraîchissement, le focus clavier revient sur la même commande (menu, puce, bouton). */
     let sel = null;
@@ -1164,7 +1262,8 @@
     dock() { ui.dock = !ui.dock; render(); },
     session() { startSession(); },
     'session-stop'() { ui.session = null; render(); },
-    'mission-open'(d) { ui.modal = { type: 'mission', id: d.id }; render(); },
+    'mission-open'(d) { ui.modal = { type: 'mission', id: d.id, focusSel: d.back ? '[data-act="guide"]' : null }; render(); },
+    guide(d) { ui.modal = { type: 'guide', id: d.id, from: d.from || null }; render(); },
     mission(d) { completeMission(d.id); },
     timer(d) { const m = missionsFor(today()).find((x) => x.id === d.id); if (m) startTimer(m.id, m.min); },
     'timer-pause'() { pauseTimer(); },

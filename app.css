@@ -767,3 +767,129 @@ button.w-mt, a.w-mt { cursor: pointer; }
   .w-rail > *, .w-row, .w-btn, .w-nn { transition: none; }
   .w-rail > :hover, .w-rail > :focus-visible, .w-rail > .is-focus { transform: none; }
 }
+
+/* ==========================================================================
+   Guides « Comment bien faire l'exo » et onglet Documentation (deux modes)
+   ========================================================================== */
+.nav-short { display: none; }
+/* « Documentation » en entier seulement sur grand écran : en dessous, la barre du haut n'a pas la place pour six onglets. */
+@media (max-width: 1359px) { #nav .nav-full { display: none; } #nav .nav-short { display: inline; } }
+
+/* Barre du haut sur écran moyen (fenêtre en moitié d'écran) : six onglets ne tiennent qu'en masquant la barre d'XP
+   (visible dans Progrès), en resserrant les onglets et, sous 1024 px, en ne gardant que le logo (nom lu par les lecteurs d'écran). */
+@media (min-width: 861px) and (max-width: 1239px) { .hud .lvl { display: none; } #nav { gap: 2px; } #nav a { padding: 10px 10px; } }
+@media (min-width: 861px) and (max-width: 1023px) { .brand span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
+@media (max-width: 380px) { .hud { gap: 6px; } .streak { padding-left: 8px; padding-right: 8px; } }
+
+/* Repère de l'Accueil en notes naturelles : une case vide garde la hauteur d'une case jouable. */
+.rep tbody td:empty { height: 44px; }
+@media (min-width: 1024px) { .repere .rep tbody td:empty { height: 36px; } }
+
+/* Bouton dans la fenêtre de mission */
+.howto { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; border-radius: 16px; border: 2px solid var(--col); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: transform .15s var(--ease-out), background-color .15s; }
+.howto > span:not(.howto-go) { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.howto b { font-weight: 800; }
+.howto span span { font-size: .86rem; color: var(--muted); }
+.howto-go { font-size: 1.4rem; font-weight: 800; color: var(--col); line-height: 1; }
+.howto:hover { background: var(--soft); }
+.howto:active { transform: scale(.98); }
+
+/* Fenêtre du guide */
+.gsheet { width: min(760px, 100%); gap: 18px; }
+.g-goal { font-size: 1.05rem; font-weight: 600; }
+.g-fig { display: grid; gap: 12px; }
+.g-fig.two { grid-template-columns: 1fr 1fr; }
+.g-pane { margin: 0; padding: 14px; border-radius: 16px; background: var(--bg); border: 2px solid transparent; display: flex; flex-direction: column; gap: 10px; }
+.g-pane.good { border-color: #A9DCC2; }
+.g-pane.bad { border-color: #F0B4BD; }
+.g-pane figcaption { font-size: .88rem; color: var(--muted); }
+.g-pane figcaption b { color: var(--ink); }
+.g-sec { display: flex; flex-direction: column; gap: 10px; }
+.g-list, .g-steps, .g-err { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.g-list li { position: relative; padding-left: 22px; }
+.g-list li::before { content: ""; position: absolute; left: 6px; top: .62em; width: 7px; height: 7px; border-radius: 50%; background: var(--col); }
+.g-steps { counter-reset: gs; gap: 10px; }
+.g-steps li { counter-increment: gs; position: relative; padding-left: 40px; min-height: 28px; }
+.g-steps li::before { content: counter(gs); position: absolute; left: 0; top: -2px; width: 28px; height: 28px; border-radius: 50%; background: var(--col); color: #fff; font-weight: 800; font-size: .9rem; display: grid; place-items: center; }
+.g-err li { border-radius: 14px; background: var(--bg); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+.g-bad b { color: var(--bad); }
+.g-fix b { color: var(--good); }
+.g-okbox { background: #E4F5EC; border-radius: 16px; padding: 14px 16px; }
+.g-okbox .g-list li::before { background: var(--good); }
+.g-video { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+@media (max-width: 560px) { .g-fig.two { grid-template-columns: 1fr; } .gsheet { padding: 22px 16px; } }
+
+/* Schémas (SVG décoratifs, décrits par leur légende) */
+.gf { display: block; width: 100%; height: auto; max-height: 230px; }
+.gf-wood { fill: #ECE5D8; }
+.gf-nut { fill: var(--ink); }
+.gf-fret, .gf-body { stroke: #A39B8E; stroke-width: 2; }
+.gf-body { stroke-width: 3; }
+.gf-fretb { fill: #A39B8E; }
+.gf-str, .gf-strl { stroke: #6E6880; }
+.gf-strl { stroke-width: 2; }
+.gf-tx { fill: var(--muted); font: 600 11px var(--body); }
+.gf-strong { fill: var(--ink); font-weight: 800; }
+.gf-dot { fill: var(--ink); }
+.gf-dt { fill: var(--surface); font: 800 11px var(--body); }
+.gf-dot.root { fill: #FF4D2E; }
+.gf-dt.root { fill: #17132B; }
+.gf-dot.ghost { fill: none; stroke: #8E89A3; stroke-width: 1.5; }
+.gf-dt.ghost { fill: var(--muted); }
+.gf-hand { fill: #D9D4EA; stroke: #8E89A3; stroke-width: 1.5; }
+.gf-hand.hot { fill: #C9C1EE; stroke: #5B4BFF; }
+.gf-pick { fill: #FF4D2E; }
+.gf-string { fill: #6E6880; }
+.gf-string.hot { fill: #FF4D2E; }
+.gf-good, .gf-bad, .gf-ink { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.gf-good { stroke: var(--good); }
+.gf-bad { stroke: var(--bad); }
+.gf-ink { stroke: var(--ink); stroke-width: 2; }
+text.gf-good { fill: var(--good); stroke: none; font-weight: 800; }
+text.gf-bad { fill: var(--bad); stroke: none; font-weight: 800; }
+.gf-arc.dash { stroke-dasharray: 6 5; }
+.gf-zone.r { fill: rgba(91, 75, 255, .14); stroke: #5B4BFF; stroke-width: 1.5; }
+.gf-zone.l { fill: rgba(23, 119, 80, .14); stroke: var(--good); stroke-width: 1.5; }
+
+/* Onglet Documentation, mode clair */
+.gtiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.gtile { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 18px; border-radius: 20px; border: 2px solid transparent; background: var(--bg); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: transform .15s var(--ease-out), border-color .15s; }
+.gtile .gt-t { display: flex; flex-direction: column; gap: 3px; }
+.gtile b { font-family: var(--display); font-stretch: 112%; font-weight: 900; font-size: 1.05rem; line-height: 1.15; }
+.gt-s { font-size: .86rem; font-weight: 700; color: var(--muted); }
+.gt-p { font-size: .86rem; color: #3D3958; }
+.gtile:hover { border-color: var(--ink); }
+.gtile:active { transform: scale(.98); }
+.gtile.today { border-color: var(--accent); }
+.gtile .pill { background: var(--surface); }
+
+/* Mode sombre */
+[data-theme="dark"] .mhead .kicker { color: var(--muted) !important; } /* la couleur de branche manque de contraste sur fond sombre */
+[data-theme="dark"] .howto { background: #12121C; border-color: #45455A; }
+[data-theme="dark"] .howto:hover { background: #232333; }
+[data-theme="dark"] .howto-go { color: var(--w-gold); }
+[data-theme="dark"] .g-pane, [data-theme="dark"] .g-err li { background: #12121C; }
+[data-theme="dark"] .g-pane.good { border-color: #1F5A40; }
+[data-theme="dark"] .g-pane.bad { border-color: #6A2A33; }
+[data-theme="dark"] .g-list li::before { background: var(--w-red); }
+[data-theme="dark"] .g-steps li::before { background: #2E2E40; color: var(--ink); box-shadow: inset 0 0 0 2px var(--w-red); }
+[data-theme="dark"] .g-bad b { color: #FF8A8A; }
+[data-theme="dark"] .g-fix b { color: #6EE7B7; }
+[data-theme="dark"] .g-okbox { background: #102A20; }
+[data-theme="dark"] .g-okbox .g-list li::before { background: var(--w-ok); }
+[data-theme="dark"] .gf-wood { fill: #2B2636; }
+[data-theme="dark"] .gf-fret, [data-theme="dark"] .gf-body { stroke: #6B6478; }
+[data-theme="dark"] .gf-fretb { fill: #6B6478; }
+[data-theme="dark"] .gf-str, [data-theme="dark"] .gf-strl { stroke: #B5B0C4; }
+[data-theme="dark"] .gf-string { fill: #B5B0C4; }
+[data-theme="dark"] .gf-dot { fill: var(--ink); }
+[data-theme="dark"] .gf-dt { fill: #0B0B12; }
+[data-theme="dark"] .gf-hand { fill: #3A3650; stroke: #7A7490; }
+[data-theme="dark"] .gf-hand.hot { fill: #4A4170; stroke: #B9B0FF; }
+[data-theme="dark"] .gf-good { stroke: #6EE7B7; }
+[data-theme="dark"] .gf-bad { stroke: #FF8A8A; }
+[data-theme="dark"] text.gf-good { fill: #6EE7B7; }
+[data-theme="dark"] text.gf-bad { fill: #FF8A8A; }
+[data-theme="dark"] .gf-zone.r { fill: rgba(185, 176, 255, .14); stroke: #B9B0FF; }
+[data-theme="dark"] .gf-zone.l { fill: rgba(110, 231, 183, .12); stroke: #6EE7B7; }
+@media (prefers-reduced-motion: reduce) { .howto, .gtile { transition: none; } .howto:active, .gtile:active { transform: none; } }

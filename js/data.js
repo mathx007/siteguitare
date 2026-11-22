@@ -63,6 +63,244 @@ const EXOS = {
 };
 const EXO_ROTATION = ['trem', 'penta16', 'trem', 'seq3', 'saut', 'trem', 'legato', 'araignee'];
 
+/* Guides « Comment bien faire l'exo » (une entrée par exercice de vitesse) et fiches de base de l'onglet Documentation.
+   errors : [ce qui se passe, comment corriger]. fig : schéma dessiné par le site. yt : recherche YouTube ouverte dans un nouvel onglet. */
+const GUIDES = {
+  trem: {
+    kind: 'exo', fig: 'pick', yt: 'trémolo picking guitare tuto',
+    goal: 'Répéter une seule note très vite et très régulièrement, sans que le bras se raidisse.',
+    setup: [
+      'Médiator tenu entre la pulpe du pouce et le côté de l\'index replié. Seule la pointe dépasse, 1 à 2 mm : moins il y a de médiator dans la corde, moins il accroche.',
+      'Prise ferme mais souple : le médiator ne doit pas tourner, mais tes doigts ne blanchissent pas.',
+      'Avant-bras posé sur le haut de la caisse. Le poignet reste libre, la tranche de la main peut effleurer les cordes graves pour les faire taire, sans appuyer.',
+      'Main gauche : un doigt (annulaire ou majeur) case 9 de la corde de Sol, juste derrière la frette. Les autres doigts touchent légèrement les cordes voisines pour qu\'elles ne sonnent pas.',
+    ],
+    steps: [
+      'Sans métronome, joue lentement en aller-retour : bas, haut, bas, haut. Les deux sens doivent sonner au même volume.',
+      'Le mouvement vient du poignet (une petite rotation, comme pour secouer une goutte d\'eau), pas du coude ni des doigts. La pointe ne s\'éloigne que de quelques millimètres de la corde.',
+      'Lance le métronome à ton tempo propre et joue 4 notes par clic (doubles croches), le coup vers le bas sur le clic.',
+      'Deux séries de 45 secondes. Si l\'épaule ou l\'avant-bras se crispe, baisse de 5 bpm : la détente compte plus que la vitesse.',
+      'Trois pointes de 5 secondes à +20 bpm. C\'est normal que ce soit moins propre ; reste relâché, puis reviens au tempo propre.',
+    ],
+    errors: [
+      ['L\'épaule monte et l\'avant-bras se durcit : la vitesse plafonne et la fatigue arrive vite.', 'Respire, laisse tomber l\'épaule, secoue la main entre les séries. Baisse le tempo jusqu\'à ce que le geste soit léger.'],
+      ['Grand mouvement : le médiator part loin de la corde à chaque coup.', 'Garde la pointe tout près de la corde. Plus le trajet est court, plus tu peux aller vite.'],
+      ['La pointe s\'enfonce trop : elle accroche et frotte.', 'Ne laisse dépasser que 1 à 2 mm et incline très légèrement le médiator.'],
+      ['Les coups vers le bas sonnent plus fort que les coups vers le haut.', 'Écoute les 4 notes de chaque clic : elles doivent être identiques. Ralentis pour les égaliser.'],
+      ['Tout le bras bouge depuis le coude.', 'Le coude reste calme ; seul le poignet travaille.'],
+      ['Les cordes voisines se mettent à sonner.', 'Tranche de la main droite sur les cordes graves, doigts libres de la main gauche sur les aiguës.'],
+    ],
+    check: ['Les notes sont régulières comme une machine à coudre.', 'Tu peux respirer normalement (et même parler) pendant la série.', 'Après 45 secondes, ton bras est fatigué mais pas dur ni douloureux.'],
+  },
+  penta16: {
+    kind: 'exo', fig: 'penta', yt: 'gamme pentatonique aller retour médiator guitare',
+    goal: 'Monter et descendre la penta d\'un seul trait, les deux mains parfaitement ensemble.',
+    setup: [
+      'Main gauche : un doigt par case. En position 1 de La mineur, l\'index joue la case 5, l\'annulaire la case 7 et l\'auriculaire la case 8.',
+      'Pouce derrière le manche, vers le milieu, à peu près en face du majeur. Le poignet n\'est pas cassé.',
+      'Doigts arrondis : tu appuies avec le bout, juste derrière la frette.',
+      'Main droite : aller-retour strict. Bas, haut, bas, haut, sans aucune exception, même quand tu changes de corde.',
+    ],
+    steps: [
+      'Joue la gamme lentement, une note par clic, en disant « bas, haut » à voix haute.',
+      'En penta, il y a 2 notes par corde : chaque corde commence par un coup vers le bas. Profite de cette régularité.',
+      'Passe à 2 notes par clic, puis à 4 (doubles croches), au tempo où tout reste propre.',
+      'Enchaîne la montée et la descente sans t\'arrêter aux extrémités : le changement de direction se fait dans le rythme.',
+      'Deux passages au tempo propre, puis deux pointes à +15 bpm.',
+    ],
+    errors: [
+      ['Deux coups vers le bas d\'affilée en changeant de corde.', 'Reviens lentement et vérifie le sens de chaque coup : l\'aller-retour doit être strict.'],
+      ['Les mains se décalent : la note sonne avant que le doigt soit posé, ou le doigt part trop tôt.', 'Ralentis jusqu\'à ce que doigt et médiator tombent exactement ensemble.'],
+      ['Les doigts de la main gauche s\'envolent loin du manche.', 'Ils restent à moins d\'un centimètre des cordes, prêts à retomber.'],
+      ['Tu accélères dans la descente.', 'Le métronome sert d\'arbitre : la descente se joue au même tempo que la montée.'],
+      ['Pause au sommet ou en bas de la gamme.', 'Pense la gamme comme une boucle, sans point d\'arrêt.'],
+    ],
+    check: ['Chaque note a la même durée et le même volume.', 'Tu entends une seule ligne continue, sans trou au changement de corde.', 'Tes doigts restent près du manche même en fin de série.'],
+  },
+  seq3: {
+    kind: 'exo', fig: 'seq', yt: 'séquence de 3 notes gamme pentatonique guitare',
+    goal: 'Casser l\'habitude de jouer la gamme de haut en bas, et préparer des phrases de solo plus vivantes.',
+    setup: [
+      'Même position de main gauche que pour la penta : un doigt par case, pouce derrière le manche.',
+      'Numérote les notes de la position, de la plus grave (1) à la plus aiguë (12).',
+      'Main droite en aller-retour strict, comme toujours en vitesse.',
+    ],
+    steps: [
+      'Joue 1-2-3, puis 2-3-4, puis 3-4-5, et ainsi de suite jusqu\'en haut.',
+      'Redescends de la même façon : 12-11-10, puis 11-10-9…',
+      'Commence en triolets : 3 notes par clic, chaque groupe démarre sur le clic. Tu sens ainsi les groupes.',
+      'Quand c\'est solide, tu peux passer en doubles croches (4 notes par clic) : les groupes ne tombent plus sur le clic, c\'est un excellent travail de rythme.',
+      'Tempo propre d\'abord, puis une pointe à +15 bpm.',
+    ],
+    errors: [
+      ['Tu perds le fil du motif et tu inventes une suite.', 'Ralentis et dis les numéros à voix haute. Le motif doit devenir automatique avant d\'accélérer.'],
+      ['Petite pause entre chaque groupe de 3.', 'Les groupes s\'enchaînent sans respiration : la dernière note d\'un groupe mène directement à la suivante.'],
+      ['Chaque groupe recommence par un coup vers le bas.', 'En aller-retour strict, un groupe de 3 sur deux commence vers le haut. C\'est voulu.'],
+      ['L\'accent tombe toujours sur la première note du groupe en doubles croches.', 'En doubles croches, l\'accent suit le clic, pas le groupe. Écoute le métronome.'],
+    ],
+    check: ['Tu peux jouer toute la séquence sans regarder et sans t\'arrêter.', 'Le motif est aussi régulier en descente qu\'en montée.'],
+  },
+  saut: {
+    kind: 'exo', fig: 'skip', yt: 'string skipping guitare exercice',
+    goal: 'Passer d\'une corde à une corde non voisine sans rater la cible ni faire sonner celle du milieu.',
+    setup: [
+      'Penta en position 1, même doigté que d\'habitude.',
+      'La paume de la main droite étouffe les cordes plus graves que celle que tu joues ; le dessous des doigts de la main gauche étouffe les cordes plus aiguës.',
+      'Le poignet droit peut glisser légèrement sur le chevalet pour suivre les cordes, sans perdre son appui.',
+    ],
+    steps: [
+      'Joue les 2 notes de la corde de Mi grave (6), puis les 2 notes de la corde de Ré (4). Ensuite La (5) puis Sol (3), Ré (4) puis Si (2), Sol (3) puis Mi aigu (1). Puis redescends.',
+      'Aller-retour strict : bas-haut sur une corde, bas-haut sur l\'autre.',
+      'Le médiator passe au-dessus de la corde sautée par un petit arc, juste assez haut pour ne pas la toucher.',
+      'Isole le passage difficile : 2 notes, saut, 2 notes, en boucle. Le changement de corde est le vrai travail.',
+      'Au début, regarde la corde visée avant de sauter. Puis essaie sans regarder.',
+    ],
+    errors: [
+      ['Le médiator monte très haut au-dessus des cordes.', 'Un arc bas suffit. Plus il est haut, plus tu perds de temps et de précision.'],
+      ['La corde du milieu sonne au passage.', 'Ralentis et vise : l\'arc doit passer au-dessus d\'elle sans la frôler.'],
+      ['Des cordes à vide résonnent pendant que tu joues.', 'Vérifie l\'étouffement des deux mains : paume à droite, doigts à gauche.'],
+      ['La main droite reste figée et finit par viser à côté.', 'Laisse le poignet glisser un peu pour accompagner le déplacement.'],
+    ],
+    check: ['Seules les notes voulues sonnent.', 'Le saut ne crée aucun trou dans le rythme.'],
+  },
+  legato: {
+    kind: 'exo', fig: 'legato', yt: 'hammer on pull off guitare technique',
+    goal: 'Faire sonner les notes liées aussi fort que la note attaquée, avec une seule attaque par corde.',
+    setup: [
+      'Main gauche : un doigt par case, pouce derrière le manche, doigts bien arrondis.',
+      'Hammer-on (« marteau ») : le doigt tombe d\'environ 1 cm, vite, sur le bout, juste derrière la frette.',
+      'Pull-off (« tiré ») : le doigt ne se soulève pas tout droit, il tire la corde un peu vers le sol en la relâchant, comme une petite pichenette.',
+      'Avant un pull-off, le doigt de la note plus grave est déjà posé.',
+      'Étouffement indispensable : le legato fait vibrer les autres cordes. Paume droite sur les cordes graves, doigts gauches libres sur les aiguës.',
+    ],
+    steps: [
+      'Sur une seule corde : attaque la note de l\'index, puis hammer-on avec l\'annulaire. Compare les deux volumes.',
+      'Inverse : annulaire et index posés, attaque, puis pull-off de l\'annulaire. La note de l\'index doit bien sonner.',
+      'Enchaîne sur chaque corde de la position 1 : une attaque au médiator, les autres notes aux doigts seulement.',
+      'Ajoute le métronome à un tempo lent et garde les notes bien égales.',
+      'Enregistre-toi : à l\'écoute, on ne doit pas deviner quelle note est attaquée.',
+    ],
+    errors: [
+      ['Hammer-on mou : le doigt se pose au lieu de frapper.', 'Frappe plus vite (pas plus fort), avec le bout du doigt.'],
+      ['Tu frappes loin de la frette : la note est étouffée.', 'Vise juste derrière la frette, c\'est là que la note sonne le mieux.'],
+      ['Pull-off levé tout droit : la note suivante sonne à peine.', 'Tire la corde légèrement vers le sol avant de la lâcher.'],
+      ['L\'index n\'est pas posé avant le pull-off : une corde à vide sonne.', 'Pose toujours le doigt de la note d\'arrivée en premier.'],
+      ['Le pouce serre fort le manche.', 'Appuie juste assez pour que la note sonne clair. Le legato demande de la vitesse, pas de la force.'],
+    ],
+    check: ['Les notes liées ont presque le même volume que l\'attaque.', 'Aucune corde voisine ne résonne.', 'Ta main gauche n\'est pas crispée après la série.'],
+  },
+  araignee: {
+    kind: 'exo', fig: 'spider', yt: 'exercice araignée guitare chromatique 1234',
+    goal: 'Réveiller les quatre doigts de la main gauche et les synchroniser avec le médiator. C\'est un échauffement.',
+    setup: [
+      'Un doigt par case : index case 1, majeur case 2, annulaire case 3, auriculaire case 4.',
+      'Si l\'écart est trop grand près de la tête, fais l\'exercice cases 5 à 8 : les cases sont plus serrées.',
+      'Pouce derrière le manche, au milieu, en face du majeur. Le poignet est légèrement avancé sous le manche, jamais cassé.',
+      'Main droite en aller-retour strict.',
+    ],
+    steps: [
+      'Corde de Mi grave : 1-2-3-4. Puis corde de La : 1-2-3-4. Continue jusqu\'au Mi aigu.',
+      'Redescends : 4-3-2-1 sur chaque corde, du Mi aigu au Mi grave.',
+      'Une note par clic d\'abord, puis deux. La régularité passe avant la vitesse.',
+      'Les doigts qui ne jouent pas restent au-dessus des cordes, à moins d\'un centimètre.',
+      '3 minutes au maximum : c\'est une mise en route, pas une séance de force.',
+    ],
+    errors: [
+      ['L\'auriculaire se replie loin du manche quand il ne joue pas.', 'Garde-le au-dessus de sa case, prêt. Ralentis s\'il le faut.'],
+      ['Tu appuies trop fort.', 'Cherche la pression minimale qui fait sonner la note clair, puis ajoute à peine.'],
+      ['Le doigt est à plat ou loin de la frette : la note frise.', 'Bout du doigt, juste derrière la frette.'],
+      ['Le pouce remonte par-dessus le manche.', 'Redescends-le derrière le manche : l\'écart entre les doigts devient plus facile.'],
+      ['Tu forces l\'écartement jusqu\'à sentir que ça tire.', 'Monte en cases 5 à 8, l\'exercice reste aussi utile.'],
+    ],
+    check: ['Chaque note sonne clair, sans frise.', 'Les doigts restent proches des cordes.', 'Aucune douleur dans la main ou le poignet.'],
+  },
+  mediator: {
+    kind: 'base', t: 'Tenir le médiator', e: 'guitar', yt: 'comment tenir un médiator guitare',
+    goal: 'Une prise stable qui ne tourne pas, avec juste assez de pointe pour attaquer net.',
+    setup: [
+      'Replie l\'index et pose le médiator à plat sur le côté de sa dernière phalange.',
+      'Le pouce vient à plat par-dessus. La pointe du médiator est à peu près perpendiculaire au pouce.',
+      'Laisse dépasser 1 à 2 mm pour les notes rapides, un peu plus pour gratter des accords.',
+      'Les autres doigts sont détendus : repliés ou légèrement ouverts, comme tu veux, mais sans tension.',
+    ],
+    steps: [
+      'Tiens le médiator et demande-toi : si quelqu\'un tire dessus, résiste-t-il un peu sans que tu serres fort ? C\'est la bonne pression.',
+      'Joue quelques notes lentes et regarde si le médiator tourne entre tes doigts.',
+      'Pendant une série rapide, relâche volontairement un peu la prise : souvent, ça va plus vite.',
+    ],
+    errors: [
+      ['Le médiator est pincé avec le bout des doigts.', 'Il tourne et glisse. Pose-le sur le côté de l\'index, pouce à plat.'],
+      ['Tu serres à t\'en blanchir les doigts.', 'La crispation remonte jusqu\'à l\'épaule. Desserre jusqu\'à la limite où il tient encore.'],
+      ['Beaucoup trop de pointe dépasse.', 'Elle accroche les cordes et ralentit. Raccourcis.'],
+    ],
+    check: ['Le médiator garde la même position pendant une minute de jeu.', 'Tes doigts ne fatiguent pas.'],
+  },
+  tempo: {
+    kind: 'base', t: 'Tempo propre et métronome', e: 'stopwatch', yt: 'travailler avec un métronome guitare vitesse',
+    goal: 'Savoir quel tempo travailler, et pourquoi le site te demande de le noter.',
+    setup: [
+      'Ton tempo propre est le tempo le plus rapide où tu joues l\'exercice entier sans faute, sans crispation, trois fois de suite.',
+      'Doubles croches : 4 notes par clic. Triolets : 3 notes par clic. Croches : 2 notes par clic.',
+      'Le métronome du site se trouve dans la mission, ou dans le dock (bouton Métronome de l\'Accueil).',
+    ],
+    steps: [
+      'Pars lentement, là où c\'est facile. Monte de 5 bpm à chaque passage réussi.',
+      'Dès qu\'une faute ou une crispation apparaît, redescends de 5 bpm : tu viens de trouver ton tempo propre du jour.',
+      'Note ce tempo dans la mission avant de la valider : le site suit ta progression dans l\'onglet Progrès.',
+      'Les pointes plus rapides (5 secondes) montrent au cerveau le geste suivant. Elles ne remplacent pas le travail au tempo propre.',
+    ],
+    errors: [
+      ['Tu joues plus vite que le clic, puis tu le rattrapes.', 'Le clic est l\'arbitre : chaque coup vers le bas tombe exactement dessus.'],
+      ['Tu montes de 20 bpm d\'un coup.', 'Par paliers de 5 : le geste propre s\'installe mieux.'],
+      ['Tu notes un tempo réussi une seule fois, par chance.', 'Trois fois de suite, sinon ce n\'est pas encore ton tempo propre.'],
+    ],
+    check: ['Tu sais donner ton tempo propre pour chaque exercice de vitesse.', 'Tu entends le clic pendant que tu joues, sans le couvrir.'],
+  },
+  mute: {
+    kind: 'base', t: 'Étouffer les cordes', e: 'shield', fig: 'mute', yt: 'étouffer les cordes guitare muting technique',
+    goal: 'Ne faire sonner que la note voulue, surtout avec de la saturation.',
+    setup: [
+      'Main droite : la paume (la tranche, près du petit doigt) repose légèrement sur les cordes plus graves que celle que tu joues.',
+      'Main gauche : le dessous du doigt qui appuie et les doigts libres effleurent les cordes plus aiguës.',
+      'On effleure, on n\'appuie pas : la corde ne doit pas sonner, mais tu ne dois pas la tirer non plus.',
+    ],
+    steps: [
+      'Joue une note sur la corde de Sol avec beaucoup de saturation, puis arrête-toi : écoute ce qui continue de sonner.',
+      'Pose la paume droite sur Mi, La et Ré. Recommence : les graves doivent rester muettes.',
+      'Laisse le dessous de l\'index gauche toucher Si et Mi aigu. Recommence.',
+      'En changeant de corde, la paume suit : elle glisse avec la main.',
+    ],
+    errors: [
+      ['La paume appuie fort près du chevalet : tu fais un palm mute sur la corde jouée.', 'Elle ne doit couvrir que les cordes plus graves que celle que tu joues.'],
+      ['Les doigts gauches sont trop cambrés : ils ne touchent rien.', 'Aplatis un peu le doigt pour qu\'il effleure les cordes aiguës.'],
+      ['Ça résonne seulement en saturation, alors tu n\'y fais pas attention en son clair.', 'Prends l\'habitude en son clair : elle te suivra en saturation.'],
+    ],
+    check: ['Quand tu t\'arrêtes, le silence est immédiat.', 'Avec beaucoup de gain, seule la note voulue sonne.'],
+  },
+  posture: {
+    kind: 'base', t: 'Posture et pauses', e: 'flexed-biceps', yt: 'posture guitare électrique assis',
+    goal: 'Jouer 30 minutes par jour sans tension ni douleur.',
+    setup: [
+      'Assis, le dos droit sans être raide, les deux pieds au sol.',
+      'La guitare touche ton corps ; le manche monte légèrement. Une sangle aide à garder la même hauteur assis et debout.',
+      'Épaules basses et détendues. Vérifie-les souvent : elles montent sans prévenir.',
+      'Le poignet gauche n\'est pas cassé à angle droit ; le bras droit repose sur le haut de la caisse.',
+    ],
+    steps: [
+      'Commence la séance par 2 ou 3 minutes d\'échauffement (l\'araignée, par exemple).',
+      'Entre deux séries, laisse tomber les bras et secoue doucement les mains.',
+      'Bois un peu d\'eau et regarde au loin quelques secondes toutes les 10 minutes.',
+    ],
+    errors: [
+      ['Tu te penches au-dessus de la guitare pour voir le manche.', 'Incline légèrement la guitare vers toi plutôt que ton dos vers elle.'],
+      ['Tu continues malgré une douleur.', 'Une gêne vive ou qui dure : arrête et repose-toi. Si elle revient, parles-en à un professionnel de santé.'],
+      ['Tu fais toute la séance sans pause.', 'De courtes pauses régulières entretiennent la vitesse au lieu de la freiner.'],
+    ],
+    check: ['Tes épaules sont au même niveau qu\'au début de la séance.', 'Après 30 minutes, tu n\'as mal nulle part.'],
+  },
+};
+const GUIDE_BASES = ['mediator', 'tempo', 'mute', 'posture'];
+
 /* Pourquoi chaque mission : une ligne, sans promesse exagérée. */
 const WHY = {
   vit: 'Tempo propre d\'abord, puis de courtes pointes plus rapides : alterner les deux fait monter la vitesse sans sacrifier la précision.',
