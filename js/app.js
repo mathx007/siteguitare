@@ -55,6 +55,21 @@
     mic: { on: false, err: '', devices: [], device: '' }, check: null, importMsg: '', login: { show: false, state: 'idle', email: '', msg: '' }, sync: 'local',
   };
 
+  /* ---------- Thème : clair (mise en page actuelle) ou sombre (« Mur de cartes ») ----------
+     Par défaut, le site suit le réglage de l'appareil ; le bouton de la barre du haut force l'un ou l'autre (mémorisé). */
+  const LS_THEME = 'gq-theme', mqDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  const storedTheme = () => { try { const t = localStorage.getItem(LS_THEME); return t === 'dark' || t === 'light' ? t : null; } catch (e) { return null; } };
+  const isDark = () => document.documentElement.dataset.theme === 'dark';
+  function applyTheme() {
+    const t = storedTheme() || (mqDark && mqDark.matches ? 'dark' : 'light');
+    document.documentElement.dataset.theme = t;
+    const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute('content', t === 'dark' ? '#0B0B12' : '#5B4BFF');
+  }
+  applyTheme();
+  if (mqDark && mqDark.addEventListener) mqDark.addEventListener('change', () => { if (!storedTheme()) { applyTheme(); render(); } });
+  const ICON_THEME = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2z"/></svg>';
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M7 4.8v14.4a1 1 0 0 0 1.5.86l11.6-7.2a1 1 0 0 0 0-1.72L8.5 3.94A1 1 0 0 0 7 4.8z"/></svg>';
+
   /* ---------- Sauvegarde locale et en ligne ---------- */
   function loadLocal() { try { const raw = localStorage.getItem(LS); if (raw) { const o = normalize(JSON.parse(raw)); if (o) st = o; } } catch (e) { /* stockage indisponible */ } }
   function saveLocal() { try { localStorage.setItem(LS, JSON.stringify(st)); } catch (e) { /* idem */ } }
@@ -328,6 +343,7 @@
       <div class="hud">
         <span class="streak" title="Jours validés d'affilée">${E('fire', 20)}<b class="num">${s.streak}</b><span class="hide-s">jour${s.streak > 1 ? 's' : ''}</span></span>
         <span class="lvl hide-s"><span>Niveau ${li.level} · <span class="num">${li.into} / ${li.need}</span> XP</span><span class="bar" role="progressbar" aria-label="Expérience" aria-valuemin="0" aria-valuemax="${li.need}" aria-valuenow="${li.into}"><i style="width:${(100 * li.into / li.need).toFixed(1)}%"></i></span></span>
+        <button class="theme-btn" data-act="theme" aria-pressed="${isDark()}" aria-label="Mode sombre" title="${isDark() ? 'Passer en mode clair' : 'Passer en mode sombre'}">${ICON_THEME}</button>
         <button class="avatar${u ? ' on' : ''}" data-act="account" aria-label="${u ? 'Compte connecté' : 'Se connecter'}">${esc(initial)}</button>
       </div></div>`;
   }
@@ -418,6 +434,141 @@
       <div class="row between"><div class="legend">${[0, 1, 2, 3, 4].map((p) => `<span><i style="background:${POS_COL[p]}"></i>${word} ${p + 1}</span>`).join('')}<span><i style="background:#FF4D2E;border:3px solid #fff"></i>Tonique</span></div>
         <button class="btn gold sm" data-act="fb-play">${E('headphone', 20)} Écouter la gamme</button></div>
       <p class="small muted">Corde de Mi grave en bas, comme sur une tablature. Clique sur une note pour l'entendre. « Écouter la gamme » joue ${all ? 'la position 1' : 'la ' + word.toLowerCase() + ' ' + (Math.min(...fb.pos) + 1)} en montée puis en descente.</p></section>`;
+  }
+
+  /* ---------- Mode sombre : « Mur de cartes » (une vitrine, puis des rangées qu'on parcourt de côté) ---------- */
+  const wImg = (s, w) => { const src = songImg(s, w); return src ? `<img src="${esc(src)}" alt="${esc(songAlt(s))}" loading="lazy"${artAttrs(s)} onerror="this.remove()">` : ''; };
+  const wBill = (s, inner) => `<section class="w-bill">${s ? wImg(s, 1200) : ''}<div class="w-bill-in">${inner}</div></section>`;
+  /* Une rangée sans bouton reste défilable au clavier (tabindex) ; avec des boutons, le focus suffit à la faire défiler. */
+  const wRow = (title, count, items) => { const html = items.join(''), kb = /<(button|a)\b/.test(html) ? '' : ` tabindex="0" role="group" aria-label="${esc(title)}"`;
+    return `<section class="w-row"><h2>${esc(title)}${count ? ` <span>${esc(count)}</span>` : ''}</h2><div class="w-rail"${kb}>${html}</div></section>`; };
+  /* Tuile générique : bouton (act), lien (href) ou simple bloc (attrs, extra pour des boutons internes). */
+  function wTile(o) {
+    const tag = o.act ? 'button' : o.href ? 'a' : 'div';
+    const attrs = o.act ? ` type="button" ${o.act}` : o.href ? ` href="${o.href}"` : o.attrs ? ' ' + o.attrs : '';
+    return `<${tag} class="w-mt${o.cls ? ' ' + o.cls : ''}"${attrs}>${o.icon ? E(o.icon, 32, 'w-ic') : ''}${o.art || ''}<span class="w-mt-t"><b>${esc(o.t)}</b>${o.s ? `<span>${esc(o.s)}</span>` : ''}${o.p ? `<span class="w-p">${esc(o.p)}</span>` : ''}</span>`
+      + (o.bar != null ? `<span class="w-bar" role="progressbar" aria-label="${esc(o.barLabel || o.t)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${o.bar}"><i style="width:${o.bar}%"></i></span>` : '') + (o.extra || '') + `</${tag}>`;
+  }
+  function wCard(s, focus) {
+    const own = owned(s.id), alt = isDefeated(s.id), stp = stepsOf(s.id);
+    const sub = own ? 'Acquise' : stp ? `Étape ${stp}/3` : RARITY[s.r];
+    const flag = s.boss === 'final' && !alt ? 'Boss final' : s.boss === 'mini' && !own ? 'Mini-boss' : st.boss.current === s.id && s.boss !== 'final' ? 'Boss' : '';
+    /* Le nom accessible reprend le texte visible de la carte, complété par la rareté et l'action (texte réservé aux lecteurs d'écran). */
+    return `<button type="button" class="w-cd r${s.r}${own || ui.preview ? '' : ' todo'}${alt ? ' alt' : ''}${focus ? ' is-focus' : ''}" data-act="song" data-id="${s.id}">`
+      + `<span class="w-poster" aria-hidden="true">${esc(s.t)}</span>${wImg(s, 480)}${flag ? `<span class="w-flag">${flag}</span>` : ''}<span class="w-cap"><b>${esc(s.t)}</b><span>${esc(s.a)} · ${sub}</span></span><span class="sr-only">, ${alt ? 'Alt-mythique' : RARITY[s.r]}${own ? '' : ', non acquise'}. Ouvrir la fiche</span></button>`;
+  }
+  /* Repère vertical des cordes de Mi grave et de La : notes naturelles seulement (A à G), cases 0 à 12. */
+  function repereNat() {
+    let rows = '';
+    for (let f = 0; f <= 12; f++) {
+      rows += `<tr class="${f === 0 ? 'f0' : f === 1 ? 'f1' : ''}"><th scope="row"><span class="sr-only">Case </span>${f}<span class="w-dots" aria-hidden="true">${f === 12 ? '<i></i><i></i>' : [3, 5, 7, 9].includes(f) ? '<i></i>' : ''}</span></th>`
+        + [[0, 'Mi grave'], [1, 'La']].map(([s, nm]) => {
+          const midi = Core.OPEN_MIDI[s] + f, pc = Core.mod(midi, 12), n = Core.NOTE_EN[pc], root = pc === ui.fb.root;
+          return n.length > 1 ? '<td></td>' : `<td><button type="button" class="w-nn${root ? ' root' : ''}" data-act="pluck" data-midi="${midi}" aria-label="Corde de ${nm}, case ${f} : ${n}${root ? ', tonique de la gamme choisie' : ''}">${n}</button></td>`;
+        }).join('') + '</tr>';
+    }
+    return `<section class="w-repere" aria-labelledby="wrep-t"><h2 id="wrep-t">Notes des cordes de Mi grave et de La</h2><p>Notes naturelles, cases 0 à 12. En orange : la tonalité du manche complet. Clique pour entendre.</p>
+      <table><caption class="sr-only">Notes naturelles des cordes de Mi grave et de La, cases 0 à 12 ; une case vide porte un dièse ou un bémol.</caption><thead><tr><td></td><th scope="col">E<span class="sr-only"> : corde de Mi grave</span></th><th scope="col">A<span class="sr-only"> : corde de La</span></th></tr></thead><tbody>${rows}</tbody></table></section>`;
+  }
+  const wWeek = (k, s) => `<span class="w-week">${Core.weekDays(k).map((d, i) => { const rr = getRec(d); return `<i class="${rr.ok ? 'ok' : ''}${s.pausedDays.includes(d) ? ' pause' : ''}${d === k ? ' today' : ''}" title="${d}">${'LMMJVSD'[i]}</i>`; }).join('')}</span>`;
+  function wallAccueil() {
+    const k = today(), r = getRec(k), ms = missionsFor(k), b = bossState(), s = Core.computeStreak(st.days, k);
+    const doneN = ms.filter((m) => r.done.includes(m.id)).length, next = ms.find((m) => !r.done.includes(m.id));
+    const left = ms.filter((m) => !r.done.includes(m.id)).reduce((t, m) => t + m.min, 0);
+    const a = songById(st.active) || songById('hysteria');
+    let bill;
+    if (next) {
+      const br = BR[next.br], art = (next.song && songById(next.song)) || a;
+      bill = wBill(art, `<h1>${esc(next.fun)}</h1><p class="w-meta"><b>Mission ${ms.indexOf(next) + 1} sur ${ms.length}</b> · ${esc(br.name)} · ${next.min} minutes · encore ${left} minutes aujourd'hui</p><p class="w-lede">${esc(next.text)}</p>
+        <div class="w-acts"><button type="button" class="w-btn w-btn-1" data-act="session">${ICON_PLAY}${doneN ? 'Reprendre la séance' : 'Jouer'}</button><button type="button" class="w-btn w-btn-2" data-act="mission-open" data-id="${next.id}">Voir la mission</button>${next.fb ? `<button type="button" class="w-btn w-btn-2" data-act="show-fb" data-fb="${esc(JSON.stringify(next.fb))}">Voir sur le manche</button>` : ''}</div>
+        <p class="w-note">Le chrono démarre et les missions s'enchaînent toutes seules.</p>`);
+    } else {
+      bill = wBill(a, `<h1>Séance terminée</h1><p class="w-meta"><b>${ms.length} missions sur ${ms.length}</b> · série de ${s.streak} jour${s.streak > 1 ? 's' : ''}</p><p class="w-lede">${r.chest === 'ready' ? 'Ton booster du jour t\'attend : ouvre-le pour gagner une carte bonus.' : 'Bravo. Reviens demain pour la séance suivante et un nouveau booster.'}</p>${r.chest === 'ready' ? `<div class="w-acts"><button type="button" class="w-btn w-btn-1" data-act="booster">${E('wrapped-gift', 22)}Ouvrir le booster</button></div>` : ''}`);
+    }
+    const tiles = ms.map((m) => { const br = BR[m.br], done = r.done.includes(m.id), cur = next && m.id === next.id; return wTile({ act: `data-act="mission-open" data-id="${m.id}"`, icon: br.icon, t: m.fun, s: `${br.name} · ${done ? 'faite' : m.min + ' min'}`, p: m.sub, cls: (done ? 'done' : '') + (cur ? ' is-focus' : '') + (cur && ui.session ? ' live' : '') }); });
+    tiles.push(r.chest === 'ready' ? wTile({ act: 'data-act="booster"', icon: 'wrapped-gift', t: 'Booster du jour prêt', s: 'Ouvre-le pour gagner une carte', cls: 'gold' })
+      : r.chest === 'opened' ? wTile({ icon: 'wrapped-gift', t: 'Booster ouvert', s: 'Reviens demain pour le suivant', cls: 'done', attrs: 'tabindex="-1" data-focus-after="booster"' })
+        : wTile({ icon: 'wrapped-gift', t: 'Booster du jour', s: `${doneN} mission${doneN > 1 ? 's' : ''} sur ${ms.length}`, bar: Math.round(100 * doneN / ms.length), barLabel: 'Missions faites pour ouvrir le booster' }));
+    const lt = st.lastTrophy && TROPHIES.find((t) => t.id === st.lastTrophy);
+    const now = [wCard(a, true),
+      b ? wTile({ act: `data-act="song" data-id="${b.id}"`, icon: b.first ? 'fox' : 'dragon-face', t: `${b.song.t} · ${b.song.a}`, s: `${b.first ? 'Boss final' : 'Boss'} · ${b.hp} PV sur 100`, p: 'Prochain coup : ' + bossHint(b), bar: b.hp, barLabel: 'Points de vie du boss' })
+        : wTile({ act: 'data-act="next-boss"', icon: 'crown', t: 'Choisir le prochain boss', s: 'Boss vaincu' }),
+      wTile({ attrs: 'role="group" aria-label="Ta semaine"', icon: 'fire', t: `Série de ${s.streak} jour${s.streak > 1 ? 's' : ''}`, s: s.jokerUsed ? 'Jour de pause utilisé cette semaine' : 'Jour de pause disponible cette semaine', extra: wWeek(k, s) }),
+      wTile({ href: '#trophees', icon: lt ? lt.e : 'trophy', t: lt ? lt.n : 'Aucun trophée pour l\'instant', s: lt ? 'Dernier trophée' : 'Termine une séance complète', p: lt ? lt.g : '' })];
+    const quick = [['metro', 'stopwatch', 'Métronome', Sound.metro.bpm + ' bpm'], ['tuner', 'microphone', 'Accordeur', MIC_OK ? 'Micro' : 'Micro indisponible'], ['manche', 'world-map', 'Manche', 'Gammes et positions'],
+      ['oreille', 'ear', 'Jeu d\'oreille', 'Record : ' + Object.values(st.ear.best || {}).reduce((m, v) => Math.max(m, v), 0)], ['jam', 'game-die', 'Boucle d\'impro', 'La mineur'], ['check', 'bullseye', 'Contrôle de gamme', 'Micro, note par note']]
+      .map(([id, ic, t, sub]) => wTile({ act: `data-act="quick" data-q="${id}"`, icon: ic, t, s: sub }));
+    const pal = BRANCHES.map((br) => { const i = curIdx(br.id), L = PALIERS[br.id]; return i < L.length ? wTile({ href: '#paliers', icon: br.icon, t: L[i].t, s: `${br.name} · palier ${i + 1} sur ${L.length}`, p: 'Test : ' + L[i].test }) : ''; }).filter(Boolean);
+    const songs = allSongs(), mine = songs.filter((x) => owned(x.id) || stepsOf(x.id) || pinfo(x.id).n);
+    const coll = (mine.length >= 6 ? mine : mine.concat(songs.filter((x) => !mine.includes(x)).slice(0, 8 - mine.length))).map((x) => wCard(x));
+    return `<div class="w-home"><div class="w-side">${repereNat()}</div><div class="w-main">${bill}<div class="w-wall">`
+      + wRow('Ta séance', next ? `${left} minutes restantes` : 'terminée', tiles) + wRow('En ce moment', 'carte en cours, boss, semaine', now) + wRow('Outils', '', quick)
+      + (pal.length ? wRow('Paliers à franchir', 'un par branche', pal) : '') + wRow('Ta collection', `${songs.filter((x) => owned(x.id)).length} / ${songs.length} morceaux`, coll)
+      + `</div>${mancheBlock()}</div></div>`;
+  }
+  function wallCollection() {
+    const songs = allSongs(), nS = songs.filter((x) => owned(x.id)).length, nP = skillsDone(), nB = BONUS.filter((x) => st.bonus[x.id]).length;
+    const keep = (x) => ui.rar === 'all' || x.r === ui.rar;
+    const a = songById(st.active) || songById('hysteria'), pa = pinfo(a.id), sa = stepsOf(a.id);
+    const lede = owned(a.id) ? 'Carte acquise. Choisis une autre carte en cours depuis sa fiche.' : sa < 3 ? `Étape ${sa + 1} sur 3 : « ${esc((a.ear ? STEPS_EAR : STEPS_SONG)[sa])} ».` : `Étapes réussies. Passages en entier à 100 % : ${pa.n} sur ${PASSES_NEEDED}.`;
+    const bill = wBill(a, `<h1>${esc(a.t)}</h1><p class="w-meta"><b>${esc(a.a)}</b> · ${RARITY[a.r]} · carte en cours</p><p class="w-lede">${lede}</p>
+      <div class="w-acts"><button type="button" class="w-btn w-btn-1" data-act="song" data-id="${a.id}">${E('card-file-box', 22)}Ouvrir la fiche</button><button type="button" class="w-btn w-btn-2" data-act="add-song">Ajouter un morceau</button></div>
+      <p class="w-note"><b class="num">${nS}</b> / ${songs.length} morceaux · <b class="num">${nP}</b> / ${ALL_PAL.length} paliers · <b class="num">${nB}</b> / ${BONUS.length} bonus</p>`);
+    const chips = `<div class="w-filters" role="group" aria-label="Filtrer les morceaux par rareté">${[['all', 'Toutes'], ...Object.entries(RARITY)].map(([key, n]) => `<button type="button" data-act="rar" data-v="${key}" aria-pressed="${ui.rar === key}">${n}</button>`).join('')}<button type="button" data-act="preview" aria-pressed="${ui.preview}">Aperçu : tout en couleur</button></div>`;
+    const rows = [], plural = (n, w) => `${n} ${w}${n > 1 ? 's' : ''}`;
+    const started = songs.filter((x) => keep(x) && !owned(x.id) && (stepsOf(x.id) || pinfo(x.id).n));
+    if (started.length) rows.push(wRow('Presque acquises', plural(started.length, 'carte') + ' commencée' + (started.length > 1 ? 's' : ''), started.map((x, i) => wCard(x, i === 0))));
+    const got = songs.filter((x) => keep(x) && owned(x.id));
+    if (got.length) rows.push(wRow('Acquises', plural(got.length, 'carte'), got.map((x) => wCard(x))));
+    for (const rr of ['M', 'L', 'E', 'R', 'C']) {
+      if (ui.rar !== 'all' && ui.rar !== rr) continue;
+      const list = SONGS.filter((x) => x.r === rr);
+      if (list.length) rows.push(wRow(rr === 'M' ? 'Mythique' : RARITY[rr] + 's', plural(list.length, 'carte'), list.map((x) => wCard(x))));
+    }
+    rows.push(wRow('Tes morceaux', 'ajoutés par toi', (st.custom || []).filter(keep).map((x) => wCard(x)).concat([wTile({ act: 'data-act="add-song"', icon: 'sparkles', t: 'Ajouter un morceau', s: 'Titre, artiste, difficulté' })])));
+    rows.push(wRow('Cartes de paliers', `${nP} / ${ALL_PAL.length}`, ALL_PAL.map((p) => { const on = !!st.skills[p.id]; return wTile({ cls: `w-pc r${palierRar(p)}${on ? '' : ' todo'}`, art: on ? `<span class="w-emo" aria-hidden="true">${p.e}</span>` : E('locked', 40, 'w-lock'), t: p.t, s: `${BR[p.br].name} · palier ${p.idx + 1}${on ? '' : ' · verrouillée'}` }); })));
+    rows.push(wRow('Cartes bonus', `${nB} / ${BONUS.length}`, BONUS.map((x) => { const n = st.bonus[x.id] || 0, rr = BONUS_RAR[x.r]; return n ? wTile({ act: `data-act="bonus" data-id="${x.id}"`, cls: `w-pc r${rr}`, art: `<span class="w-emo" aria-hidden="true">${x.e}</span>`, t: x.t, s: RARITY[rr] + (n > 1 ? ' ×' + n : '') }) : wTile({ cls: `w-pc r${rr} todo`, art: E('locked', 40, 'w-lock'), t: '???', s: `${RARITY[rr]} · dans un booster du jour` }); })));
+    return `${bill}${chips}<div class="w-wall">${rows.join('')}</div><p class="w-foot">Une carte reste grisée tant que le morceau n'a pas été joué ${PASSES_NEEDED} fois en entier à 100 % du tempo (${PASSES_PER_DAY} passages par jour au plus), après ses 3 étapes. Illustrations : œuvres du domaine public, via Wikimedia Commons.</p>`;
+  }
+  function wPalierActs(p) {
+    let h = '';
+    if (p.fb) h += `<button type="button" class="w-btn w-btn-2 sm" data-act="show-fb" data-fb="${esc(JSON.stringify(p.fb))}">Voir sur le manche</button>`;
+    if (p.br === 'ore' && p.idx < 4) h += `<button type="button" class="w-btn w-btn-2 sm" data-act="go-ear" data-mode="${earPreset(p.idx)[0]}" data-level="${earPreset(p.idx)[1]}">Ouvrir le jeu</button>`;
+    h += ui.armed === p.id ? `<button type="button" class="w-btn w-btn-ok sm" data-act="palier-ok" data-id="${p.id}">Confirmer : test réussi</button><button type="button" class="w-btn w-btn-2 sm" data-act="disarm">Pas encore</button>`
+      : `<button type="button" class="w-btn w-btn-1 sm" data-act="arm" data-id="${p.id}">J'ai réussi le test</button>`;
+    return `<span class="w-acts">${h}</span>`;
+  }
+  function wallPaliers() {
+    const b = bossState(), pending = BRANCHES.map((br) => ALL_PAL.find((p) => p.br === br.id && p.idx === curIdx(br.id))).filter(Boolean).sort((x, y) => x.idx - y.idx), top = pending[0];
+    const bill = top ? wBill(b ? b.song : null, `<h1>${esc(top.t)}</h1><p class="w-meta"><b>${esc(BR[top.br].name)}</b> · palier ${top.idx + 1} sur ${PALIERS[top.br].length} · le plus utile contre le boss</p><p class="w-lede">${esc(top.d)}</p><p class="w-lede"><b>Test :</b> ${esc(top.test)}</p>${wPalierActs(top).replace('class="w-acts"', 'class="w-acts" id="bill-acts"')}<p class="w-note">C'est toi le jury : sois honnête, le boss ne se laisse pas tromper.</p>`)
+      : wBill(b ? b.song : null, '<h1>Tous les paliers sont franchis</h1><p class="w-lede">Il ne reste que le boss.</p>');
+    const rows = BRANCHES.map((br) => {
+      const L = PALIERS[br.id], ci = curIdx(br.id);
+      return wRow(br.name, `${ci} / ${L.length} · ${br.tag}`, L.map((p, i) => {
+        if (i < ci) return wTile({ icon: i === 0 ? br.icon : null, t: p.t, s: 'Franchi', cls: 'done', extra: i === ci - 1 ? `<button type="button" class="w-link" data-act="palier-undo" data-id="${p.id}">Annuler ce palier</button>` : '' });
+        if (i === ci) return wTile({ icon: br.icon, t: p.t, s: 'Prochain test', p: 'Test : ' + p.test, cls: 'is-focus w-wide', extra: p === top ? '' : wPalierActs(p) });
+        return wTile({ t: p.t, s: 'Verrouillé', cls: 'lock' });
+      }));
+    });
+    return `${bill}<div class="w-wall">${rows.join('')}</div>`;
+  }
+  function wallTrophees() {
+    const f = facts(), a = songById(st.active) || songById('hysteria');
+    const all = TROPHIES.map((t) => { const [v, g] = t.p(f); return { t, own: !!st.trophies[t.id], v, g, pct: Math.round(100 * Math.min(1, v / g)), hid: t.hidden && !st.trophies[t.id] }; });
+    const got = all.filter((x) => x.own), todo = all.filter((x) => !x.own && !x.hid).sort((p, q) => q.pct - p.pct), hidden = all.filter((x) => x.hid), top = todo[0];
+    const bill = top ? wBill(a, `<h1>${esc(top.t.n)}</h1><p class="w-meta"><b>${TIER[top.t.tier].n}</b> · le trophée le plus proche · <span class="num">${top.v} / ${top.g}</span></p><p class="w-lede">${esc(top.t.g)}.</p><span class="w-bar big" role="progressbar" aria-label="${esc(top.t.n)}" aria-valuemin="0" aria-valuemax="${top.g}" aria-valuenow="${top.v}"><i style="width:${top.pct}%"></i></span><p class="w-note">${got.length} trophée${got.length > 1 ? 's' : ''} sur ${TROPHIES.length} obtenu${got.length > 1 ? 's' : ''}.</p>`)
+      : wBill(a, `<h1>Tous les trophées visibles sont à toi</h1><p class="w-lede">${hidden.length ? 'Les trophées cachés se dévoilent pendant le combat contre le boss.' : 'Collection complète.'}</p>`);
+    const tile = (x) => wTile({ icon: x.t.e, t: x.t.n, s: `${TIER[x.t.tier].n}${x.own ? ' · obtenu' : ' · ' + x.v + ' / ' + x.g}`, p: x.t.g, bar: x.own ? null : x.pct, barLabel: x.t.n, cls: 'tier-' + x.t.tier + (x.own ? ' own' : '') });
+    return `${bill}<div class="w-wall">${(got.length ? wRow('Obtenus', `${got.length} sur ${TROPHIES.length}`, got.map(tile)) : '') + (todo.length ? wRow('À débloquer', 'du plus proche au plus lointain', todo.map(tile)) : '')
+      + (hidden.length ? wRow('Cachés', 'se dévoilent pendant le combat contre le boss', hidden.map(() => wTile({ icon: 'locked', t: 'Trophée caché', s: '?', cls: 'lock' }))) : '')}</div>`;
+  }
+  function wallProgres(li, s, b) {
+    const k = today(), last = allSongs().filter((x) => owned(x.id)).pop() || songById(st.active) || songById('hysteria');
+    const next = (Core.RANKS.find((r) => r[0] > li.level) || ['max'])[0];
+    return wBill(last, `<h1>${esc(Core.rankFor(li.level))}</h1><p class="w-meta"><b class="num">Niveau ${li.level} · ${li.into} / ${li.need} XP</b> · série de ${s.streak} jour${s.streak > 1 ? 's' : ''} · prochain rang au niveau ${next}</p><span class="w-bar big" role="progressbar" aria-label="Expérience" aria-valuemin="0" aria-valuemax="${li.need}" aria-valuenow="${li.into}"><i style="width:${(100 * li.into / li.need).toFixed(1)}%"></i></span>`)
+      + `<div class="w-wall">${wRow('Tes chiffres', '', [wTile({ icon: 'sparkles', t: `${st.xp} XP`, s: 'au total' }), wTile({ icon: 'fire', t: `${s.streak} jour${s.streak > 1 ? 's' : ''}`, s: 'de série' }), wTile({ icon: '1st-place-medal', t: `${Math.max(st.best || 0, s.streak)} jours`, s: 'record de série' }),
+        wTile({ icon: 'check-mark-button', t: `${Object.values(st.days).filter((d) => d.ok).length} jours`, s: 'validés' }), wTile({ icon: 'chart-increasing', t: `${skillsDone()} / ${ALL_PAL.length}`, s: 'paliers' }), wTile({ icon: b ? 'fox' : 'crown', t: `${b ? b.hp : 0} PV`, s: 'restants au boss' })])
+        + wRow('Cette semaine', s.jokerUsed ? 'jour de pause utilisé' : 'un jour de pause disponible', Core.weekDays(k).map((d, i) => { const rr = getRec(d); return wTile({ t: 'LMMJVSD'[i], s: rr.ok ? 'Validé' : d === k ? `Aujourd'hui · ${rr.done.length} mission${rr.done.length > 1 ? 's' : ''}` : d < k ? (s.pausedDays.includes(d) ? 'Pause' : 'Manqué') : 'À venir', cls: 'w-day' + (rr.ok ? ' done' : '') + (d === k ? ' is-focus' : '') + (d > k ? ' lock' : '') }); }))}</div>`;
   }
 
   /* ---------- Vue : accueil ---------- */
@@ -567,16 +718,16 @@
     let cal = ''; for (let i = 0; i < 35; i++) { const d = Core.addDays(start, i), r = getRec(d); cal += `<i class="${r.ok ? 'ok' : r.done.length ? 'p1' : ''}${d === k ? ' today' : ''}" title="${d}"></i>`; }
     let code = ''; try { code = btoa(unescape(encodeURIComponent(JSON.stringify(st)))); } catch (e) { code = ''; }
     const b = bossState();
-    return `<section class="pagehead"><div><div class="kicker muted">Niveau ${li.level}</div><h1 class="h1">${esc(Core.rankFor(li.level))}</h1><p class="muted">Prochain rang au niveau ${(Core.RANKS.find((r) => r[0] > li.level) || ['max'])[0]}.</p></div></section>
-      <div class="tiles">
+    const head = `<section class="pagehead"><div><div class="kicker muted">Niveau ${li.level}</div><h1 class="h1">${esc(Core.rankFor(li.level))}</h1><p class="muted">Prochain rang au niveau ${(Core.RANKS.find((r) => r[0] > li.level) || ['max'])[0]}.</p></div></section>`;
+    const tiles = `<div class="tiles">
         <div class="tile" style="--bg:#E3DFFF">${E('sparkles', 28)}<b class="num">${st.xp}</b><span>XP au total</span></div>
         <div class="tile" style="--bg:#FFE1DA">${E('fire', 28)}<b class="num">${s.streak}</b><span>jours de série</span></div>
         <div class="tile" style="--bg:#FFEFBF">${E('1st-place-medal', 28)}<b class="num">${Math.max(st.best || 0, s.streak)}</b><span>record de série</span></div>
         <div class="tile" style="--bg:#D5F5EE">${E('check-mark-button', 28)}<b class="num">${Object.values(st.days).filter((d) => d.ok).length}</b><span>jours validés</span></div>
         <div class="tile" style="--bg:#DBE7FF">${E('chart-increasing', 28)}<b class="num">${skillsDone()}/${ALL_PAL.length}</b><span>paliers</span></div>
         <div class="tile" style="--bg:#F8DDF2">${E(b ? 'fox' : 'crown', 28)}<b class="num">${b ? b.hp : 0}</b><span>PV restants au boss</span></div>
-      </div>
-      <div class="row2b">
+      </div>`;
+    const rest = `<div class="row2b">
         <section class="panel"><h2 class="h3">Tes cinq branches</h2>${radarSvg()}</section>
         <section class="panel"><h2 class="h3">5 dernières semaines</h2><div class="cal">${cal}</div><div class="legend"><span><i style="background:#177750"></i>Jour validé</span><span><i style="background:#9FDCC2"></i>Commencé</span></div></section>
       </div>
@@ -600,6 +751,7 @@
         </section>
       </div>
       <p class="small muted">Illustrations des cartes : œuvres du domaine public via Wikimedia Commons. Emoji : Fluent Emoji de Microsoft (licence MIT).</p>`;
+    return isDark() ? wallProgres(li, s, b) + `<div class="w-classic">${rest}</div>` : head + tiles + rest;
   }
 
   /* ---------- Vue : manche ---------- */
@@ -888,7 +1040,9 @@
 
   /* ---------- Rendu global ---------- */
   function renderView() {
-    const v = { accueil: viewAccueil, paliers: viewPaliers, collection: viewCollection, trophees: viewTrophees, progres: viewProgres, manche: viewManche, oreille: viewOreille }[ui.tab] || viewAccueil;
+    /* Mode sombre : Accueil, Collection, Paliers et Trophées en « Mur de cartes » ; Progrès bascule lui-même ; Manche et Oreille gardent leur mise en page. */
+    const wall = isDark() ? { accueil: wallAccueil, paliers: wallPaliers, collection: wallCollection, trophees: wallTrophees } : {};
+    const v = wall[ui.tab] || { accueil: viewAccueil, paliers: viewPaliers, collection: viewCollection, trophees: viewTrophees, progres: viewProgres, manche: viewManche, oreille: viewOreille }[ui.tab] || viewAccueil;
     const el = $('#view'), a = document.activeElement;
     /* Après un rafraîchissement, le focus clavier revient sur la même commande (menu, puce, bouton). */
     let sel = null;
@@ -1015,6 +1169,7 @@
     timer(d) { const m = missionsFor(today()).find((x) => x.id === d.id); if (m) startTimer(m.id, m.min); },
     'timer-pause'() { pauseTimer(); },
     booster() { openBooster(); },
+    theme() { try { localStorage.setItem(LS_THEME, isDark() ? 'light' : 'dark'); } catch (e) { /* stockage indisponible : le choix vaut pour cette visite */ document.documentElement.dataset.theme = isDark() ? 'light' : 'dark'; render(); return; } applyTheme(); render(); toast(isDark() ? 'Mode sombre activé' : 'Mode clair activé', isDark() ? 'card-file-box' : 'sunrise'); },
     bflip() { revealBooster(false); },
     bskip() { revealBooster(true); },
     close() { ui.modal = null; ui.armed = null; render(); },
