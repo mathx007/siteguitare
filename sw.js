@@ -1,6 +1,6 @@
 /* Gratte Quest : fonctionnement hors ligne. Réseau d'abord pour les fichiers du site (les mises à jour arrivent tout de suite),
    copie locale si le réseau manque. Les requêtes vers d'autres sites (compte, illustrations Wikimedia) ne passent pas par ici. */
-const CACHE = 'gratte-quest-v15';
+const CACHE = 'gratte-quest-v16';
 const SHELL = ['./', './index.html', './app.css', './js/core.js', './js/data.js', './js/audio.js', './js/cloud.js', './js/app.js', './vendor/supabase.js', './manifest.webmanifest', './assets/icons/icon-192.png', './assets/fonts/fonts.css', './assets/fonts/archivo-latin-standard-normal.woff2', './assets/fonts/inter-latin-wght-normal.woff2'];
 /* Toujours revalider auprès du serveur (cache: 'reload' / 'no-cache') : sans ça, le navigateur peut resservir pendant
    10 minutes une ancienne version gardée en cache HTTP par GitHub Pages, même juste après une mise en ligne. */

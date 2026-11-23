@@ -51,7 +51,7 @@
   let st = fresh();
   const ui = {
     tab: 'accueil', modal: null, armed: null, timer: null, session: null, dock: false, beat: -1, bpmDraft: '', bpmExo: 'trem', flipped: null,
-    colTab: 'songs', rar: 'all', preview: false, fb: { root: 9, scale: 'pentaMin', pos: [0, 1, 2, 3, 4], labels: 'notes' },
+    colTab: 'songs', rar: 'all', ownedOnly: true, preview: false, fb: { root: 9, scale: 'pentaMin', pos: [0, 1, 2, 3, 4], labels: 'notes' },
     ear: { mode: 'note', level: 1, q: null, streak: 0, result: null, tries: [], revealed: false },
     mic: { on: false, err: '', devices: [], device: '' }, check: null, importMsg: '', login: { show: false, state: 'idle', email: '', msg: '' }, sync: 'local',
   };
@@ -775,18 +775,22 @@
   /* ---------- Vue : collection ---------- */
   function viewCollection() {
     const songs = allSongs(), nS = songs.filter((s) => owned(s.id)).length, nP = skillsDone(), nB = BONUS.filter((b) => st.bonus[b.id]).length;
+    /* « Possédées » (activé par défaut) : seulement les cartes acquises de l'onglet ouvert. */
+    const own = ui.ownedOnly, tabN = ui.colTab === 'songs' ? nS : ui.colTab === 'paliers' ? nP : nB;
     let grid = '';
     if (ui.colTab === 'songs') {
-      grid = songs.filter((s) => ui.rar === 'all' || s.r === ui.rar).map((s) => songCardHtml(s)).join('')
-        + `<div class="slot"><button class="card addcard" data-act="add-song">${E('sparkles', 48)}<b>Ajouter un morceau</b><span>Titre, artiste, difficulté</span></button></div>`;
-    } else if (ui.colTab === 'paliers') grid = ALL_PAL.map((p) => palierCard(p)).join('');
-    else grid = BONUS.map((b) => bonusCard(b)).join('');
-    const filters = ui.colTab === 'songs' ? `<div class="chips">${[['all', 'Toutes'], ...Object.entries(RARITY)].map(([k, n]) => `<button class="chip${ui.rar === k ? ' on' : ''}" data-act="rar" data-v="${k}">${k === 'all' ? n : k + ' · ' + n}</button>`).join('')}<button class="chip${ui.preview ? ' on' : ''}" data-act="preview" aria-pressed="${ui.preview}">Aperçu : tout en couleur</button></div>
-      <p class="small muted">Une carte reste grisée tant que le morceau n'a pas été joué ${PASSES_NEEDED} fois en entier à 100 % du tempo, à raison de ${PASSES_PER_DAY} passages maximum par jour, après ses 3 étapes. La rareté dépend de la difficulté. Clique sur une carte pour la retourner, puis clique dessus une deuxième fois pour ouvrir sa fiche.</p>` : '';
+      grid = songs.filter((s) => (ui.rar === 'all' || s.r === ui.rar) && (!own || owned(s.id))).map((s) => songCardHtml(s)).join('')
+        + (own ? '' : `<div class="slot"><button class="card addcard" data-act="add-song">${E('sparkles', 48)}<b>Ajouter un morceau</b><span>Titre, artiste, difficulté</span></button></div>`);
+    } else if (ui.colTab === 'paliers') grid = ALL_PAL.filter((p) => !own || st.skills[p.id]).map((p) => palierCard(p)).join('');
+    else grid = BONUS.filter((b) => !own || st.bonus[b.id]).map((b) => bonusCard(b)).join('');
+    const ownChip = `<button class="chip${own ? ' on' : ''}" data-act="owned-only" aria-pressed="${own}">${E('check-mark-button', 18)} Possédées · ${tabN}</button>`;
+    const filters = `<div class="chips">${ownChip}${ui.colTab === 'songs' ? [['all', 'Toutes raretés'], ...Object.entries(RARITY)].map(([k, n]) => `<button class="chip${ui.rar === k ? ' on' : ''}" data-act="rar" data-v="${k}" aria-pressed="${ui.rar === k}">${k === 'all' ? n : k + ' · ' + n}</button>`).join('') + `<button class="chip${ui.preview ? ' on' : ''}" data-act="preview" aria-pressed="${ui.preview}">Aperçu : tout en couleur</button>` : ''}</div>`
+      + (ui.colTab === 'songs' ? `<p class="small muted">Une carte reste grisée tant que le morceau n'a pas été joué ${PASSES_NEEDED} fois en entier à 100 % du tempo, à raison de ${PASSES_PER_DAY} passages maximum par jour, après ses 3 étapes. La rareté dépend de la difficulté. Clique sur une carte pour la retourner, puis clique dessus une deuxième fois pour ouvrir sa fiche.</p>` : '');
+    const empty = own && !grid ? `<div class="panel col-empty">${E('card-file-box', 44)}<p><b>${ui.colTab === 'songs' ? (ui.rar === 'all' ? 'Aucune carte de morceau acquise pour l\'instant.' : `Aucune carte ${RARITY[ui.rar].toLowerCase()} acquise pour l'instant.`) : ui.colTab === 'paliers' ? 'Aucun palier franchi pour l\'instant.' : 'Aucune carte bonus pour l\'instant.'}</b> ${ui.colTab === 'songs' ? `Une carte s'acquiert en jouant le morceau ${PASSES_NEEDED} fois en entier à 100 % du tempo, après ses 3 étapes.` : ui.colTab === 'paliers' ? 'Une carte palier s\'obtient en réussissant son test.' : 'Ouvre le booster du jour après une séance complète.'}</p><button class="btn" data-act="owned-only">Voir toutes les cartes</button></div>` : '';
     return `<section class="pagehead"><div><div class="kicker muted">Album</div><h1 class="h1">Ma collection</h1></div>
         <div class="counts"><div><b class="num">${nS}</b><span>/ ${songs.length} morceaux</span></div><div><b class="num">${nP}</b><span>/ ${ALL_PAL.length} paliers</span></div><div><b class="num">${nB}</b><span>/ ${BONUS.length} bonus</span></div></div></section>
       <div class="tabs" role="tablist">${[['songs', 'Morceaux'], ['paliers', 'Paliers'], ['bonus', 'Bonus']].map(([k, n]) => `<button role="tab" aria-selected="${ui.colTab === k}" class="tab${ui.colTab === k ? ' on' : ''}" data-act="coltab" data-v="${k}">${n}</button>`).join('')}</div>
-      ${filters}<div class="cards">${grid}</div>
+      ${filters}${empty || `<div class="cards">${grid}</div>`}
       <p class="small muted">Illustrations : œuvres du domaine public, via Wikimedia Commons. L'œuvre de chaque carte est indiquée dans sa fiche.</p>`;
   }
 
@@ -820,27 +824,40 @@
       <div class="row between foot"><span></span><button class="btn" data-act="close">Fermer</button></div></div>`;
   }
 
-  /* ---------- Vue : trophées en coupes sur des étagères de vitrine (même mise en page dans les deux modes) ----------
-     Une seule coupe SVG, teintée par niveau (or, argent, bronze) ; non obtenue : silhouette avec sa progression. */
-  const CUP_METAL = { or: ['#7A5A12', '#FFE08A', '#E0A92A', '#8A6418'], argent: ['#5D6470', '#F4F6FA', '#AEB6C4', '#666D7A'], bronze: ['#6E3F1D', '#F1BE8E', '#B9733F', '#6A3A18'], lock: ['#2C2B3A', '#555369', '#3C3B4E', '#2A293A'] };
-  const cupDefs = () => `<svg class="sr-only" aria-hidden="true" focusable="false"><defs>${Object.entries(CUP_METAL).map(([k, [a, b, c, d]]) => `<linearGradient id="cup-${k}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${a}"/><stop offset=".28" stop-color="${b}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${d}"/></linearGradient>`).join('')}<linearGradient id="cup-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B3352"/><stop offset="1" stop-color="#17132B"/></linearGradient></defs></svg>`;
-  const cupSvg = (k) => `<svg class="cup" viewBox="0 0 120 150" aria-hidden="true" focusable="false"><path d="M24 30c-16 0-18 26 4 32" fill="none" stroke="url(#cup-${k})" stroke-width="7" stroke-linecap="round"/><path d="M96 30c16 0 18 26-4 32" fill="none" stroke="url(#cup-${k})" stroke-width="7" stroke-linecap="round"/>
-    <path d="M20 18h80v26c0 28-17 46-40 48-23-2-40-20-40-48z" fill="url(#cup-${k})"/><path d="M30 24h8v20c0 18 7 30 16 36-15-3-24-17-24-36z" fill="#fff" opacity=".28"/><ellipse cx="60" cy="18" rx="40" ry="5" fill="#000" opacity=".22"/>
-    <path d="M53 92h14l-2 18h-10z" fill="url(#cup-${k})"/><rect x="38" y="110" width="44" height="9" rx="2" fill="url(#cup-${k})"/><rect x="28" y="119" width="64" height="20" rx="3" fill="url(#cup-base)"/><rect x="40" y="125" width="40" height="8" rx="1.5" fill="url(#cup-${k})" opacity=".85"/></svg>`;
-  function trophyItem(x) {
-    const t = x.t, k = x.own ? t.tier : 'lock', name = x.hid ? 'Trophée caché' : t.n;
-    return `<li class="tro${x.own ? ' own' : ''}${x.hid ? ' hid' : ''} tier-${t.tier}"><div class="tro-3d"><div class="tro-cup">${cupSvg(k)}<span class="tro-ic">${x.hid ? E('locked', 30) : E(t.e, 32)}</span></div></div>
-      <b>${esc(name)}</b><span class="tro-g">${x.hid ? 'Se dévoile pendant le combat contre le boss.' : esc(t.g)}</span>
-      ${x.own ? '<span class="tro-st">Obtenu</span>' : x.hid ? '' : `<span class="tro-p"><span class="bar" role="progressbar" aria-label="${esc(t.n)}" aria-valuemin="0" aria-valuemax="${x.g}" aria-valuenow="${x.v}"><i style="width:${x.pct}%"></i></span><span class="num">${x.v} / ${x.g}</span></span>`}</li>`;
-  }
-  function viewTrophees() {
+
+  /* ---------- Vue : trophées dans une vitrine en noyer et laiton (3D CSS, même vitrine dans les deux modes) ----------
+     Coupes dessinées de trois quarts et légèrement tournées ; plaque en laiton par trophée ; un clic affiche sa fiche sous la vitre. */
+  const CUP_METAL = { or: ['#6E4F0E', '#FFE9A6', '#E3AE2E', '#9A6E16', '#5E420A'], argent: ['#565C68', '#FFFFFF', '#B8C0CC', '#78808D', '#4A505B'], bronze: ['#5E3416', '#F6C9A0', '#BE7841', '#83491F', '#4E2A10'], lock: ['#25242F', '#5E5C72', '#3E3D50', '#2A2938', '#1E1D27'] };
+  const cupDefs = () => `<svg class="sr-only" aria-hidden="true" focusable="false"><defs>${Object.entries(CUP_METAL).map(([k, c]) => `<linearGradient id="cup-${k}" x1="0" x2="1">${c.map((s, i) => `<stop offset="${[0, 0.3, 0.55, 0.85, 1][i]}" stop-color="${s}"/>`).join('')}</linearGradient>`).join('')}
+    <linearGradient id="cup-in" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity=".15"/></linearGradient><linearGradient id="cup-base" x1="0" x2="1"><stop offset="0" stop-color="#14111F"/><stop offset=".35" stop-color="#4A4166"/><stop offset="1" stop-color="#14111F"/></linearGradient>
+    <symbol id="cup" viewBox="0 0 120 160"><path d="M96 36c22-4 20 30-6 30" fill="none" stroke="var(--m)" stroke-width="7" stroke-linecap="round" opacity=".75"/><path d="M21 24c0 40 17 66 39 68 22-2 39-28 39-68z" fill="var(--m)"/><ellipse cx="60" cy="24" rx="39" ry="9" fill="var(--m)"/><ellipse cx="60" cy="24" rx="34" ry="6.5" fill="url(#cup-in)"/>
+    <path d="M33 30c2 26 10 44 20 52-14-4-22-24-23-52z" fill="#fff" opacity=".35"/><path d="M24 36c-22-4-20 30 6 30" fill="none" stroke="var(--m)" stroke-width="7" stroke-linecap="round"/><path d="M54 92h12l-1 22h-10z" fill="var(--m)"/><ellipse cx="60" cy="114" rx="16" ry="4" fill="var(--m)"/>
+    <path d="M30 122h60v22H30z" fill="url(#cup-base)"/><ellipse cx="60" cy="144" rx="30" ry="6" fill="#0E0B18"/><ellipse cx="60" cy="122" rx="30" ry="6" fill="#5A5078"/><rect x="44" y="128" width="32" height="9" rx="1.5" fill="var(--m)" opacity=".9"/></symbol></defs></svg>`;
+  /* Trophées par étagère selon la largeur (la vitrine est redessinée si ce nombre change). */
+  const vtPerShelf = () => { const w = window.innerWidth; return w >= 1200 ? 7 : w >= 980 ? 5 : w >= 760 ? 4 : w >= 480 ? 3 : 2; };
+  let vtPer = 0;
+  function trophyData() {
     const f = facts();
-    const all = TROPHIES.map((t) => { const own = !!st.trophies[t.id], [v, g] = t.p(f); return { t, own, v, g, pct: Math.round(100 * Math.min(1, v / g)), hid: t.hidden && !own }; });
-    const got = all.filter((x) => x.own).length, near = all.filter((x) => !x.own && !x.hid).sort((p, q) => q.pct - p.pct)[0];
-    const shelf = (tier) => { const xs = all.filter((x) => x.t.tier === tier).sort((p, q) => (q.own - p.own) || (p.hid - q.hid) || (q.pct - p.pct)); const n = xs.filter((x) => x.own).length;
-      return xs.length ? `<section class="shelf tier-${tier}" aria-labelledby="sh-${tier}"><h2 id="sh-${tier}">${TIER[tier].n} <span>${n} sur ${xs.length}</span></h2><ul class="shelf-row">${xs.map(trophyItem).join('')}</ul></section>` : ''; };
-    return `${cupDefs()}<section class="pagehead"><div><h1 class="h1">Trophées</h1><p class="muted">${got} sur ${TROPHIES.length} obtenus${near ? ` · le plus proche : <b>${esc(near.t.n)}</b> (${near.v} / ${near.g})` : ''}</p></div></section>
-      <div class="vitrine">${shelf('or')}${shelf('argent')}${shelf('bronze')}</div>`;
+    return TROPHIES.map((t) => { const own = !!st.trophies[t.id], [v, g] = t.p(f); return { t, own, v, g, pct: Math.round(100 * Math.min(1, v / g)), hid: t.hidden && !own }; });
+  }
+  const troState = (x) => x.own ? 'Obtenu' : x.hid ? 'Caché' : `${x.v} / ${x.g}`;
+  function viewTrophees() {
+    const all = trophyData(), per = vtPer = vtPerShelf(), got = all.filter((x) => x.own).length;
+    const order = ['or', 'argent', 'bronze'].flatMap((tier) => all.filter((x) => x.t.tier === tier).sort((p, q) => (q.own - p.own) || (p.hid - q.hid) || (q.pct - p.pct)));
+    const sel = all.find((x) => x.t.id === ui.troSel) || all.filter((x) => !x.own && !x.hid).sort((p, q) => q.pct - p.pct)[0] || all.find((x) => x.own) || all[0];
+    const shelves = [];
+    for (const tier of ['or', 'argent', 'bronze']) { const xs = order.filter((x) => x.t.tier === tier); for (let i = 0; i < xs.length; i += per) shelves.push(xs.slice(i, i + per)); }
+    const cup = (x) => { const name = x.hid ? 'Trophée caché' : x.t.n;
+      return `<button type="button" class="vt-tro${x.own ? ' own' : ''}${x === sel ? ' sel' : ''}" data-act="tro" data-id="${x.t.id}" aria-pressed="${x === sel}"><span class="vt-spot" aria-hidden="true"></span><svg class="vt-cup" viewBox="0 0 120 160" aria-hidden="true" focusable="false" style="--m:url(#cup-${x.own ? x.t.tier : 'lock'})"><use href="#cup"/></svg>${E(x.hid ? 'locked' : x.t.e, 30, 'vt-ic')}<span class="sr-only">${esc(name)}, ${TIER[x.t.tier].n}, ${troState(x)}. Voir la fiche</span></button>`; };
+    const plate = (x) => `<span class="vt-plate${x.own ? ' own' : ''}"><b>${esc(x.hid ? 'Trophée caché' : x.t.n)}</b><span class="num">${troState(x)}</span></span>`;
+    const info = `<div class="vt-info" aria-live="polite">${E(sel.hid ? 'locked' : sel.t.e, 40)}<div><b>${esc(sel.hid ? 'Trophée caché' : sel.t.n)}</b><span class="vt-tier">${TIER[sel.t.tier].n}${sel.own ? ` · obtenu le ${st.trophies[sel.t.id].split('-').reverse().join('/')}` : ''}</span><p>${sel.hid ? 'Se dévoile pendant le combat contre le boss.' : esc(sel.t.g) + '.'}</p>
+      ${sel.own || sel.hid ? '' : `<span class="vt-prog"><span class="bar" role="progressbar" aria-label="${esc(sel.t.n)}" aria-valuemin="0" aria-valuemax="${sel.g}" aria-valuenow="${sel.v}"><i style="width:${sel.pct}%"></i></span><span class="num">${sel.v} / ${sel.g}</span></span>`}</div></div>`;
+    const tierN = (tier) => { const xs = all.filter((x) => x.t.tier === tier); return `${TIER[tier].n} ${xs.filter((x) => x.own).length}/${xs.length}`; };
+    return `${cupDefs()}<section class="pagehead"><div><h1 class="h1">Trophées</h1><p class="muted">${got} sur ${TROPHIES.length} obtenus · ${tierN('or')} · ${tierN('argent')} · ${tierN('bronze')}. Clique sur une coupe pour voir son objectif.</p></div></section>
+      <div class="vt-scene" style="--per:${per}"><div class="vt-cab" id="vt-cab"><div class="vt-back" aria-hidden="true"></div><div class="vt-side l" aria-hidden="true"></div><div class="vt-side r" aria-hidden="true"></div><div class="vt-lid t" aria-hidden="true"></div><div class="vt-lid b" aria-hidden="true"></div><div class="vt-led" aria-hidden="true"></div>
+        ${shelves.map((row, i) => `<div class="vt-shelf${i === shelves.length - 1 ? ' last' : ''}"><div class="vt-cups">${row.map(cup).join('')}</div><div class="vt-lip">${row.map(plate).join('')}</div></div>`).join('')}
+        <div class="vt-glass" aria-hidden="true"></div><div class="vt-frame" aria-hidden="true"></div><div class="vt-plinth" aria-hidden="true"></div></div></div>
+      ${info}`;
   }
 
   /* ---------- Vue : progrès ---------- */
@@ -1468,6 +1485,8 @@
     'img-reset'(d) { delete st.img[d.id]; commit(); },
     coltab(d) { ui.colTab = d.v; ui.flipped = null; render(); },
     rar(d) { ui.rar = d.v; ui.flipped = null; render(); },
+    tro(d) { ui.troSel = d.id; renderView(); const b = document.querySelector(`.vt-tro[data-id="${CSS.escape(d.id)}"]`); if (b) b.focus({ preventScroll: true }); },
+    'owned-only'() { ui.ownedOnly = !ui.ownedOnly; ui.flipped = null; render(); },
     preview() { ui.preview = !ui.preview; render(); },
     quick(d) {
       Sound.ac();
@@ -1601,15 +1620,18 @@
   });
   document.addEventListener('pointerout', (ev) => { const c = ev.target.closest && ev.target.closest('.card'); if (c && !c.contains(ev.relatedTarget)) { c.style.removeProperty('--rx'); c.style.removeProperty('--ry'); c.style.removeProperty('--sx'); } });
   Sound.metro.onBeat = (b) => { ui.beat = b; document.querySelectorAll('#beats, #sx-beats').forEach((el) => [...el.children].forEach((c, i) => c.classList.toggle('on', i === b))); };
-  /* Coupes des trophées : légère inclinaison 3D qui suit la souris (rien si le mouvement réduit est demandé). */
+  /* Vitrine des trophées : elle pivote un peu en suivant la souris (rien si le mouvement réduit est demandé). */
   const noMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
   document.addEventListener('pointermove', (ev) => {
-    if (noMotion.matches || ev.pointerType !== 'mouse') return;
-    const tro = ev.target.closest && ev.target.closest('.tro'); if (!tro) return;
-    const r = tro.getBoundingClientRect(), cup = tro.querySelector('.tro-cup');
-    cup.style.setProperty('--ry', ((ev.clientX - r.left) / r.width - 0.5) * 30 + 'deg'); cup.style.setProperty('--rx', (0.5 - (ev.clientY - r.top) / r.height) * 16 + 'deg');
+    if (noMotion.matches || ev.pointerType !== 'mouse' || ui.tab !== 'trophees') return;
+    const sc = ev.target.closest && ev.target.closest('.vt-scene'), cab = $('#vt-cab'); if (!cab) return;
+    if (!sc) { cab.style.removeProperty('--ry'); cab.style.removeProperty('--rx'); return; }
+    const r = sc.getBoundingClientRect();
+    cab.style.setProperty('--ry', (-10 + ((ev.clientX - r.left) / r.width - 0.5) * 16).toFixed(2) + 'deg'); cab.style.setProperty('--rx', ((0.5 - (ev.clientY - r.top) / r.height) * 6 - 2).toFixed(2) + 'deg');
   });
-  document.addEventListener('pointerout', (ev) => { const tro = ev.target.closest && ev.target.closest('.tro'); if (tro && !tro.contains(ev.relatedTarget)) { const cup = tro.querySelector('.tro-cup'); cup.style.removeProperty('--ry'); cup.style.removeProperty('--rx'); } });
+  /* Le nombre de trophées par étagère suit la largeur de l'écran. */
+  let vtResize = null;
+  window.addEventListener('resize', () => { clearTimeout(vtResize); vtResize = setTimeout(() => { if (ui.tab === 'trophees' && vtPerShelf() !== vtPer) renderView(); }, 150); });
   /* Page fermée pendant le compte à rebours : la mission validée est enregistrée quand même. */
   window.addEventListener('pagehide', () => { if (ui.session && ui.session.pending) { if (ui.session.count) clearTimeout(ui.session.count.t); ui.session.count = null; seanceCommit(); save(); } });
   function readHash() { const h = location.hash.replace('#', ''); ui.tab = VIEWS.includes(h) ? h : 'accueil'; ui.armed = null; ui.flipped = null; }

@@ -1090,37 +1090,6 @@ body.in-seance #toasts { top: 76px; bottom: auto; left: auto; right: 32px; trans
 }
 
 /* ==========================================================================
-   Trophées : coupes SVG sur des étagères de vitrine (mêmes dans les deux modes)
-   ========================================================================== */
-.vitrine { display: flex; flex-direction: column; gap: 8px; padding: 26px 26px 10px; border-radius: 24px; background: linear-gradient(180deg, #1B1733, #0E0D12); color: var(--dk-ink); }
-.shelf { position: relative; padding: 8px 0 22px; background: radial-gradient(60% 70% at 50% 0%, rgba(255, 224, 138, .1), transparent 70%); }
-.shelf.tier-argent { background: radial-gradient(60% 70% at 50% 0%, rgba(221, 226, 236, .09), transparent 70%); }
-.shelf.tier-bronze { background: radial-gradient(60% 70% at 50% 0%, rgba(235, 199, 164, .09), transparent 70%); }
-.shelf h2 { display: flex; align-items: baseline; gap: 10px; font-family: var(--display); font-stretch: 125%; font-weight: 900; font-size: 1.2rem; color: #fff; }
-.shelf h2 span { font: 600 .88rem var(--body); color: var(--dk-muted); }
-.shelf-row { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px 14px; position: relative; }
-/* la planche de l'étagère, sous chaque rangée de coupes */
-.tro::after { content: ""; position: absolute; left: -7px; right: -7px; bottom: 0; height: 12px; border-radius: 0; background: linear-gradient(180deg, #4A3F66, #2A2340 60%, #16122A); box-shadow: 0 10px 18px rgba(0, 0, 0, .55); }
-.tro { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; padding: 8px 6px 28px; } /* chaque coupe repose sur un morceau de planche : chaque rangée a la sienne */
-.tro-3d { perspective: 600px; width: 118px; }
-.tro-cup { position: relative; transform: rotateY(var(--ry, 0deg)) rotateX(var(--rx, 0deg)) translateY(var(--ty, 0)); transform-style: preserve-3d; transition: transform .35s var(--ease-out); }
-.tro-cup::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: -8px; height: 10px; border-radius: 50%; background: rgba(0, 0, 0, .5); filter: blur(4px); transform: translateZ(-20px); }
-.tro:hover .tro-cup { --ty: -6px; }
-.cup { display: block; width: 100%; height: auto; }
-.tro-ic { position: absolute; left: 50%; top: 21%; transform: translate(-50%, 0) translateZ(12px); filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35)); }
-.tro:not(.own) .tro-ic img { filter: grayscale(1) brightness(.75); }
-.tro b { font-family: var(--display); font-stretch: 112%; font-weight: 900; font-size: 1rem; line-height: 1.15; color: #fff; margin-top: 6px; }
-.tro-g { font-size: .82rem; color: var(--dk-muted); line-height: 1.35; }
-.tro-st { font: 800 .78rem var(--body); color: #1B1733; background: #FFD166; border-radius: 99px; padding: 2px 10px; margin-top: 2px; }
-.tro.tier-argent .tro-st { background: #DDE2EC; }
-.tro.tier-bronze .tro-st { background: #EBC7A4; }
-.tro-p { display: flex; align-items: center; gap: 8px; width: 100%; max-width: 150px; font-size: .78rem; color: var(--dk-muted); }
-.tro-p .bar { flex: 1; background: #2E2E40; }
-.tro-p .bar i { background: #FFD166; }
-@media (max-width: 560px) { .vitrine { padding: 18px 12px 6px; } .shelf-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tro-3d { width: 104px; } }
-@media (prefers-reduced-motion: reduce) { .tro-cup { transition: none; transform: none !important; } }
-
-/* ==========================================================================
    Titres et rangs : emblème en médiator, fenêtre des titres
    ========================================================================== */
 button.lvl { background: none; border: 0; padding: 4px 6px; margin: -4px -6px; border-radius: 10px; font: inherit; color: inherit; text-align: left; cursor: pointer; transition: background-color .15s; }
@@ -1158,3 +1127,59 @@ button.lvl:hover { background: var(--bg); }
 .rsheet .btn { background: #FFD166; color: #1B1733; }
 .rsheet :focus-visible { outline-color: #FFD166; }
 @media (max-width: 760px) { .rk-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } .rk-hero { flex-direction: column; text-align: center; gap: 12px; } .rk-hd { align-items: center; } .emblem.big { width: 108px; } }
+
+/* Collection : filtre « Possédées » vide */
+.col-empty { flex-direction: row; align-items: center; gap: 18px; flex-wrap: wrap; }
+.col-empty p { flex: 1; min-width: 220px; margin: 0; }
+.chip img.emo { vertical-align: -3px; margin-right: 2px; }
+
+/* ==========================================================================
+   Trophées : vitrine en noyer et laiton, vitre en verre, 3D CSS (même vitrine dans les deux modes)
+   ========================================================================== */
+.vt-scene { --D: 110px; --pad: 28px; perspective: 2200px; perspective-origin: 58% 40%; padding: 34px 44px 84px; overflow: hidden; }
+.vt-cab { position: relative; max-width: 1000px; margin: 0 auto; padding: var(--pad) var(--pad) 66px; transform-style: preserve-3d; transform: rotateY(var(--ry, -10deg)) rotateX(var(--rx, -2deg)); transition: transform .6s var(--ease-out); }
+.vt-cab > div:not(.vt-shelf) { position: absolute; }
+.vt-back { inset: 0; background: radial-gradient(80% 30% at 50% 0%, rgba(255, 222, 160, .45), transparent 70%), repeating-linear-gradient(91deg, rgba(0, 0, 0, .09) 0 2px, transparent 2px 11px), linear-gradient(#5A3720, #3B2414); }
+.vt-side { top: 0; bottom: 0; width: var(--D); background: repeating-linear-gradient(90deg, rgba(0, 0, 0, .1) 0 2px, transparent 2px 10px), linear-gradient(90deg, #3B2414, #6B4428); }
+.vt-side.l { left: 0; transform-origin: left center; transform: rotateY(-90deg); }
+.vt-side.r { right: 0; transform-origin: right center; transform: rotateY(90deg); }
+.vt-lid { left: 0; right: 0; height: var(--D); background: linear-gradient(#4A2E1B, #2E1C10); }
+.vt-lid.t { top: 0; transform-origin: top center; transform: rotateX(90deg); }
+.vt-lid.b { bottom: 0; transform-origin: bottom center; transform: rotateX(-90deg); background: linear-gradient(#6B4428, #3B2414); }
+.vt-led { left: 6%; right: 6%; top: 3px; height: 5px; border-radius: 3px; transform: translateZ(6px); background: #FFE7B0; box-shadow: 0 0 18px 6px rgba(255, 214, 140, .55); }
+.vt-glass { inset: 0; transform: translateZ(var(--D)); pointer-events: none; background: linear-gradient(115deg, rgba(255, 255, 255, 0) 18%, rgba(255, 255, 255, .2) 22%, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0) 58%, rgba(255, 255, 255, .14) 61%, rgba(255, 255, 255, 0) 66%), rgba(255, 236, 200, .05); }
+.vt-frame { inset: -16px; transform: translateZ(calc(var(--D) + 1px)); border: 16px solid transparent; border-image: linear-gradient(135deg, #E5C77E, #9C7633 40%, #D9B66A 60%, #7E5C24) 1; pointer-events: none; }
+.vt-plinth { left: -16px; right: -16px; bottom: -58px; height: 42px; transform: translateZ(var(--D)); background: linear-gradient(#5A3720, #2E1C10); box-shadow: 0 18px 30px rgba(0, 0, 0, .35); }
+.vt-shelf { position: relative; height: 160px; margin-bottom: 52px; transform-style: preserve-3d; }
+.vt-shelf.last { margin-bottom: 0; }
+.vt-shelf::before { content: ""; position: absolute; left: calc(-1 * var(--pad)); right: calc(-1 * var(--pad)); top: 100%; height: var(--D); transform-origin: top center; transform: rotateX(90deg); background: linear-gradient(#8A5A39, #5A3720); }
+.vt-cups { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(var(--per), minmax(0, 1fr)); align-items: end; transform: translateZ(calc(var(--D) * .5)); transform-style: preserve-3d; }
+.vt-lip { position: absolute; left: calc(-1 * var(--pad)); right: calc(-1 * var(--pad)); top: 100%; height: 50px; padding: 0 var(--pad); display: grid; grid-template-columns: repeat(var(--per), minmax(0, 1fr)); align-items: center; transform: translateZ(calc(var(--D) - 4px)); background: linear-gradient(#C9A15A, #8E6A2E); box-shadow: 0 8px 16px rgba(0, 0, 0, .35); }
+/* coupe : légèrement tournée pour montrer son volume */
+.vt-tro { position: relative; justify-self: center; width: min(112px, 92%); padding: 0; border: 0; background: none; cursor: pointer; transform-style: preserve-3d; transform: rotateY(-18deg); transition: transform .3s var(--ease-out); }
+.vt-tro:hover, .vt-tro:focus-visible { transform: rotateY(-6deg) translateY(-8px); }
+.vt-tro:focus-visible { outline: 3px solid #FFD166; outline-offset: 4px; border-radius: 10px; }
+.vt-cup { display: block; width: 100%; height: auto; filter: drop-shadow(0 12px 8px rgba(0, 0, 0, .45)); }
+.vt-tro .vt-ic { position: absolute; left: 50%; top: 18%; width: 28%; height: auto; transform: translateX(-46%) skewY(-3deg); }
+.vt-tro:not(.own) .vt-ic { filter: grayscale(1) brightness(.7); }
+.vt-spot { position: absolute; left: 50%; bottom: 10%; width: 150%; aspect-ratio: 1; transform: translate(-50%, 0) translateZ(-48px); border-radius: 50%; background: radial-gradient(circle at 50% 45%, rgba(255, 220, 160, .38), transparent 62%); pointer-events: none; }
+.vt-tro.sel::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -4px; height: 10px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 209, 102, .9), transparent); }
+.vt-plate { justify-self: center; max-width: 94%; display: flex; flex-direction: column; align-items: center; padding: 3px 9px; border-radius: 3px; background: linear-gradient(#F3DCA0, #C9A15A); box-shadow: inset 0 0 0 1px rgba(94, 64, 20, .45); color: #3B2414; text-align: center; line-height: 1.15; }
+.vt-plate b { font: 800 .74rem var(--body); max-width: 100%; text-wrap: balance; }
+.vt-plate span { font: 700 .68rem var(--body); }
+.vt-info { display: flex; gap: 16px; align-items: flex-start; max-width: 1000px; margin: 0 auto; padding: 18px 22px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line); }
+.vt-info > div { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.vt-info b { font-family: var(--display); font-stretch: 112%; font-weight: 900; font-size: 1.15rem; }
+.vt-tier { color: var(--muted); font-weight: 600; font-size: .88rem; }
+.vt-info p { margin: 2px 0 0; }
+.vt-prog { display: flex; align-items: center; gap: 10px; max-width: 360px; font-size: .88rem; color: var(--muted); }
+.vt-prog .bar { flex: 1; }
+@media (max-width: 760px) {
+  .vt-scene { --D: 70px; --pad: 16px; perspective: 1100px; padding: 24px 22px 70px; margin: 0 -16px; }
+  .vt-cab { transform: rotateY(var(--ry, -6deg)) rotateX(var(--rx, -2deg)); }
+  .vt-shelf { height: 136px; margin-bottom: 50px; }
+  .vt-plate b { font-size: .68rem; }
+  .vt-plinth { bottom: -48px; height: 32px; }
+  .vt-cab { padding-bottom: 60px; }
+}
+@media (prefers-reduced-motion: reduce) { .vt-cab, .vt-tro { transition: none; } .vt-tro:hover, .vt-tro:focus-visible { transform: rotateY(-18deg); } }
