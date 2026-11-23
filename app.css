@@ -88,7 +88,7 @@ details[open] { display: flex; flex-direction: column; gap: 8px; }
 #nav a.on { background: var(--ink); color: #fff; }
 .hud { display: flex; align-items: center; gap: 14px; }
 .streak { display: flex; align-items: center; gap: 6px; font-weight: 700; padding: 6px 12px; border-radius: 99px; background: #FFE1DA; }
-.lvl { display: flex; flex-direction: column; gap: 4px; font-size: .82rem; color: var(--muted); min-width: 150px; }
+.lvl { display: flex; flex-direction: column; gap: 4px; font-size: .82rem; color: var(--muted); min-width: 150px; white-space: nowrap; }
 .bar { display: block; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
 .bar > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .5s; }
 .avatar { width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--muted); color: #fff; font-weight: 800; cursor: pointer; }
@@ -1088,3 +1088,73 @@ body.in-seance #toasts { top: 76px; bottom: auto; left: auto; right: 32px; trans
   .sx-stamp.go, .sx-hero.swap-in, .sx-boss.hit, .sx-toast { animation: none; }
   .sx-drawer { transition: none; }
 }
+
+/* ==========================================================================
+   Trophées : coupes SVG sur des étagères de vitrine (mêmes dans les deux modes)
+   ========================================================================== */
+.vitrine { display: flex; flex-direction: column; gap: 8px; padding: 26px 26px 10px; border-radius: 24px; background: linear-gradient(180deg, #1B1733, #0E0D12); color: var(--dk-ink); }
+.shelf { position: relative; padding: 8px 0 22px; background: radial-gradient(60% 70% at 50% 0%, rgba(255, 224, 138, .1), transparent 70%); }
+.shelf.tier-argent { background: radial-gradient(60% 70% at 50% 0%, rgba(221, 226, 236, .09), transparent 70%); }
+.shelf.tier-bronze { background: radial-gradient(60% 70% at 50% 0%, rgba(235, 199, 164, .09), transparent 70%); }
+.shelf h2 { display: flex; align-items: baseline; gap: 10px; font-family: var(--display); font-stretch: 125%; font-weight: 900; font-size: 1.2rem; color: #fff; }
+.shelf h2 span { font: 600 .88rem var(--body); color: var(--dk-muted); }
+.shelf-row { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px 14px; position: relative; }
+/* la planche de l'étagère, sous chaque rangée de coupes */
+.tro::after { content: ""; position: absolute; left: -7px; right: -7px; bottom: 0; height: 12px; border-radius: 0; background: linear-gradient(180deg, #4A3F66, #2A2340 60%, #16122A); box-shadow: 0 10px 18px rgba(0, 0, 0, .55); }
+.tro { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; padding: 8px 6px 28px; } /* chaque coupe repose sur un morceau de planche : chaque rangée a la sienne */
+.tro-3d { perspective: 600px; width: 118px; }
+.tro-cup { position: relative; transform: rotateY(var(--ry, 0deg)) rotateX(var(--rx, 0deg)) translateY(var(--ty, 0)); transform-style: preserve-3d; transition: transform .35s var(--ease-out); }
+.tro-cup::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: -8px; height: 10px; border-radius: 50%; background: rgba(0, 0, 0, .5); filter: blur(4px); transform: translateZ(-20px); }
+.tro:hover .tro-cup { --ty: -6px; }
+.cup { display: block; width: 100%; height: auto; }
+.tro-ic { position: absolute; left: 50%; top: 21%; transform: translate(-50%, 0) translateZ(12px); filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35)); }
+.tro:not(.own) .tro-ic img { filter: grayscale(1) brightness(.75); }
+.tro b { font-family: var(--display); font-stretch: 112%; font-weight: 900; font-size: 1rem; line-height: 1.15; color: #fff; margin-top: 6px; }
+.tro-g { font-size: .82rem; color: var(--dk-muted); line-height: 1.35; }
+.tro-st { font: 800 .78rem var(--body); color: #1B1733; background: #FFD166; border-radius: 99px; padding: 2px 10px; margin-top: 2px; }
+.tro.tier-argent .tro-st { background: #DDE2EC; }
+.tro.tier-bronze .tro-st { background: #EBC7A4; }
+.tro-p { display: flex; align-items: center; gap: 8px; width: 100%; max-width: 150px; font-size: .78rem; color: var(--dk-muted); }
+.tro-p .bar { flex: 1; background: #2E2E40; }
+.tro-p .bar i { background: #FFD166; }
+@media (max-width: 560px) { .vitrine { padding: 18px 12px 6px; } .shelf-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tro-3d { width: 104px; } }
+@media (prefers-reduced-motion: reduce) { .tro-cup { transition: none; transform: none !important; } }
+
+/* ==========================================================================
+   Titres et rangs : emblème en médiator, fenêtre des titres
+   ========================================================================== */
+button.lvl { background: none; border: 0; padding: 4px 6px; margin: -4px -6px; border-radius: 10px; font: inherit; color: inherit; text-align: left; cursor: pointer; transition: background-color .15s; }
+button.lvl:hover { background: var(--bg); }
+.emblem { position: relative; display: inline-grid; place-items: center; width: 64px; flex: none; }
+.emblem.big { width: 132px; }
+.emb { display: block; width: 100%; height: auto; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .35)); }
+.emb-ic { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); }
+.emb-div { position: absolute; left: 50%; bottom: 2%; transform: translateX(-50%); min-width: 26px; padding: 1px 7px; border-radius: 99px; background: #FFD166; color: #1B1733; font: 900 .78rem/1.3 var(--display); font-stretch: 125%; text-align: center; box-shadow: 0 2px 6px rgba(0, 0, 0, .4); }
+.emblem.big .emb-div { font-size: 1.05rem; padding: 2px 10px; }
+.emblem.lock .emb-ic img { opacity: .8; }
+.rk-head { display: flex; align-items: center; gap: 16px; }
+.rk-head .emblem { width: 72px; }
+.pagehead:has(.rk-head) { align-items: center; }
+.rsheet { width: min(860px, 100%); gap: 18px; background: radial-gradient(80% 60% at 20% 0%, #2B2450, #120F22 70%); color: var(--dk-ink); border: 1px solid var(--dk-line); }
+.rk-hero { display: flex; align-items: center; gap: 24px; }
+.rk-hd { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
+.rk-lv { font: 700 .9rem var(--body); color: var(--dk-muted); }
+.rk-hd h2 { margin: 0; font-family: var(--display); font-stretch: 125%; font-weight: 900; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1; color: #fff; text-wrap: balance; }
+.rk-bar { display: block; width: 100%; height: 10px; border-radius: 6px; background: #2E2E40; overflow: hidden; max-width: 420px; }
+.rk-bar i { display: block; height: 100%; background: linear-gradient(90deg, #FFD166, #FF6B4F); }
+.rk-next { font-size: .92rem; color: var(--dk-ink); }
+.rk-h { margin: 4px 0 0; font-family: var(--display); font-stretch: 125%; font-weight: 900; font-size: 1.1rem; color: #fff; }
+.rk-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.rk { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 14px 10px; border-radius: 16px; background: rgba(255, 255, 255, .05); border: 2px solid rgba(255, 255, 255, .08); }
+.rk.cur { border-color: #FFD166; background: rgba(255, 209, 102, .1); }
+.rk-t { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.rk-t b { font-family: var(--display); font-stretch: 112%; font-weight: 900; font-size: .95rem; line-height: 1.15; color: #fff; }
+.rk-t > span:not(.rk-pips) { font-size: .78rem; color: var(--dk-muted); }
+.rk.lock .rk-t b { color: #CFCBDD; }
+.rk-pips { display: flex; gap: 5px; margin-top: 2px; }
+.rk-pips i { width: 16px; height: 6px; border-radius: 3px; background: #3A3850; transform: skewX(-20deg); }
+.rk-pips i.on { background: #FFD166; }
+.rk-note { margin: 0; font-size: .85rem; color: var(--dk-muted); }
+.rsheet .btn { background: #FFD166; color: #1B1733; }
+.rsheet :focus-visible { outline-color: #FFD166; }
+@media (max-width: 760px) { .rk-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } .rk-hero { flex-direction: column; text-align: center; gap: 12px; } .rk-hd { align-items: center; } .emblem.big { width: 108px; } }

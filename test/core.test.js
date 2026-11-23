@@ -227,3 +227,19 @@ test('générateur déterministe', () => {
   const v = C.seeded(1)();
   assert.ok(v >= 0 && v < 1);
 });
+
+test('titres : divisions I, II, III sur l\'XP de chaque titre, dernier titre plafonné', () => {
+  assert.strictEqual(C.xpForLevel(1), 0);
+  assert.strictEqual(C.xpForLevel(3), 450);
+  const r0 = C.rankInfo(0);
+  assert.deepStrictEqual([r0.idx, r0.name, r0.div, r0.divInto, r0.divNeed], [0, 'Gratteur de salon', 1, 0, 150]);
+  assert.strictEqual(C.rankInfo(149).div, 1);
+  assert.strictEqual(C.rankInfo(150).div, 2);
+  assert.strictEqual(C.rankInfo(300).div, 3);
+  const r3 = C.rankInfo(450);
+  assert.deepStrictEqual([r3.idx, r3.name, r3.div, r3.next.level], [1, 'Dompteur de médiator', 1, 6]);
+  const top = C.rankInfo(C.xpForLevel(80));
+  assert.deepStrictEqual([top.name, top.div, top.next, top.maxed], ['Légende vivante', 3, null, true]);
+  assert.ok(top.divInto <= top.divNeed);
+  for (let x = 0; x < 60000; x += 997) { const r = C.rankInfo(x); assert.ok(r.div >= 1 && r.div <= 3 && r.divInto >= 0 && r.divInto <= r.divNeed, String(x)); }
+});

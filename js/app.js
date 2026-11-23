@@ -341,7 +341,7 @@
       <nav id="nav" aria-label="Sections">${TABS.map(([id, n, ic, sh]) => `<a href="#${id}" class="${ui.tab === id ? 'on' : ''}"${ui.tab === id ? ' aria-current="page"' : ''}>${E(ic, 20, 'navic')}${sh ? `<span class="nav-full">${n}</span><span class="nav-short">${sh}</span>` : `<span>${n}</span>`}</a>`).join('')}</nav>
       <div class="hud">
         <span class="streak" title="Jours validés d'affilée">${E('fire', 20)}<b class="num">${s.streak}</b><span class="hide-s">jour${s.streak > 1 ? 's' : ''}</span></span>
-        <span class="lvl hide-s"><span>Niveau ${li.level} · <span class="num">${li.into} / ${li.need}</span> XP</span><span class="bar" role="progressbar" aria-label="Expérience" aria-valuemin="0" aria-valuemax="${li.need}" aria-valuenow="${li.into}"><i style="width:${(100 * li.into / li.need).toFixed(1)}%"></i></span></span>
+        <button type="button" class="lvl hide-s" data-act="rank"><span>Niveau ${li.level} · <span class="num">${li.into} / ${li.need}</span> XP<span class="sr-only">, ${esc(Core.rankInfo(st.xp).name)} : voir les titres et les rangs</span></span><span class="bar" aria-hidden="true"><i style="width:${(100 * li.into / li.need).toFixed(1)}%"></i></span></button>
         <button class="theme-btn" data-act="theme" aria-pressed="${isDark()}" aria-label="Mode sombre" title="${isDark() ? 'Passer en mode clair' : 'Passer en mode sombre'}">${ICON_THEME}</button>
         <button class="avatar${u ? ' on' : ''}" data-act="account" aria-label="${u ? 'Compte connecté' : 'Se connecter'}">${esc(initial)}</button>
       </div></div>`;
@@ -656,30 +656,6 @@
       + (pal.length ? wRow('Paliers à franchir', 'un par branche', pal) : '') + wRow('Ta collection', `${songs.filter((x) => owned(x.id)).length} / ${songs.length} morceaux`, coll)
       + `</div>${mancheBlock()}</div></div>`;
   }
-  function wallCollection() {
-    const songs = allSongs(), nS = songs.filter((x) => owned(x.id)).length, nP = skillsDone(), nB = BONUS.filter((x) => st.bonus[x.id]).length;
-    const keep = (x) => ui.rar === 'all' || x.r === ui.rar;
-    const a = songById(st.active) || songById('hysteria'), pa = pinfo(a.id), sa = stepsOf(a.id);
-    const lede = owned(a.id) ? 'Carte acquise. Choisis une autre carte en cours depuis sa fiche.' : sa < 3 ? `Étape ${sa + 1} sur 3 : « ${esc((a.ear ? STEPS_EAR : STEPS_SONG)[sa])} ».` : `Étapes réussies. Passages en entier à 100 % : ${pa.n} sur ${PASSES_NEEDED}.`;
-    const bill = wBill(a, `<h1>${esc(a.t)}</h1><p class="w-meta"><b>${esc(a.a)}</b> · ${RARITY[a.r]} · carte en cours</p><p class="w-lede">${lede}</p>
-      <div class="w-acts"><button type="button" class="w-btn w-btn-1" data-act="song" data-id="${a.id}">${E('card-file-box', 22)}Ouvrir la fiche</button><button type="button" class="w-btn w-btn-2" data-act="add-song">Ajouter un morceau</button></div>
-      <p class="w-note"><b class="num">${nS}</b> / ${songs.length} morceaux · <b class="num">${nP}</b> / ${ALL_PAL.length} paliers · <b class="num">${nB}</b> / ${BONUS.length} bonus</p>`);
-    const chips = `<div class="w-filters" role="group" aria-label="Filtrer les morceaux par rareté">${[['all', 'Toutes'], ...Object.entries(RARITY)].map(([key, n]) => `<button type="button" data-act="rar" data-v="${key}" aria-pressed="${ui.rar === key}">${n}</button>`).join('')}<button type="button" data-act="preview" aria-pressed="${ui.preview}">Aperçu : tout en couleur</button></div>`;
-    const rows = [], plural = (n, w) => `${n} ${w}${n > 1 ? 's' : ''}`;
-    const started = songs.filter((x) => keep(x) && !owned(x.id) && (stepsOf(x.id) || pinfo(x.id).n));
-    if (started.length) rows.push(wRow('Presque acquises', plural(started.length, 'carte') + ' commencée' + (started.length > 1 ? 's' : ''), started.map((x, i) => wCard(x, i === 0))));
-    const got = songs.filter((x) => keep(x) && owned(x.id));
-    if (got.length) rows.push(wRow('Acquises', plural(got.length, 'carte'), got.map((x) => wCard(x))));
-    for (const rr of ['M', 'L', 'E', 'R', 'C']) {
-      if (ui.rar !== 'all' && ui.rar !== rr) continue;
-      const list = SONGS.filter((x) => x.r === rr);
-      if (list.length) rows.push(wRow(rr === 'M' ? 'Mythique' : RARITY[rr] + 's', plural(list.length, 'carte'), list.map((x) => wCard(x))));
-    }
-    rows.push(wRow('Tes morceaux', 'ajoutés par toi', (st.custom || []).filter(keep).map((x) => wCard(x)).concat([wTile({ act: 'data-act="add-song"', icon: 'sparkles', t: 'Ajouter un morceau', s: 'Titre, artiste, difficulté' })])));
-    rows.push(wRow('Cartes de paliers', `${nP} / ${ALL_PAL.length}`, ALL_PAL.map((p) => { const on = !!st.skills[p.id]; return wTile({ cls: `w-pc r${palierRar(p)}${on ? '' : ' todo'}`, art: on ? `<span class="w-emo" aria-hidden="true">${p.e}</span>` : E('locked', 40, 'w-lock'), t: p.t, s: `${BR[p.br].name} · palier ${p.idx + 1}${on ? '' : ' · verrouillée'}` }); })));
-    rows.push(wRow('Cartes bonus', `${nB} / ${BONUS.length}`, BONUS.map((x) => { const n = st.bonus[x.id] || 0, rr = BONUS_RAR[x.r]; return n ? wTile({ act: `data-act="bonus" data-id="${x.id}"`, cls: `w-pc r${rr}`, art: `<span class="w-emo" aria-hidden="true">${x.e}</span>`, t: x.t, s: RARITY[rr] + (n > 1 ? ' ×' + n : '') }) : wTile({ cls: `w-pc r${rr} todo`, art: E('locked', 40, 'w-lock'), t: '???', s: `${RARITY[rr]} · dans un booster du jour` }); })));
-    return `${bill}${chips}<div class="w-wall">${rows.join('')}</div><p class="w-foot">Une carte reste grisée tant que le morceau n'a pas été joué ${PASSES_NEEDED} fois en entier à 100 % du tempo (${PASSES_PER_DAY} passages par jour au plus), après ses 3 étapes. Illustrations : œuvres du domaine public, via Wikimedia Commons.</p>`;
-  }
   function wPalierActs(p) {
     let h = '';
     if (p.fb) h += `<button type="button" class="w-btn w-btn-2 sm" data-act="show-fb" data-fb="${esc(JSON.stringify(p.fb))}">Voir sur le manche</button>`;
@@ -702,20 +678,11 @@
     });
     return `${bill}<div class="w-wall">${rows.join('')}</div>`;
   }
-  function wallTrophees() {
-    const f = facts(), a = songById(st.active) || songById('hysteria');
-    const all = TROPHIES.map((t) => { const [v, g] = t.p(f); return { t, own: !!st.trophies[t.id], v, g, pct: Math.round(100 * Math.min(1, v / g)), hid: t.hidden && !st.trophies[t.id] }; });
-    const got = all.filter((x) => x.own), todo = all.filter((x) => !x.own && !x.hid).sort((p, q) => q.pct - p.pct), hidden = all.filter((x) => x.hid), top = todo[0];
-    const bill = top ? wBill(a, `<h1>${esc(top.t.n)}</h1><p class="w-meta"><b>${TIER[top.t.tier].n}</b> · le trophée le plus proche · <span class="num">${top.v} / ${top.g}</span></p><p class="w-lede">${esc(top.t.g)}.</p><span class="w-bar big" role="progressbar" aria-label="${esc(top.t.n)}" aria-valuemin="0" aria-valuemax="${top.g}" aria-valuenow="${top.v}"><i style="width:${top.pct}%"></i></span><p class="w-note">${got.length} trophée${got.length > 1 ? 's' : ''} sur ${TROPHIES.length} obtenu${got.length > 1 ? 's' : ''}.</p>`)
-      : wBill(a, `<h1>Tous les trophées visibles sont à toi</h1><p class="w-lede">${hidden.length ? 'Les trophées cachés se dévoilent pendant le combat contre le boss.' : 'Collection complète.'}</p>`);
-    const tile = (x) => wTile({ icon: x.t.e, t: x.t.n, s: `${TIER[x.t.tier].n}${x.own ? ' · obtenu' : ' · ' + x.v + ' / ' + x.g}`, p: x.t.g, bar: x.own ? null : x.pct, barLabel: x.t.n, cls: 'tier-' + x.t.tier + (x.own ? ' own' : '') });
-    return `${bill}<div class="w-wall">${(got.length ? wRow('Obtenus', `${got.length} sur ${TROPHIES.length}`, got.map(tile)) : '') + (todo.length ? wRow('À débloquer', 'du plus proche au plus lointain', todo.map(tile)) : '')
-      + (hidden.length ? wRow('Cachés', 'se dévoilent pendant le combat contre le boss', hidden.map(() => wTile({ icon: 'locked', t: 'Trophée caché', s: '?', cls: 'lock' }))) : '')}</div>`;
-  }
   function wallProgres(li, s, b) {
     const k = today(), last = allSongs().filter((x) => owned(x.id)).pop() || songById(st.active) || songById('hysteria');
     const next = (Core.RANKS.find((r) => r[0] > li.level) || ['max'])[0];
-    return wBill(last, `<h1>${esc(Core.rankFor(li.level))}</h1><p class="w-meta"><b class="num">Niveau ${li.level} · ${li.into} / ${li.need} XP</b> · série de ${s.streak} jour${s.streak > 1 ? 's' : ''} · prochain rang au niveau ${next}</p><span class="w-bar big" role="progressbar" aria-label="Expérience" aria-valuemin="0" aria-valuemax="${li.need}" aria-valuenow="${li.into}"><i style="width:${(100 * li.into / li.need).toFixed(1)}%"></i></span>`)
+    const rk = Core.rankInfo(st.xp);
+    return wBill(last, `<div class="rk-head">${emblem(rk.idx, { key: 'w', div: rk.div })}<h1>${esc(rk.name)} ${ROMAN[rk.div - 1]}</h1></div><p class="w-meta"><b class="num">Niveau ${li.level} · ${li.into} / ${li.need} XP</b> · série de ${s.streak} jour${s.streak > 1 ? 's' : ''} · prochain titre au niveau ${next}</p><span class="w-bar big" role="progressbar" aria-label="Expérience" aria-valuemin="0" aria-valuemax="${li.need}" aria-valuenow="${li.into}"><i style="width:${(100 * li.into / li.need).toFixed(1)}%"></i></span><div class="w-acts"><button type="button" class="w-btn w-btn-2" data-act="rank">${E('trophy', 22)}Voir les titres et les rangs</button></div>`)
       + `<div class="w-wall">${wRow('Tes chiffres', '', [wTile({ icon: 'sparkles', t: `${st.xp} XP`, s: 'au total' }), wTile({ icon: 'fire', t: `${s.streak} jour${s.streak > 1 ? 's' : ''}`, s: 'de série' }), wTile({ icon: '1st-place-medal', t: `${Math.max(st.best || 0, s.streak)} jours`, s: 'record de série' }),
         wTile({ icon: 'check-mark-button', t: `${Object.values(st.days).filter((d) => d.ok).length} jours`, s: 'validés' }), wTile({ icon: 'chart-increasing', t: `${skillsDone()} / ${ALL_PAL.length}`, s: 'paliers' }), wTile({ icon: b ? 'fox' : 'crown', t: `${b ? b.hp : 0} PV`, s: 'restants au boss' })])
         + wRow('Cette semaine', s.jokerUsed ? 'jour de pause utilisé' : 'un jour de pause disponible', Core.weekDays(k).map((d, i) => { const rr = getRec(d); return wTile({ t: 'LMMJVSD'[i], s: rr.ok ? 'Validé' : d === k ? `Aujourd'hui · ${rr.done.length} mission${rr.done.length > 1 ? 's' : ''}` : d < k ? (s.pausedDays.includes(d) ? 'Pause' : 'Manqué') : 'À venir', cls: 'w-day' + (rr.ok ? ' done' : '') + (d === k ? ' is-focus' : '') + (d > k ? ' lock' : '') }); }))}</div>`;
@@ -824,16 +791,56 @@
   }
 
   /* ---------- Vue : trophées ---------- */
+  /* ---------- Titres et rangs : emblème en forme de médiator, une matière par titre, divisions I à III ---------- */
+  const RANK_SKIN = [
+    ['guitar', 'Bois', ['#5B3A1E', '#D9A066', '#8B5A2B']], ['flexed-biceps', 'Bronze', ['#6E3F1D', '#F1BE8E', '#B9733F']], ['bow-and-arrow', 'Argent', ['#5D6470', '#F4F6FA', '#AEB6C4']],
+    ['high-voltage', 'Or', ['#7A5A12', '#FFE08A', '#E0A92A']], ['shield', 'Platine', ['#1F5E6B', '#C8F7FF', '#4FC3D9']], ['person-mage', 'Améthyste', ['#3E1F6E', '#DCC8FF', '#8B5CF6']],
+    ['dragon', 'Rubis', ['#6B1022', '#FFB8C6', '#E0284F']], ['crown', 'Légende', ['#FF6B4F', '#FFD166', '#3DDC97', '#6EA8FF', '#B98CFF']]];
+  const ROMAN = ['I', 'II', 'III'];
+  function emblemSvg(i, opts = {}) {
+    const [, , cols] = RANK_SKIN[i], lock = opts.lock, id = 'em' + i + (opts.key || ''), stops = (lock ? ['#2C2B3A', '#5A586E', '#3C3B4E'] : cols).map((c, k, a) => `<stop offset="${(k / (a.length - 1)).toFixed(2)}" stop-color="${c}"/>`).join('');
+    return `<svg class="emb" viewBox="0 0 100 120" aria-hidden="true" focusable="false"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">${stops}</linearGradient></defs>
+      <path d="M50 4C80 4 96 20 96 40c0 30-30 60-46 76C34 100 4 70 4 40 4 20 20 4 50 4z" fill="url(#${id})"/><path d="M50 12c25 0 38 13 38 29 0 25-24 50-38 63C36 91 12 66 12 41c0-16 13-29 38-29z" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>
+      <path d="M22 20c8-6 18-8 28-8v30C38 40 28 36 18 40c0-8 1-15 4-20z" fill="#fff" opacity=".22"/></svg>`;
+  }
+  const emblem = (i, opts = {}) => `<span class="emblem${opts.lock ? ' lock' : ''}${opts.big ? ' big' : ''}">${emblemSvg(i, opts)}<span class="emb-ic">${E(opts.lock ? 'locked' : RANK_SKIN[i][0], opts.big ? 48 : 28)}</span>${opts.div ? `<span class="emb-div" aria-hidden="true">${ROMAN[opts.div - 1]}</span>` : ''}</span>`;
+  function rankSheet() {
+    const r = Core.rankInfo(st.xp), li = Core.levelInfo(st.xp), R = Core.RANKS;
+    const next = r.div < 3 ? `${r.divNeed - r.divInto} XP avant la division ${ROMAN[r.div]}` : r.next ? `${Core.xpForLevel(r.next.level) - st.xp} XP avant « ${r.next.name} » (niveau ${r.next.level})` : 'Rang maximal atteint';
+    const items = R.map(([lvl, name], i) => {
+      const done = i < r.idx, cur = i === r.idx, lock = i > r.idx, to = R[i + 1] ? `niveaux ${lvl} à ${R[i + 1][0] - 1}` : `niveau ${lvl} et plus`;
+      const pips = [1, 2, 3].map((d) => `<i class="${done || (cur && d <= r.div) ? 'on' : ''}"></i>`).join('');
+      return `<li class="rk${done ? ' done' : ''}${cur ? ' cur' : ''}${lock ? ' lock' : ''}"${cur ? ' aria-current="step"' : ''}>${emblem(i, { lock, key: 'l', div: cur ? r.div : 0 })}<span class="rk-t"><b>${esc(name)}</b><span>${RANK_SKIN[i][1]} · ${to}</span><span class="rk-pips" aria-hidden="true">${pips}</span><span class="sr-only">${done ? 'Atteint.' : cur ? `Ton rang actuel, division ${ROMAN[r.div - 1]}.` : 'Pas encore atteint.'}</span></span></li>`;
+    }).join('');
+    return `<div class="sheet rsheet" aria-labelledby="rk-title">
+      <div class="rk-hero">${emblem(r.idx, { big: true, key: 'b', div: r.div })}<div class="rk-hd"><span class="rk-lv">Niveau ${li.level} · ${RANK_SKIN[r.idx][1]} · division ${ROMAN[r.div - 1]}</span><h2 id="rk-title">${esc(r.name)} ${ROMAN[r.div - 1]}</h2>
+        <span class="rk-bar" role="progressbar" aria-label="Progression dans la division" aria-valuemin="0" aria-valuemax="${r.divNeed}" aria-valuenow="${r.divInto}"><i style="width:${(100 * r.divInto / r.divNeed).toFixed(1)}%"></i></span><span class="rk-next">${esc(next)}</span></div></div>
+      <h3 class="rk-h">Les ${R.length} titres</h3><ol class="rk-list">${items}</ol>
+      <p class="rk-note">Chaque titre se gagne en trois divisions, I, II puis III, au fil de l'XP. Les missions, les paliers, les morceaux et les trophées en rapportent.</p>
+      <div class="row between foot"><span></span><button class="btn" data-act="close">Fermer</button></div></div>`;
+  }
+
+  /* ---------- Vue : trophées en coupes sur des étagères de vitrine (même mise en page dans les deux modes) ----------
+     Une seule coupe SVG, teintée par niveau (or, argent, bronze) ; non obtenue : silhouette avec sa progression. */
+  const CUP_METAL = { or: ['#7A5A12', '#FFE08A', '#E0A92A', '#8A6418'], argent: ['#5D6470', '#F4F6FA', '#AEB6C4', '#666D7A'], bronze: ['#6E3F1D', '#F1BE8E', '#B9733F', '#6A3A18'], lock: ['#2C2B3A', '#555369', '#3C3B4E', '#2A293A'] };
+  const cupDefs = () => `<svg class="sr-only" aria-hidden="true" focusable="false"><defs>${Object.entries(CUP_METAL).map(([k, [a, b, c, d]]) => `<linearGradient id="cup-${k}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${a}"/><stop offset=".28" stop-color="${b}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${d}"/></linearGradient>`).join('')}<linearGradient id="cup-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B3352"/><stop offset="1" stop-color="#17132B"/></linearGradient></defs></svg>`;
+  const cupSvg = (k) => `<svg class="cup" viewBox="0 0 120 150" aria-hidden="true" focusable="false"><path d="M24 30c-16 0-18 26 4 32" fill="none" stroke="url(#cup-${k})" stroke-width="7" stroke-linecap="round"/><path d="M96 30c16 0 18 26-4 32" fill="none" stroke="url(#cup-${k})" stroke-width="7" stroke-linecap="round"/>
+    <path d="M20 18h80v26c0 28-17 46-40 48-23-2-40-20-40-48z" fill="url(#cup-${k})"/><path d="M30 24h8v20c0 18 7 30 16 36-15-3-24-17-24-36z" fill="#fff" opacity=".28"/><ellipse cx="60" cy="18" rx="40" ry="5" fill="#000" opacity=".22"/>
+    <path d="M53 92h14l-2 18h-10z" fill="url(#cup-${k})"/><rect x="38" y="110" width="44" height="9" rx="2" fill="url(#cup-${k})"/><rect x="28" y="119" width="64" height="20" rx="3" fill="url(#cup-base)"/><rect x="40" y="125" width="40" height="8" rx="1.5" fill="url(#cup-${k})" opacity=".85"/></svg>`;
+  function trophyItem(x) {
+    const t = x.t, k = x.own ? t.tier : 'lock', name = x.hid ? 'Trophée caché' : t.n;
+    return `<li class="tro${x.own ? ' own' : ''}${x.hid ? ' hid' : ''} tier-${t.tier}"><div class="tro-3d"><div class="tro-cup">${cupSvg(k)}<span class="tro-ic">${x.hid ? E('locked', 30) : E(t.e, 32)}</span></div></div>
+      <b>${esc(name)}</b><span class="tro-g">${x.hid ? 'Se dévoile pendant le combat contre le boss.' : esc(t.g)}</span>
+      ${x.own ? '<span class="tro-st">Obtenu</span>' : x.hid ? '' : `<span class="tro-p"><span class="bar" role="progressbar" aria-label="${esc(t.n)}" aria-valuemin="0" aria-valuemax="${x.g}" aria-valuenow="${x.v}"><i style="width:${x.pct}%"></i></span><span class="num">${x.v} / ${x.g}</span></span>`}</li>`;
+  }
   function viewTrophees() {
-    const f = facts(), got = TROPHIES.filter((t) => st.trophies[t.id]).length;
-    return `<section class="pagehead"><div><div class="kicker muted">Accomplissements</div><h1 class="h1">Trophées</h1></div><div class="counts"><div><b class="num">${got}</b><span>sur ${TROPHIES.length} obtenus</span></div></div></section>
-      <div class="trophies">${TROPHIES.map((t) => {
-        const own = !!st.trophies[t.id], [v, g] = t.p(f), hid = t.hidden && !own;
-        const pct = Math.round(100 * Math.min(1, v / g));
-        return `<div class="trophy${own ? ' own' : ''}"><div class="tt"><span class="medal" style="--m:${own ? TIER[t.tier].c : '#ECEAF4'}">${hid ? E('locked', 28) : E(t.e, 30)}</span><div><b>${hid ? 'Trophée caché' : esc(t.n)}</b><div class="small muted">${TIER[t.tier].n}</div></div></div>
-          <p class="small">${hid ? 'Se dévoile pendant le combat contre le boss.' : esc(t.g)}</p>
-          <div class="tbar"><span class="bar" role="progressbar" aria-label="${esc(t.n)}" aria-valuemin="0" aria-valuemax="${g}" aria-valuenow="${hid ? 0 : v}"><i style="width:${hid ? 0 : pct}%"></i></span><b class="small num">${own ? 'Obtenu' : hid ? '?' : v + ' / ' + g}</b></div></div>`;
-      }).join('')}</div>`;
+    const f = facts();
+    const all = TROPHIES.map((t) => { const own = !!st.trophies[t.id], [v, g] = t.p(f); return { t, own, v, g, pct: Math.round(100 * Math.min(1, v / g)), hid: t.hidden && !own }; });
+    const got = all.filter((x) => x.own).length, near = all.filter((x) => !x.own && !x.hid).sort((p, q) => q.pct - p.pct)[0];
+    const shelf = (tier) => { const xs = all.filter((x) => x.t.tier === tier).sort((p, q) => (q.own - p.own) || (p.hid - q.hid) || (q.pct - p.pct)); const n = xs.filter((x) => x.own).length;
+      return xs.length ? `<section class="shelf tier-${tier}" aria-labelledby="sh-${tier}"><h2 id="sh-${tier}">${TIER[tier].n} <span>${n} sur ${xs.length}</span></h2><ul class="shelf-row">${xs.map(trophyItem).join('')}</ul></section>` : ''; };
+    return `${cupDefs()}<section class="pagehead"><div><h1 class="h1">Trophées</h1><p class="muted">${got} sur ${TROPHIES.length} obtenus${near ? ` · le plus proche : <b>${esc(near.t.n)}</b> (${near.v} / ${near.g})` : ''}</p></div></section>
+      <div class="vitrine">${shelf('or')}${shelf('argent')}${shelf('bronze')}</div>`;
   }
 
   /* ---------- Vue : progrès ---------- */
@@ -868,7 +875,8 @@
     let cal = ''; for (let i = 0; i < 35; i++) { const d = Core.addDays(start, i), r = getRec(d); cal += `<i class="${r.ok ? 'ok' : r.done.length ? 'p1' : ''}${d === k ? ' today' : ''}" title="${d}"></i>`; }
     let code = ''; try { code = btoa(unescape(encodeURIComponent(JSON.stringify(st)))); } catch (e) { code = ''; }
     const b = bossState();
-    const head = `<section class="pagehead"><div><div class="kicker muted">Niveau ${li.level}</div><h1 class="h1">${esc(Core.rankFor(li.level))}</h1><p class="muted">Prochain rang au niveau ${(Core.RANKS.find((r) => r[0] > li.level) || ['max'])[0]}.</p></div></section>`;
+    const rk = Core.rankInfo(st.xp);
+    const head = `<section class="pagehead"><div class="rk-head">${emblem(rk.idx, { key: 'p', div: rk.div })}<div><div class="kicker muted">Niveau ${li.level}</div><h1 class="h1">${esc(rk.name)} ${ROMAN[rk.div - 1]}</h1><p class="muted">${rk.next ? `Prochain titre au niveau ${rk.next.level} : ${esc(rk.next.name)}.` : 'Rang maximal.'}</p></div></div><button class="btn" data-act="rank">${E('trophy', 22)} Voir les titres et les rangs</button></section>`;
     const tiles = `<div class="tiles">
         <div class="tile" style="--bg:#E3DFFF">${E('sparkles', 28)}<b class="num">${st.xp}</b><span>XP au total</span></div>
         <div class="tile" style="--bg:#FFE1DA">${E('fire', 28)}<b class="num">${s.streak}</b><span>jours de série</span></div>
@@ -1203,6 +1211,7 @@
     let inner = '';
     if (m.type === 'mission') { const ms = missionsFor(today()).find((x) => x.id === m.id); if (!ms) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = missionSheet(ms); }
     else if (m.type === 'song') { const s = songById(m.id); if (!s) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = songSheet(s); }
+    else if (m.type === 'rank') inner = rankSheet();
     else if (m.type === 'guide') { if (!GUIDES[m.id]) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = guideSheet(m.id, m.from); }
     else if (m.type === 'booster') {
       /* Séquence : le paquet tremble, le sceau se fissure, flash, carte face cachée ; au clic (ou Entrée/Espace) elle se retourne et le bandeau de rareté s'envole. */
@@ -1293,8 +1302,8 @@
   /* ---------- Rendu global ---------- */
   function renderView() {
     /* Mode sombre : Accueil, Collection, Paliers et Trophées en « Mur de cartes » ; Progrès bascule lui-même ; Manche et Oreille gardent leur mise en page. */
-    /* Sombre : Mur sur Accueil, Collection, Paliers, Trophées et Docs. Clair : Mur sur l'Accueil seulement (choix du 22 novembre 2026). */
-    const wall = isDark() ? { accueil: wallAccueil, paliers: wallPaliers, collection: wallCollection, trophees: wallTrophees, doc: wallDoc } : { accueil: wallAccueil };
+    /* Sombre : Mur sur Accueil, Paliers et Docs. Clair : Mur sur l'Accueil seulement. */
+    const wall = isDark() ? { accueil: wallAccueil, paliers: wallPaliers, doc: wallDoc } : { accueil: wallAccueil }; /* Collection et Trophées : même mise en page dans les deux modes */
     const v = wall[ui.tab] || { accueil: viewAccueil, paliers: viewPaliers, collection: viewCollection, trophees: viewTrophees, doc: viewDoc, progres: viewProgres, manche: viewManche, oreille: viewOreille }[ui.tab] || viewAccueil;
     const el = $('#view'), a = document.activeElement;
     /* Après un rafraîchissement, le focus clavier revient sur la même commande (menu, puce, bouton). */
@@ -1417,6 +1426,7 @@
     dock() { ui.dock = !ui.dock; render(); },
     session() { startSession(); },
     'session-stop'() { seanceStop(); },
+    rank() { ui.modal = { type: 'rank' }; render(); },
     'seance-ok'() { seanceValidate(); },
     'seance-pause'() { const s = ui.session, m = seanceCur(); if (!s || !m) return; if (s.count) { seanceHold(); return; } if (ui.timer && ui.timer.mid === m.id && ui.timer.running) { pauseTimer(); seanceToolsOff(); render(); } else { seanceStartTimer(m); render(); } },
     'seance-now'() { seanceCountDone(); },
@@ -1591,6 +1601,15 @@
   });
   document.addEventListener('pointerout', (ev) => { const c = ev.target.closest && ev.target.closest('.card'); if (c && !c.contains(ev.relatedTarget)) { c.style.removeProperty('--rx'); c.style.removeProperty('--ry'); c.style.removeProperty('--sx'); } });
   Sound.metro.onBeat = (b) => { ui.beat = b; document.querySelectorAll('#beats, #sx-beats').forEach((el) => [...el.children].forEach((c, i) => c.classList.toggle('on', i === b))); };
+  /* Coupes des trophées : légère inclinaison 3D qui suit la souris (rien si le mouvement réduit est demandé). */
+  const noMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+  document.addEventListener('pointermove', (ev) => {
+    if (noMotion.matches || ev.pointerType !== 'mouse') return;
+    const tro = ev.target.closest && ev.target.closest('.tro'); if (!tro) return;
+    const r = tro.getBoundingClientRect(), cup = tro.querySelector('.tro-cup');
+    cup.style.setProperty('--ry', ((ev.clientX - r.left) / r.width - 0.5) * 30 + 'deg'); cup.style.setProperty('--rx', (0.5 - (ev.clientY - r.top) / r.height) * 16 + 'deg');
+  });
+  document.addEventListener('pointerout', (ev) => { const tro = ev.target.closest && ev.target.closest('.tro'); if (tro && !tro.contains(ev.relatedTarget)) { const cup = tro.querySelector('.tro-cup'); cup.style.removeProperty('--ry'); cup.style.removeProperty('--rx'); } });
   /* Page fermée pendant le compte à rebours : la mission validée est enregistrée quand même. */
   window.addEventListener('pagehide', () => { if (ui.session && ui.session.pending) { if (ui.session.count) clearTimeout(ui.session.count.t); ui.session.count = null; seanceCommit(); save(); } });
   function readHash() { const h = location.hash.replace('#', ''); ui.tab = VIEWS.includes(h) ? h : 'accueil'; ui.armed = null; ui.flipped = null; }

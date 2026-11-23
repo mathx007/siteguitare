@@ -157,6 +157,18 @@ const RANKS = [
   [30, 'Kami du manche'], [40, 'Légende vivante'],
 ];
 function rankFor(level) { let r = RANKS[0][1]; for (const [l, n] of RANKS) if (level >= l) r = n; return r; }
+/* XP totale pour atteindre un niveau (niveau 1 = 0 XP). */
+function xpForLevel(level) { let x = 0; for (let l = 1; l < level; l++) x += 150 + 50 * l; return x; }
+/* Titre et division (I, II, III) façon jeu vidéo : l'XP d'un titre est découpée en trois tiers égaux.
+   Le dernier titre (« Légende vivante ») s'étend sur 30 niveaux. Affichage seulement : l'XP et les niveaux ne changent pas. */
+function rankInfo(xp) {
+  const x = Math.max(0, Math.floor(xp)), level = levelInfo(x).level;
+  let idx = 0; for (let k = 0; k < RANKS.length; k++) if (level >= RANKS[k][0]) idx = k;
+  const next = RANKS[idx + 1], lo = xpForLevel(RANKS[idx][0]), hi = next ? xpForLevel(next[0]) : xpForLevel(RANKS[idx][0] + 30), span = hi - lo;
+  const div = Math.min(3, 1 + Math.floor((3 * (x - lo)) / span));
+  const dLo = lo + Math.round((span * (div - 1)) / 3), dHi = div < 3 ? lo + Math.round((span * div) / 3) : hi;
+  return { idx, name: RANKS[idx][1], level, div, divInto: Math.min(x - dLo, dHi - dLo), divNeed: dHi - dLo, next: next ? { level: next[0], name: next[1] } : null, maxed: !next && x >= hi };
+}
 
 /* Passages à 100 % d'un morceau : 3 pour acquérir la carte, 2 au maximum par jour. */
 function passesInfo(list, today, needed = 3, perDay = 2) {
@@ -256,6 +268,6 @@ function seeded(seed) {
 const Core = {
   NOTE_FR, NOTE_EN, OPEN_MIDI, STRING_FR, MAXFRET, DEG_LABEL, SCALES, BOX, mod, noteName, boxRootFret, positionShifts,
   inPosition, fretboardNotes, sequenceForPosition, dayKey, parseDay, addDays, dayNumber, isoWeek, weekDays,
-  computeStreak, levelInfo, rankFor, RANKS, bossHp, passesInfo, maxWeekOk, detectPitch, freqToMidi, midiToFreq, NoteTracker, seeded,
+  computeStreak, levelInfo, rankFor, rankInfo, xpForLevel, RANKS, bossHp, passesInfo, maxWeekOk, detectPitch, freqToMidi, midiToFreq, NoteTracker, seeded,
 };
 if (typeof module !== 'undefined' && module.exports) module.exports = Core;
