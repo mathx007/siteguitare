@@ -1183,3 +1183,34 @@ button.lvl:hover { background: var(--bg); }
   .vt-cab { padding-bottom: 60px; }
 }
 @media (prefers-reduced-motion: reduce) { .vt-cab, .vt-tro { transition: none; } .vt-tro:hover, .vt-tro:focus-visible { transform: rotateY(-18deg); } }
+
+/* Vitrine 3D (WebGL) : remplace la vitrine CSS une fois chargée ; la vitrine CSS reste en secours */
+.vt3d-host { display: none; }
+.vt-scene.is-3d { padding: 0; overflow: visible; perspective: none; }
+.vt-scene.is-3d .vt3d-host { display: block; max-width: 1180px; margin: 0 auto; }
+.vt-scene.is-3d .vt-cab { display: none; }
+.vt3d-canvas { display: block; width: 100%; height: 520px; cursor: grab; touch-action: pan-y; border-radius: 18px; }
+.vt3d-canvas:active { cursor: grabbing; }
+/* Liste de tous les trophées */
+.vt-listbox { max-width: 1000px; margin: 22px auto 0; display: flex; flex-direction: column; gap: 12px; }
+.vt-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.vt-chip { width: 100%; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: border-color .15s; }
+.vt-chip:hover { border-color: var(--muted); }
+.vt-chip.on { border-color: var(--ink); }
+.vt-cn { flex: 1; min-width: 0; font-weight: 700; font-size: .92rem; line-height: 1.2; }
+.vt-cs { font-size: .8rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.vt-chip.own .vt-cs { color: #1B1733; background: #FFD166; border-radius: 99px; padding: 1px 8px; }
+.vt-chip.own.tier-argent .vt-cs { background: #DDE2EC; }
+.vt-chip.own.tier-bronze .vt-cs { background: #EBC7A4; }
+.vt-chip:not(.own) img.emo { filter: grayscale(1); opacity: .7; }
+@media (max-width: 760px) { .vt-scene.is-3d { margin: 0 -16px; } .vt3d-canvas { border-radius: 0; } }
+
+/* Compte et déconnexion */
+.acsheet { gap: 12px; }
+.acsheet .big-av { width: 64px; height: 64px; font-size: 1.6rem; display: grid; place-items: center; border-radius: 50%; }
+.ac-acts { gap: 10px; width: 100%; }
+.ac-acts .btn { width: 100%; justify-content: center; }
+.lo-wipe { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
+.lo-wipe input { width: 22px; height: 22px; margin-top: 2px; flex: none; accent-color: var(--accent); }
+.lo-wipe > span { display: flex; flex-direction: column; gap: 4px; }
+#lo-title:focus { outline: none; }

@@ -136,3 +136,7 @@ Archivo (The Archivo Project Authors) et Inter (The Inter Project Authors), lice
 ## Fiches « D'après le livre » (onglet Documentation)
 
 Les cinq fiches de la section « D'après le livre » s'appuient sur *The Only Guitar Book You'll Ever Need*, de Marc Schonbrun et Ernie Jackson (chapitres 3, 7, 9 et 19, annexe A). Les idées y sont reformulées pour Gratte Quest : aucun texte, aucune figure ni aucune photo du livre n'est reproduit sur le site. Chaque fiche indique le chapitre et les pages d'origine.
+
+## Bibliothèque 3D (vitrine des trophées)
+
+`vendor/three.module.min.js` et `vendor/RoomEnvironment.js` : three.js r170, © 2010-2024 auteurs de three.js, licence MIT (https://github.com/mrdoob/three.js/blob/dev/LICENSE). Seul l'import de `RoomEnvironment.js` est adapté pour pointer vers le fichier local.

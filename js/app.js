@@ -343,7 +343,7 @@
         <span class="streak" title="Jours validés d'affilée">${E('fire', 20)}<b class="num">${s.streak}</b><span class="hide-s">jour${s.streak > 1 ? 's' : ''}</span></span>
         <button type="button" class="lvl hide-s" data-act="rank"><span>Niveau ${li.level} · <span class="num">${li.into} / ${li.need}</span> XP<span class="sr-only">, ${esc(Core.rankInfo(st.xp).name)} : voir les titres et les rangs</span></span><span class="bar" aria-hidden="true"><i style="width:${(100 * li.into / li.need).toFixed(1)}%"></i></span></button>
         <button class="theme-btn" data-act="theme" aria-pressed="${isDark()}" aria-label="Mode sombre" title="${isDark() ? 'Passer en mode clair' : 'Passer en mode sombre'}">${ICON_THEME}</button>
-        <button class="avatar${u ? ' on' : ''}" data-act="account" aria-label="${u ? 'Compte connecté' : 'Se connecter'}">${esc(initial)}</button>
+        <button class="avatar${u ? ' on' : ''}" data-act="account" aria-label="${u ? 'Mon compte' : 'Se connecter'}">${esc(initial)}</button>
       </div></div>`;
   }
   function renderSessionBar() {
@@ -833,6 +833,18 @@
     <symbol id="cup" viewBox="0 0 120 160"><path d="M96 36c22-4 20 30-6 30" fill="none" stroke="var(--m)" stroke-width="7" stroke-linecap="round" opacity=".75"/><path d="M21 24c0 40 17 66 39 68 22-2 39-28 39-68z" fill="var(--m)"/><ellipse cx="60" cy="24" rx="39" ry="9" fill="var(--m)"/><ellipse cx="60" cy="24" rx="34" ry="6.5" fill="url(#cup-in)"/>
     <path d="M33 30c2 26 10 44 20 52-14-4-22-24-23-52z" fill="#fff" opacity=".35"/><path d="M24 36c-22-4-20 30 6 30" fill="none" stroke="var(--m)" stroke-width="7" stroke-linecap="round"/><path d="M54 92h12l-1 22h-10z" fill="var(--m)"/><ellipse cx="60" cy="114" rx="16" ry="4" fill="var(--m)"/>
     <path d="M30 122h60v22H30z" fill="url(#cup-base)"/><ellipse cx="60" cy="144" rx="30" ry="6" fill="#0E0B18"/><ellipse cx="60" cy="122" rx="30" ry="6" fill="#5A5078"/><rect x="44" y="128" width="32" height="9" rx="1.5" fill="var(--m)" opacity=".9"/></symbol></defs></svg>`;
+  /* Vitrine 3D : module chargé à la première ouverture de l'onglet Trophées ; en cas d'échec (pas de WebGL), la vitrine CSS reste. */
+  let T3D = null, t3dFail = false, t3dLoading = false, vt3dData = null;
+  const ASSET_V = (() => { const s = document.querySelector('script[src*="js/app.js"]'); const m = s && s.getAttribute('src').match(/[?&]v=(\d+)/); return m ? m[1] : '0'; })();
+  function mount3D() {
+    if (ui.tab !== 'trophees' || t3dFail || !vt3dData) return;
+    const host = $('#vt3d-host'); if (!host) return;
+    const show = () => { const sc = $('.vt-scene'); if (!sc || !T3D) return; T3D.attach(host, vt3dData).then(() => sc.classList.add('is-3d')).catch(() => { t3dFail = true; sc.classList.remove('is-3d'); }); };
+    if (T3D) { show(); return; }
+    if (t3dLoading) return;
+    t3dLoading = true;
+    import(new URL(`js/trophees3d.js?v=${ASSET_V}`, document.baseURI).href).then((m) => { T3D = m; t3dLoading = false; if (ui.tab === 'trophees') renderView(); }).catch(() => { t3dFail = true; t3dLoading = false; });
+  }
   /* Trophées par étagère selon la largeur (la vitrine est redessinée si ce nombre change). */
   const vtPerShelf = () => { const w = window.innerWidth; return w >= 1200 ? 7 : w >= 980 ? 5 : w >= 760 ? 4 : w >= 480 ? 3 : 2; };
   let vtPer = 0;
@@ -853,11 +865,17 @@
     const info = `<div class="vt-info" aria-live="polite">${E(sel.hid ? 'locked' : sel.t.e, 40)}<div><b>${esc(sel.hid ? 'Trophée caché' : sel.t.n)}</b><span class="vt-tier">${TIER[sel.t.tier].n}${sel.own ? ` · obtenu le ${st.trophies[sel.t.id].split('-').reverse().join('/')}` : ''}</span><p>${sel.hid ? 'Se dévoile pendant le combat contre le boss.' : esc(sel.t.g) + '.'}</p>
       ${sel.own || sel.hid ? '' : `<span class="vt-prog"><span class="bar" role="progressbar" aria-label="${esc(sel.t.n)}" aria-valuemin="0" aria-valuemax="${sel.g}" aria-valuenow="${sel.v}"><i style="width:${sel.pct}%"></i></span><span class="num">${sel.v} / ${sel.g}</span></span>`}</div></div>`;
     const tierN = (tier) => { const xs = all.filter((x) => x.t.tier === tier); return `${TIER[tier].n} ${xs.filter((x) => x.own).length}/${xs.length}`; };
-    return `${cupDefs()}<section class="pagehead"><div><h1 class="h1">Trophées</h1><p class="muted">${got} sur ${TROPHIES.length} obtenus · ${tierN('or')} · ${tierN('argent')} · ${tierN('bronze')}. Clique sur une coupe pour voir son objectif.</p></div></section>
-      <div class="vt-scene" style="--per:${per}"><div class="vt-cab" id="vt-cab"><div class="vt-back" aria-hidden="true"></div><div class="vt-side l" aria-hidden="true"></div><div class="vt-side r" aria-hidden="true"></div><div class="vt-lid t" aria-hidden="true"></div><div class="vt-lid b" aria-hidden="true"></div><div class="vt-led" aria-hidden="true"></div>
+    const is3d = !!(T3D && !t3dFail), nameOf = (x) => (x.hid ? 'Trophée caché' : x.t.n);
+    /* Données de la vitrine 3D (disques sur pied), montée après le rendu de la page par mount3D. */
+    vt3dData = { per, sel: sel.t.id, onSelect: (id) => ACT.tro({ id }), label: `Vitrine des trophées en 3D : ${got} sur ${TROPHIES.length} obtenus. La liste des trophées suit la vitrine.`,
+      shelves: shelves.map((row) => row.map((x) => ({ id: x.t.id, name: nameOf(x), state: troState(x), tier: x.t.tier, own: x.own, icon: x.hid ? 'locked' : x.t.e }))) };
+    /* Liste de tous les trophées : choix au clavier, lecteurs d'écran et téléphone. */
+    const list = `<section class="vt-listbox" aria-labelledby="vt-list-t"><h2 class="h3" id="vt-list-t">Tous les trophées</h2><ul class="vt-list">${order.map((x) => `<li><button type="button" class="vt-chip tier-${x.t.tier}${x.own ? ' own' : ''}${x === sel ? ' on' : ''}" data-act="tro" data-id="${x.t.id}" aria-pressed="${x === sel}">${E(x.hid ? 'locked' : x.t.e, 22)}<span class="vt-cn">${esc(nameOf(x))}</span><span class="vt-cs num">${x.own ? TIER[x.t.tier].n : troState(x)}</span></button></li>`).join('')}</ul></section>`;
+    return `${cupDefs()}<section class="pagehead"><div><h1 class="h1">Trophées</h1><p class="muted">${got} sur ${TROPHIES.length} obtenus · ${tierN('or')} · ${tierN('argent')} · ${tierN('bronze')}. ${is3d ? 'Fais glisser la vitrine pour la tourner, clique sur un disque pour voir son objectif.' : 'Clique sur une coupe pour voir son objectif.'}</p></div></section>
+      <div class="vt-scene${is3d ? ' is-3d' : ''}" style="--per:${per}"><div class="vt3d-host" id="vt3d-host"></div><div class="vt-cab" id="vt-cab"><div class="vt-back" aria-hidden="true"></div><div class="vt-side l" aria-hidden="true"></div><div class="vt-side r" aria-hidden="true"></div><div class="vt-lid t" aria-hidden="true"></div><div class="vt-lid b" aria-hidden="true"></div><div class="vt-led" aria-hidden="true"></div>
         ${shelves.map((row, i) => `<div class="vt-shelf${i === shelves.length - 1 ? ' last' : ''}"><div class="vt-cups">${row.map(cup).join('')}</div><div class="vt-lip">${row.map(plate).join('')}</div></div>`).join('')}
         <div class="vt-glass" aria-hidden="true"></div><div class="vt-frame" aria-hidden="true"></div><div class="vt-plinth" aria-hidden="true"></div></div></div>
-      ${info}`;
+      ${info}${list}`;
   }
 
   /* ---------- Vue : progrès ---------- */
@@ -915,7 +933,7 @@
         </section>
         <section class="panel" id="compte"><h2 class="h3">Compte et sauvegarde</h2>
           <p><span class="pill" id="sync-status">${esc(syncLabel())}</span></p>
-          ${u ? `<p class="small">Connecté avec <b>${esc(u.email || '')}</b>.</p><div class="row"><button class="btn ghost sm" data-act="logout">Se déconnecter</button>${ui.armed === 'delacc' ? '<button class="btn danger sm" data-act="delacc-ok">Confirmer : supprimer définitivement mon compte</button><button class="link" data-act="disarm">Annuler</button>' : '<button class="link" data-act="arm" data-id="delacc">Supprimer mon compte</button>'}</div>${ui.armed === 'delacc' ? '<p class="small err">Ton compte, ton adresse e-mail et ta sauvegarde en ligne seront effacés tout de suite, sans retour possible. La progression enregistrée sur cet appareil sera aussi effacée.</p>' : ''}` : `<p class="small muted">Avec un compte, ta série, tes cartes et tes trophées suivent sur ton PC et ton téléphone.</p><div><button class="btn sm" data-act="login-open">Se connecter</button></div>`}
+          ${u ? `<p class="small">Connecté avec <b>${esc(u.email || '')}</b>.</p><div class="row"><button class="btn ghost sm" data-act="logout-open">Se déconnecter</button>${ui.armed === 'delacc' ? '<button class="btn danger sm" data-act="delacc-ok">Confirmer : supprimer définitivement mon compte</button><button class="link" data-act="disarm">Annuler</button>' : '<button class="link" data-act="arm" data-id="delacc">Supprimer mon compte</button>'}</div>${ui.armed === 'delacc' ? '<p class="small err">Ton compte, ton adresse e-mail et ta sauvegarde en ligne seront effacés tout de suite, sans retour possible. La progression enregistrée sur cet appareil sera aussi effacée.</p>' : ''}` : `<p class="small muted">Avec un compte, ta série, tes cartes et tes trophées suivent sur ton PC et ton téléphone.</p><div><button class="btn sm" data-act="login-open">Se connecter</button></div>`}
           <details><summary class="small strong">Code de sauvegarde (copie manuelle)</summary>
             <label for="code-out" class="small">Ton code</label><textarea id="code-out" readonly>${code}</textarea>
             <div class="row"><button class="btn ghost sm" data-act="copy">Copier le code</button><span class="small muted" id="copy-msg"></span></div>
@@ -1229,6 +1247,7 @@
     if (m.type === 'mission') { const ms = missionsFor(today()).find((x) => x.id === m.id); if (!ms) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = missionSheet(ms); }
     else if (m.type === 'song') { const s = songById(m.id); if (!s) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = songSheet(s); }
     else if (m.type === 'rank') inner = rankSheet();
+    else if (m.type === 'account') { if (!Cloud.user) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = accountSheet(); }
     else if (m.type === 'guide') { if (!GUIDES[m.id]) { ui.modal = null; el.className = ''; el.innerHTML = ''; return; } inner = guideSheet(m.id, m.from); }
     else if (m.type === 'booster') {
       /* Séquence : le paquet tremble, le sceau se fissure, flash, carte face cachée ; au clic (ou Entrée/Espace) elle se retourne et le bandeau de rareté s'envole. */
@@ -1297,10 +1316,43 @@
   }
 
   /* ---------- Connexion ---------- */
+  /* Pages de déconnexion : confirmation (avec effacement facultatif de l'appareil), puis « Tu es déconnecté ». */
+  function logoutPage(L) {
+    if (L.state === 'loggedout') return `<div class="loginin" role="region" aria-labelledby="lo-title">
+      <div class="brand big">${E('guitar', 40)}<span>Gratte Quest</span></div>
+      <div><h1 class="h1" id="lo-title" tabindex="-1">Tu es déconnecté</h1><p class="muted">${L.wiped ? 'La progression de cet appareil a été effacée. Elle reste enregistrée sur ton compte : reconnecte-toi pour la retrouver.' : 'Ta progression reste enregistrée sur ton compte, et une copie reste sur cet appareil.'}</p></div>
+      <button class="btn big" data-act="login-retry">Se reconnecter</button>
+      <button class="btn ghost big" data-act="guest">${L.wiped ? 'Recommencer sans compte sur cet appareil' : 'Continuer sans compte sur cet appareil'}</button>${legalLinks()}</div>`;
+    const email = (Cloud.user && Cloud.user.email) || '';
+    return `<div class="loginin" role="region" aria-labelledby="lo-title">
+      <div class="brand big">${E('guitar', 40)}<span>Gratte Quest</span></div>
+      <div><h1 class="h1" id="lo-title" tabindex="-1">Se déconnecter</h1><p class="muted">${email ? `Tu es connecté avec <b>${esc(email)}</b>. ` : ''}Ta progression reste enregistrée sur ton compte : tu la retrouveras en te reconnectant.</p></div>
+      <div class="panel col"><label class="lo-wipe"><input type="checkbox" id="logout-wipe" data-change="logout-wipe"${L.wipe ? ' checked' : ''}><span><b>Effacer aussi la progression de cet appareil</b><span class="small muted">Conseillé sur un ordinateur ou un téléphone partagé. Ta progression reste sur ton compte.</span></span></label>
+        ${L.msg ? `<p class="err small">${esc(L.msg)}</p>` : ''}
+        <button class="btn big" data-act="logout"${L.busy ? ' disabled' : ''}>${L.busy ? 'Déconnexion…' : 'Se déconnecter'}</button></div>
+      <button class="btn ghost big" data-act="logout-cancel">Annuler</button>${legalLinks()}</div>`;
+  }
+  /* Fenêtre « Mon compte » (clic sur l'avatar quand on est connecté). */
+  function accountSheet() {
+    const u = Cloud.user, s = ui.sync;
+    return `<div class="sheet center acsheet" aria-labelledby="ac-title"><span class="avatar on big-av" aria-hidden="true">${esc((st.name || (u && u.email) || '?').trim().charAt(0).toUpperCase())}</span>
+      <h2 class="h2" id="ac-title">Mon compte</h2><p>Connecté avec <b>${esc((u && u.email) || '')}</b></p>
+      <p class="small muted">${s === 'error' ? 'Synchronisation impossible pour l\'instant : ta progression est gardée sur cet appareil.' : 'Ta progression est enregistrée sur ton compte et suit sur tes appareils.'}</p>
+      <div class="col ac-acts"><button class="btn" data-act="go-progres">${E('sparkles', 20)} Ma progression</button><button class="btn ghost" data-act="logout-open">Se déconnecter</button></div>
+      <button class="link" data-act="close">Fermer</button></div>`;
+  }
   function renderLogin() {
     const el = $('#login'), L = ui.login;
     if (!L.show) { el.hidden = true; el.innerHTML = ''; return; }
+    const wasHidden = el.hidden;
     el.hidden = false;
+    if (L.state === 'logout' || L.state === 'loggedout') {
+      const a = document.activeElement, keep = a && el.contains(a) && a.dataset && a.dataset.act ? `[data-act="${a.dataset.act}"]` : a && a.id === 'logout-wipe' ? '#logout-wipe' : null;
+      el.innerHTML = logoutPage(L);
+      const t = (keep && el.querySelector(keep)) || (wasHidden || L.focusTitle ? el.querySelector('#lo-title') : null); L.focusTitle = false;
+      if (t) t.focus({ preventScroll: true });
+      return;
+    }
     const avail = Cloud.available;
     el.innerHTML = `<div class="loginin">
       <div class="brand big">${E('guitar', 40)}<span>Gratte Quest</span></div>
@@ -1329,7 +1381,7 @@
       if (a.id) sel = '#' + CSS.escape(a.id);
       else if (a.dataset && a.dataset.act) sel = `[data-act="${a.dataset.act}"]` + ['id', 'v', 'p', 'q'].filter((k) => a.dataset[k] !== undefined).map((k) => `[data-${k}="${CSS.escape(a.dataset[k])}"]`).join('');
     }
-    el.innerHTML = v();
+    el.innerHTML = v(); if (ui.tab === 'trophees') mount3D();
     if (sel) { const t = el.querySelector(sel); if (t) t.focus({ preventScroll: true }); }
     if (ui.tab !== lastViewTab) { /* apparition décalée des blocs, seulement au changement de vue */
       lastViewTab = ui.tab; el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter');
@@ -1430,7 +1482,10 @@
   /* ---------- Événements ---------- */
   function go(tab) { ui.tab = VIEWS.includes(tab) ? tab : 'accueil'; ui.armed = null; ui.flipped = null; if (location.hash !== '#' + ui.tab) history.replaceState(null, '', '#' + ui.tab); render(); window.scrollTo(0, 0); }
   const ACT = {
-    account() { if (Cloud.user) go('progres'); else { ui.login.show = true; render(); } },
+    account() { if (Cloud.user) { ui.modal = { type: 'account' }; render(); } else { ui.login.show = true; ui.login.state = 'idle'; render(); } },
+    'go-progres'() { ui.modal = null; go('progres'); },
+    'logout-open'() { ui.modal = null; Object.assign(ui.login, { show: true, state: 'logout', wipe: false, busy: false, msg: '', focusTitle: true }); render(); },
+    'logout-cancel'() { Object.assign(ui.login, { show: false, state: 'idle', wipe: false }); render(); },
     'login-open'() { ui.login.show = true; render(); },
     'login-retry'() { ui.login.state = 'idle'; render(); },
     guest() { try { localStorage.setItem(LS_GUEST, '1'); } catch (e) { /* rien */ } ui.login.show = false; render(); },
@@ -1439,7 +1494,13 @@
       try { localStorage.removeItem(LS); localStorage.removeItem(LS_GUEST); } catch (e) { /* rien */ }
       st = fresh(); ui.armed = null; ui.session = null; ui.sync = 'local'; stopTimer(); render(); toast('Compte et données supprimés.', 'check-mark-button');
     },
-    async logout() { await Cloud.signOut(); ui.sync = 'local'; render(); toast('Déconnecté. Ta progression reste sur cet appareil.', 'link'); },
+    /* Déconnexion depuis la page dédiée ; l'appareil n'est effacé que si la case est cochée. */
+    async logout() {
+      const wipe = !!ui.login.wipe; ui.login.busy = true; ui.login.msg = ''; render();
+      try { if (ui.session) seanceStop(); await Cloud.signOut(); } catch (e) { ui.login.busy = false; ui.login.msg = 'Déconnexion impossible pour l\'instant. Vérifie ta connexion et réessaie.'; render(); return; }
+      if (wipe) { try { localStorage.removeItem(LS); localStorage.removeItem(LS_GUEST); } catch (e) { /* stockage indisponible */ } st = fresh(); stopTimer(); ui.session = null; ui.modal = null; }
+      ui.sync = 'local'; Object.assign(ui.login, { show: true, state: 'loggedout', wiped: wipe, busy: false, email: '', focusTitle: true }); render();
+    },
     dock() { ui.dock = !ui.dock; render(); },
     session() { startSession(); },
     'session-stop'() { seanceStop(); },
@@ -1485,7 +1546,7 @@
     'img-reset'(d) { delete st.img[d.id]; commit(); },
     coltab(d) { ui.colTab = d.v; ui.flipped = null; render(); },
     rar(d) { ui.rar = d.v; ui.flipped = null; render(); },
-    tro(d) { ui.troSel = d.id; renderView(); const b = document.querySelector(`.vt-tro[data-id="${CSS.escape(d.id)}"]`); if (b) b.focus({ preventScroll: true }); },
+    tro(d) { const fromList = document.activeElement && document.activeElement.matches && document.activeElement.matches('.vt-chip, .vt-tro'); ui.troSel = d.id; renderView(); if (fromList) { const b = document.querySelector(`.vt-scene:not(.is-3d) .vt-tro[data-id="${CSS.escape(d.id)}"], .vt-chip[data-id="${CSS.escape(d.id)}"]`); if (b) b.focus({ preventScroll: true }); } },
     'owned-only'() { ui.ownedOnly = !ui.ownedOnly; ui.flipped = null; render(); },
     preview() { ui.preview = !ui.preview; render(); },
     quick(d) {
@@ -1604,6 +1665,7 @@
   });
   document.addEventListener('change', async (ev) => {
     const k = ev.target.dataset && ev.target.dataset.change, v = ev.target.value;
+    if (k === 'logout-wipe') { ui.login.wipe = !!ev.target.checked; return; }
     if (k === 'fb-root') { ui.fb.root = Number(v); ui.check = null; render(); }
     else if (k === 'fb-scale') { ui.fb.scale = v; ui.check = null; render(); }
     else if (k === 'bpm-exo') { ui.bpmExo = v; render(); }
